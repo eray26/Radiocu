@@ -289,7 +289,17 @@ export default function App() {
       <header className={`h-16 ${theme.bgPanel} backdrop-blur-md border-b ${theme.border} flex items-center justify-between px-4 z-30 shrink-0`}>
         <div className="flex items-center gap-3">
           <div className={`w-9 h-9 bg-gradient-to-br ${theme.grad} rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20`}>
-            <Radio className="text-white w-5 h-5" />
+{/* Navbar Bölümü - Logo Değişikliği */}
+<div className="flex items-center gap-3">
+  <div className={`w-10 h-10 bg-gradient-to-br ${theme.grad} rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 overflow-hidden`}>
+    {/* Burayı Değiştiriyoruz: */}
+    <img src="/logo.png" alt="Radiocu Logo" className="w-full h-full object-cover" />
+  </div>
+  <div>
+    <h1 className="text-lg font-bold tracking-tight text-white leading-none">Radiocu</h1>
+    <span className="text-[10px] text-slate-500 font-mono tracking-widest uppercase">Global Player</span>
+  </div>
+</div>
           </div>
           <div>
             <h1 className="text-lg font-bold tracking-tight text-white leading-none">Radiocu</h1>

@@ -1,30 +1,90 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe, Radio, MapPin, Music, Wifi, AlertCircle, Sparkles, X, Bot, MessageSquare, Loader2, Activity, Zap, Waves, ExternalLink, Info, Share2, Menu, RefreshCw } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe, Radio, MapPin, Music, Wifi, AlertCircle, Sparkles, X, Bot, MessageSquare, Loader2, Activity, Zap, Waves, Menu, RefreshCw, Star } from 'lucide-react';
 
 // --- AYARLAR ---
-const GOOGLE_AD_CLIENT_ID = "ca-pub-XXXXXXXXXXXXXXXX"; 
-const IS_ADSENSE_LIVE = false; 
+const GOOGLE_AD_CLIENT_ID = "ca-pub-3676498147737928"; // Sizin ID'niz eklendi
+const IS_ADSENSE_LIVE = true; // Reklamlar aktif edildi
 const apiKey = ""; 
+
+// --- VIP İSTASYONLAR ---
+const VIP_STATIONS = {
+  TR: [
+    { name: "Power Türk", url_resolved: "https://listen.powerapp.com.tr/powerturk/mpeg/icecast.audio", favicon: "https://upload.wikimedia.org/wikipedia/commons/2/2b/Power_T%C3%BCrk_logo.svg", tags: "pop,türkçe" },
+    { name: "Power FM", url_resolved: "https://listen.powerapp.com.tr/powerfm/mpeg/icecast.audio", favicon: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Power_FM_logo.svg", tags: "pop,hit" },
+    { name: "Metro FM", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/METRO_FM_SC", favicon: "https://upload.wikimedia.org/wikipedia/tr/f/f7/Metro_FM_logo.png", tags: "pop,yabancı" },
+    { name: "Süper FM", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/SUPER_FM_SC", favicon: "https://upload.wikimedia.org/wikipedia/tr/b/b5/S%C3%BCper_FM_logo.png", tags: "pop,türkçe" },
+    { name: "Joy Türk", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/JOY_TURK_SC", favicon: "https://upload.wikimedia.org/wikipedia/tr/0/09/Joy_FM_logo.png", tags: "slow,aşk" },
+    { name: "Joy FM", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/JOY_FM_SC", favicon: "https://upload.wikimedia.org/wikipedia/en/7/70/Joy_Fm_Logo.jpg", tags: "yabancı,slow" },
+    { name: "Fenomen Türk", url_resolved: "https://listen.radyofenomen.com/fenomenturk/256/icecast.audio", favicon: "https://radyofenomen.com/assets/images/logo.png", tags: "pop,hit" },
+    { name: "Virgin Radio", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/VIRGIN_RADIO_SC", favicon: "https://upload.wikimedia.org/wikipedia/tr/9/92/Virgin_Radio_T%C3%BCrkiye_logo.png", tags: "pop,yabancı" },
+    { name: "Kafa Radyo", url_resolved: "https://kafaradyo.live/kafaradyo/128/icecast.audio", favicon: "https://kafaradyo.com/assets/img/logo.png", tags: "talk,haber" },
+    { name: "Number1 FM", url_resolved: "https://n101.rcs.revma.com/3d095282k2zuv", favicon: "https://www.numberone.com.tr/wp-content/uploads/2018/05/number1-logo-1.png", tags: "hit,dance" }
+  ],
+  US: [
+    { name: "KEXP 90.3", url_resolved: "https://kexp-mp3-128.streamguys1.com/kexp128.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/e/e8/KEXP_logo_black.svg", tags: "rock,alternative" },
+    { name: "NPR News", url_resolved: "https://npr-ice.streamguys1.com/live.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/d/d7/National_Public_Radio_logo.svg", tags: "news,talk" },
+    { name: "WHTZ - Z100", url_resolved: "https://stream.revma.ihrhls.com/zc1469", favicon: "https://upload.wikimedia.org/wikipedia/commons/5/54/Z100_New_York_logo.png", tags: "pop,top40" },
+    { name: "KIIS-FM", url_resolved: "https://stream.revma.ihrhls.com/zc185", favicon: "https://upload.wikimedia.org/wikipedia/commons/2/2e/KIIS-FM_logo.svg", tags: "pop,hits" },
+    { name: "Hot 97", url_resolved: "https://ais-sa1.streamon.fm/7008_64k.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/b/b8/WQHT_logo.png", tags: "hiphop,rap" },
+    { name: "Jazz24", url_resolved: "https://live.streamguys1.com/JAZZ24.mp3", favicon: "https://upload.wikimedia.org/wikipedia/en/3/33/KPLU_Jazz24_logo.jpg", tags: "jazz" }
+  ],
+  GB: [
+    { name: "BBC Radio 1", url_resolved: "https://stream.live.vc.bbcmedia.co.uk/bbc_radio_one", favicon: "https://upload.wikimedia.org/wikipedia/commons/0/0a/BBC_Radio_1_2021.svg", tags: "pop,news" },
+    { name: "Capital FM", url_resolved: "https://media-ice.musicradio.com/CapitalUKMP3", favicon: "https://upload.wikimedia.org/wikipedia/commons/2/28/Capital_FM_logo.svg", tags: "pop,hits" },
+    { name: "Heart UK", url_resolved: "https://media-ice.musicradio.com/HeartUKMP3", favicon: "https://upload.wikimedia.org/wikipedia/en/3/30/Heart_Radio_Logo.png", tags: "pop,adult" },
+    { name: "LBC News", url_resolved: "https://media-ice.musicradio.com/LBCUKMP3", favicon: "https://upload.wikimedia.org/wikipedia/commons/7/76/LBC_News_logo_2019.png", tags: "news,talk" },
+    { name: "Smooth Radio", url_resolved: "https://media-ice.musicradio.com/SmoothUKMP3", favicon: "https://upload.wikimedia.org/wikipedia/en/7/7a/Smooth_Radio_logo.svg", tags: "relax,oldies" }
+  ],
+  DE: [
+    { name: "1LIVE", url_resolved: "https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/e/ee/1_Live_Logo.svg", tags: "pop,hits" },
+    { name: "Antenne Bayern", url_resolved: "https://s2-webradio.antenne.de/antenne", favicon: "https://upload.wikimedia.org/wikipedia/commons/6/62/Antenne_Bayern_logo.svg", tags: "pop,rock" },
+    { name: "WDR 2", url_resolved: "https://wdr-wdr2-rheinruhr.icecastssl.wdr.de/wdr/wdr2/rheinruhr/mp3/128/stream.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/0/01/WDR_2_logo.svg", tags: "news,pop" },
+    { name: "BigFM", url_resolved: "https://streams.bigfm.de/bigfm-deutschland-128-mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/1/1a/BigFM_Logo.png", tags: "hiphop,dance" }
+  ],
+  FR: [
+    { name: "NRJ France", url_resolved: "https://scdn.nrjaudio.fm/adwz1/fr/30001/mp3_128.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/6/63/NRJ_logo.svg", tags: "hits,pop" },
+    { name: "Skyrock", url_resolved: "https://icecast.skyrock.net/s/natio_mp3_128k", favicon: "https://upload.wikimedia.org/wikipedia/commons/d/d5/Logo_Skyrock.svg", tags: "rap,urban" },
+    { name: "France Inter", url_resolved: "https://icecast.radiofrance.fr/franceinter-midfi.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/d/d2/France_Inter_Logo_2005.svg", tags: "news,talk" },
+    { name: "FIP", url_resolved: "https://icecast.radiofrance.fr/fip-midfi.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/3/3e/Fip_logo_2005.svg", tags: "eclectic,jazz" }
+  ],
+  IT: [
+    { name: "RTL 102.5", url_resolved: "https://shoutcast.rtl.it/rtl1025", favicon: "https://upload.wikimedia.org/wikipedia/commons/1/10/RTL_102.5_logo.svg", tags: "hits,pop" },
+    { name: "Radio Italia", url_resolved: "https://ice08.fluidstream.net/RadioItalia.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/9/9f/Radio_Italia_Solo_Musica_Italiana.png", tags: "italian,pop" },
+    { name: "Radio Kiss Kiss", url_resolved: "https://ice07.fluidstream.net/KissKiss.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/0/02/Radio_Kiss_Kiss_logo_2020.png", tags: "pop,fun" }
+  ],
+  ES: [
+    { name: "LOS40", url_resolved: "https://25633.live.streamtheworld.com/LOS40_SC", favicon: "https://upload.wikimedia.org/wikipedia/commons/7/72/LOS40_Logo.svg", tags: "hits,pop" },
+    { name: "Cadena SER", url_resolved: "https://22643.live.streamtheworld.com/CADENASER.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/1/1d/Cadena_SER_logo_2006.svg", tags: "news,talk" }
+  ],
+  NL: [
+    { name: "Radio 538", url_resolved: "https://22543.live.streamtheworld.com/RADIO538.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/3/37/Radio_538_logo_2014.svg", tags: "dance,hits" },
+    { name: "Qmusic", url_resolved: "https://icecast-qmusicnl-cdp.triple-it.nl/Qmusic_nl_live_96.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/2/29/Qmusic_logo_2015.svg", tags: "pop,top40" }
+  ],
+  AZ: [
+    { name: "Media FM", url_resolved: "https://listen.mediafm.az/stream", favicon: "https://mediafm.az/assets/img/logo.png", tags: "hits,pop" }
+  ]
+};
 
 // --- API SUNUCULARI ---
 const API_MIRRORS = [
+  "https://at1.api.radio-browser.info",
   "https://de1.api.radio-browser.info", 
   "https://nl1.api.radio-browser.info",
-  "https://at1.api.radio-browser.info",
   "https://fr1.api.radio-browser.info",
   "https://us1.api.radio-browser.info"
 ];
-const IP_API_URL = "https://ipapi.co/json/";
 
-// --- ÇOKLU DİL SÖZLÜĞÜ (LOCALIZATION) ---
+// --- DİL SÖZLÜĞÜ ---
 const TRANSLATIONS = {
   TR: {
+    code: "tr",
     searchPlaceholder: "Radyo veya şehir ara...",
-    categories: "Müzik Türleri",
-    allRadios: "Tümü",
+    categories: "Kategoriler",
+    allRadios: "Tüm Radyolar",
+    vipSection: "Editörün Seçimi & Popüler",
     aiBtn: "AI Asistan",
     moodTitle: "Ruh Hali",
-    moodDesc: "Şu an ne yapıyorsun?",
+    moodDesc: "Şu anki modun nedir?",
     moodInput: "Örn: Çalışıyorum, Hüzünlü...",
     factTitle: "Yerel Bilgi",
     factDesc: "hakkında bilgi al.",
@@ -38,16 +98,23 @@ const TRANSLATIONS = {
     locationDetected: "Konum Algılandı",
     footerRights: "Tüm Hakları Saklıdır.",
     seoTitle: "Canlı Radyo Dinle",
-    seoDesc: "Dünyanın en iyi radyolarını kesintisiz dinleyin."
+    seoDesc: "Dünyanın en iyi radyolarını kesintisiz dinleyin.",
+    errorMsg: "Radyolar yüklenemedi.",
+    retry: "Tekrar Dene",
+    playingError: "Yayın açılamadı (Bağlantı/Format).",
+    networkError: "Ağ hatası oluştu.",
+    srcError: "Kaynak desteklenmiyor."
   },
-  EN: { // Varsayılan (Global)
-    searchPlaceholder: "Search stations or cities...",
+  EN: { // Varsayılan
+    code: "en",
+    searchPlaceholder: "Search stations...",
     categories: "Genres",
-    allRadios: "All",
+    allRadios: "All Radios",
+    vipSection: "Editor's Choice & Popular",
     aiBtn: "AI Assistant",
     moodTitle: "Current Mood",
-    moodDesc: "What are you doing?",
-    moodInput: "Ex: Working, Sad, Party...",
+    moodDesc: "What is your vibe?",
+    moodInput: "Ex: Working, Sad...",
     factTitle: "Local Facts",
     factDesc: "Learn about",
     btnLoad: "Loading...",
@@ -60,100 +127,66 @@ const TRANSLATIONS = {
     locationDetected: "Location Detected",
     footerRights: "All Rights Reserved.",
     seoTitle: "Listen Live Radio",
-    seoDesc: "Listen to the best radio stations worldwide uninterrupted."
+    seoDesc: "Listen to best radio stations worldwide.",
+    errorMsg: "Failed to load.",
+    retry: "Retry",
+    playingError: "Stream failed.",
+    networkError: "Network error.",
+    srcError: "Source not supported."
   },
-  DE: { // Almanca
-    searchPlaceholder: "Suche Sender oder Städte...",
+  DE: {
+    code: "de",
+    searchPlaceholder: "Suche...",
     categories: "Genres",
-    allRadios: "Alle",
+    allRadios: "Alle Radios",
+    vipSection: "Empfohlen & Beliebt",
     aiBtn: "KI-Assistent",
     moodTitle: "Stimmung",
-    moodDesc: "Was machst du gerade?",
-    moodInput: "Z.B.: Arbeiten, Traurig...",
-    factTitle: "Lokale Fakten",
-    factDesc: "Lerne über",
+    moodDesc: "Wie fühlst du dich?",
+    moodInput: "Z.B.: Arbeiten...",
+    factTitle: "Fakten",
+    factDesc: "Infos über",
     btnLoad: "Laden...",
-    btnGetInfo: "Info Abrufen",
-    btnNewInfo: "Neue Info",
+    btnGetInfo: "Info",
+    btnNewInfo: "Neu",
     clear: "Löschen",
     live: "LIVE",
-    paused: "PAUSIERT",
-    stations: "Sender",
-    locationDetected: "Standort Erkannt",
-    footerRights: "Alle Rechte vorbehalten.",
-    seoTitle: "Live Radio Hören",
-    seoDesc: "Hören Sie die besten Radiosender weltweit ohne Unterbrechung."
-  },
-  FR: { // Fransızca
-    searchPlaceholder: "Rechercher radios ou villes...",
-    categories: "Genres",
-    allRadios: "Tous",
-    aiBtn: "Assistant IA",
-    moodTitle: "Humeur",
-    moodDesc: "Que faites-vous ?",
-    moodInput: "Ex: Travail, Triste...",
-    factTitle: "Infos Locales",
-    factDesc: "En savoir plus sur",
-    btnLoad: "Chargement...",
-    btnGetInfo: "Obtenir Info",
-    btnNewInfo: "Nouvelle Info",
-    clear: "Effacer",
-    live: "EN DIRECT",
     paused: "PAUSE",
-    stations: "Stations",
-    locationDetected: "Localisation Détectée",
-    footerRights: "Tous droits réservés.",
-    seoTitle: "Écouter la Radio",
-    seoDesc: "Écoutez les meilleures stations de radio du monde entier."
-  },
-  ES: { // İspanyolca
-    searchPlaceholder: "Buscar emisoras o ciudades...",
-    categories: "Géneros",
-    allRadios: "Todos",
-    aiBtn: "Asistente IA",
-    moodTitle: "Estado de Ánimo",
-    moodDesc: "¿Qué estás haciendo?",
-    moodInput: "Ej: Trabajando, Triste...",
-    factTitle: "Datos Locales",
-    factDesc: "Aprende sobre",
-    btnLoad: "Cargando...",
-    btnGetInfo: "Obtener Info",
-    btnNewInfo: "Nuevo Dato",
-    clear: "Borrar",
-    live: "EN VIVO",
-    paused: "PAUSADO",
-    stations: "Emisoras",
-    locationDetected: "Ubicación Detectada",
-    footerRights: "Todos los derechos reservados.",
-    seoTitle: "Escuchar Radio en Vivo",
-    seoDesc: "Escucha las mejores emisoras de radio del mundo sin interrupciones."
+    stations: "Sender",
+    locationDetected: "Standort",
+    footerRights: "Rechte vorbehalten.",
+    seoTitle: "Radio Hören",
+    seoDesc: "Beste Radiosender weltweit.",
+    errorMsg: "Laden fehlgeschlagen.",
+    retry: "Erneut versuchen",
+    playingError: "Stream fehler.",
+    networkError: "Netzwerkfehler.",
+    srcError: "Quelle nicht unterstützt."
   }
 };
 
 const COUNTRIES = [
   { code: 'TR', name: 'Türkiye', flag: '🇹🇷' },
+  { code: 'DE', name: 'Deutschland', flag: '🇩🇪' },
   { code: 'US', name: 'USA', flag: '🇺🇸' },
   { code: 'GB', name: 'UK', flag: '🇬🇧' },
-  { code: 'DE', name: 'Deutschland', flag: '🇩🇪' },
   { code: 'FR', name: 'France', flag: '🇫🇷' },
   { code: 'IT', name: 'Italia', flag: '🇮🇹' },
   { code: 'ES', name: 'España', flag: '🇪🇸' },
+  { code: 'NL', name: 'Netherlands', flag: '🇳🇱' },
   { code: 'BR', name: 'Brasil', flag: '🇧🇷' },
   { code: 'JP', name: 'Japan', flag: '🇯🇵' },
   { code: 'KR', name: 'Korea', flag: '🇰🇷' },
   { code: 'RU', name: 'Russia', flag: '🇷🇺' },
-  { code: 'GR', name: 'Greece', flag: '🇬🇷' },
-  { code: 'AZ', name: 'Azerbaijan', flag: '🇦🇿' },
-  { code: 'NL', name: 'Netherlands', flag: '🇳🇱' },
+  { code: 'AZ', name: 'Azerbaycan', flag: '🇦🇿' },
 ];
 
 const GENRES = ['all', 'pop', 'rock', 'jazz', 'news', 'classical', 'dance', 'folk', 'rap', 'electronic', 'lofi', 'arabesque', 'slow'];
 
-// --- SEO YÖNETİCİSİ (Dil Destekli) ---
+// --- SEO ---
 const updateSEO = (title, description, langCode) => {
   document.title = title;
-  document.documentElement.lang = langCode.toLowerCase(); // <html lang="de"> yapar
-  
+  document.documentElement.lang = langCode;
   let metaDesc = document.querySelector("meta[name='description']");
   if (!metaDesc) {
     metaDesc = document.createElement('meta');
@@ -161,23 +194,6 @@ const updateSEO = (title, description, langCode) => {
     document.head.appendChild(metaDesc);
   }
   metaDesc.setAttribute("content", description);
-
-  // JSON-LD Yapısal Veri (Google'a "Bu bir Radyo Uygulamasıdır" der)
-  let script = document.querySelector("#schema-struct");
-  if(!script) {
-      script = document.createElement('script');
-      script.id = "schema-struct";
-      script.type = "application/ld+json";
-      document.head.appendChild(script);
-  }
-  script.text = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "RadioStation",
-      "name": "Radiocu",
-      "url": "https://radiocu.com",
-      "description": description,
-      "address": { "@type": "PostalAddress", "addressCountry": langCode }
-  });
 };
 
 const callGemini = async (prompt) => {
@@ -189,8 +205,8 @@ const callGemini = async (prompt) => {
     );
     if (!response.ok) throw new Error('API Error');
     const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "Connection error.";
-  } catch (error) { return "Service unavailable."; }
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || "Error.";
+  } catch (error) { return "Unavailable."; }
 };
 
 // --- BİLEŞENLER ---
@@ -201,10 +217,38 @@ const StationLogo = ({ url, alt, className }) => {
   return <img src={url} alt={alt} className={`w-full h-full object-contain p-1 bg-slate-800 ${className}`} onError={() => setError(true)} loading="lazy" referrerPolicy="no-referrer" />;
 };
 
+// --- GÜNCELLENMİŞ ADSENSE BİLEŞENİ ---
 const AdSenseUnit = ({ slotId, style = {}, label }) => {
-  useEffect(() => { if (IS_ADSENSE_LIVE && window.adsbygoogle) try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {} }, []);
-  if (!IS_ADSENSE_LIVE) return <div className="w-full bg-slate-800/30 border border-slate-700/50 border-dashed rounded-lg flex flex-col items-center justify-center text-slate-500 p-2 my-4 select-none" style={{ ...style, minHeight: style.height || '100px' }}><span className="text-[10px] uppercase tracking-widest bg-slate-800 px-2 py-0.5 rounded mb-1 text-slate-400">Reklam</span><p className="text-[10px] opacity-60 font-mono">{label}</p></div>;
-  return <div className="ad-container my-4 bg-slate-900 flex justify-center items-center"><ins className="adsbygoogle" style={{ display: 'block', ...style }} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>;
+  useEffect(() => {
+    // Script zaten main useEffect'te yükleniyor, burada sadece push yapıyoruz
+    if (IS_ADSENSE_LIVE && window.adsbygoogle) {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (e) {
+        console.error("AdSense Push Error:", e);
+      }
+    }
+  }, []);
+
+  if (!IS_ADSENSE_LIVE) {
+    return (
+      <div className="w-full bg-slate-800/30 border border-slate-700/50 border-dashed rounded-lg flex flex-col items-center justify-center text-slate-500 p-2 my-4 select-none" style={{ ...style, minHeight: style.height || '100px' }}>
+        <span className="text-[10px] uppercase tracking-widest bg-slate-800 px-2 py-0.5 rounded mb-1 text-slate-400">Reklam</span>
+        <p className="text-[10px] opacity-60 font-mono">{label}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="ad-container my-4 bg-slate-900 flex justify-center items-center text-center">
+      {/* Google AdSense Otomatik Reklam Kodu */}
+      <ins className="adsbygoogle"
+           style={{ display: 'block', ...style }}
+           data-ad-client={GOOGLE_AD_CLIENT_ID}
+           data-ad-slot={slotId} // Eğer slot ID yoksa (Auto Ads kullanıyorsanız) bu kısmı boş bırakabilirsiniz ama genelde gereklidir.
+           data-full-width-responsive="true"></ins>
+    </div>
+  );
 };
 
 // --- ANA UYGULAMA ---
@@ -216,66 +260,99 @@ export default function App() {
   const [selectedGenre, setSelectedGenre] = useState('all');
   const [autoLocated, setAutoLocated] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeServer, setActiveServer] = useState(null);
   
-  // DİL AYARI (Varsayılan İngilizce, sonra algılayacak)
-  const [appLang, setAppLang] = useState('EN'); 
-  const t = TRANSLATIONS[appLang] || TRANSLATIONS['EN']; // Seçili dilin metinlerini al
+  // DİL AYARI
+  const [appLang, setAppLang] = useState(() => {
+    const browserLang = navigator.language.split('-')[0].toUpperCase();
+    return TRANSLATIONS[browserLang] ? browserLang : 'EN';
+  });
+  const t = TRANSLATIONS[appLang] || TRANSLATIONS['EN'];
 
-  // AI & Player State
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [aiMoodInput, setAiMoodInput] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiFact, setAiFact] = useState(null);
   const [aiSuggestion, setAiSuggestion] = useState(null);
+  
   const [currentStation, setCurrentStation] = useState(null);
+  const currentStationRef = useRef(null); 
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
   const [volume, setVolume] = useState(() => parseFloat(localStorage.getItem('rs_volume')) || 0.8);
   const [error, setError] = useState(null);
   const audioRef = useRef(new Audio());
 
+  // --- API ÇEKME ---
   const fetchWithFailover = async (countryCode) => {
     setLoading(true); setError(null);
-    let data = null; let successServer = null;
+    let data = [];
+    
     for (const server of API_MIRRORS) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3500);
-        const res = await fetch(`${server}/json/stations/bycountrycodeexact/${countryCode}?limit=100&order=votes&reverse=true`, { signal: controller.signal });
+        const res = await fetch(`${server}/json/stations/bycountrycodeexact/${countryCode}?limit=120&order=votes&reverse=true`, { signal: controller.signal });
         clearTimeout(timeoutId);
-        if (res.ok) { data = await res.json(); successServer = server; break; }
+        if (res.ok) { data = await res.json(); break; }
       } catch (e) {}
     }
-    if (data && data.length > 0) {
-      const cleanData = data.filter(s => s.url_resolved && s.url_resolved.startsWith('http') && s.name.trim().length > 0 && !s.name.toLowerCase().includes("test"));
-      setStations(cleanData); setActiveServer(successServer);
-    } else { setError(appLang === 'TR' ? "Radyolar yüklenemedi." : "Failed to load radios."); }
+
+    let cleanData = data.filter(s => 
+      s.url_resolved && 
+      s.name.trim().length > 0 && 
+      !s.name.toLowerCase().includes("test") &&
+      !s.url_resolved.includes(".m3u8") // HLS Filtresi
+    );
+
+    const vipList = VIP_STATIONS[countryCode] || [];
+    cleanData = cleanData.filter(s => !vipList.some(v => v.name.toLowerCase() === s.name.toLowerCase()));
+    
+    const finalData = [
+        ...vipList.map(v => ({ ...v, stationuuid: `vip-${v.name}`, is_vip: true })),
+        ...cleanData
+    ];
+
+    if (finalData.length > 0) {
+      setStations(finalData);
+    } else { 
+      setError(t.errorMsg); 
+    }
     setLoading(false);
   };
 
+  // --- INIT ---
   useEffect(() => {
     const initApp = async () => {
+      // 1. ADSENSE SCRIPT ENJEKSİYONU
+      if (IS_ADSENSE_LIVE && !document.getElementById('adsense-script')) {
+        const script = document.createElement('script');
+        script.id = 'adsense-script';
+        script.async = true;
+        script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${GOOGLE_AD_CLIENT_ID}`;
+        script.crossOrigin = "anonymous";
+        document.head.appendChild(script);
+      }
+
+      const browserLang = navigator.language.split('-')[0].toUpperCase();
+      if (TRANSLATIONS[browserLang]) {
+        setAppLang(browserLang);
+      }
+
       try {
-        const res = await fetch(IP_API_URL);
+        const res = await fetch("https://ipapi.co/json/");
         const data = await res.json();
         if (data?.country_code) {
           const code = data.country_code;
-          
-          // 1. Konumu Ayarla (Listedeyse)
           if (COUNTRIES.find(c => c.code === code)) {
             setSelectedCountry(code);
             setAutoLocated(true);
           }
-
-          // 2. Dili Ayarla (Çeviri varsa o dili seç, yoksa İngilizce)
           if (TRANSLATIONS[code]) {
             setAppLang(code);
-          } else {
-            setAppLang('EN'); // Desteklenmeyen ülke için İngilizce
           }
         }
-      } catch (e) { setAppLang('EN'); }
+      } catch (e) { console.log("IP Location failed."); }
     };
     initApp();
 
@@ -283,7 +360,33 @@ export default function App() {
     const onWaiting = () => setIsBuffering(true);
     const onPlaying = () => { setIsBuffering(false); setIsPlaying(true); setError(null); };
     const onPause = () => setIsPlaying(false);
-    const onError = (e) => { setIsBuffering(false); setIsPlaying(false); setError(appLang === 'TR' ? "Yayın hatası." : "Stream error."); };
+    
+    const onError = (e) => { 
+      setIsBuffering(false); 
+      setIsPlaying(false);
+      
+      const err = audio.error;
+      const code = err ? err.code : 0;
+      console.error(`Audio Error: Code ${code}`);
+
+      const activeStation = currentStationRef.current;
+      if (activeStation) {
+          const currentSrc = audio.src;
+          if (!activeStation.is_vip && currentSrc.startsWith("https://") && activeStation.url_resolved.startsWith("http://")) {
+              console.warn("HTTPS fail, fallback to HTTP");
+              audio.src = activeStation.url_resolved;
+              audio.play().catch(() => setError(t.playingError));
+              return;
+          }
+      }
+
+      let msg = t.playingError;
+      if (code === 2) msg = t.networkError;
+      if (code === 3) msg = "Decode Error";
+      if (code === 4) msg = t.srcError; 
+
+      setError(`${msg} (${code})`); 
+    };
 
     audio.addEventListener('waiting', onWaiting);
     audio.addEventListener('playing', onPlaying);
@@ -297,42 +400,70 @@ export default function App() {
       audio.removeEventListener('error', onError);
       audio.pause();
     };
-  }, []); // Dil değişimi için appLang dependency'ye eklenmedi çünkü init'te yapıyoruz
+  }, [t]); 
 
   useEffect(() => {
     fetchWithFailover(selectedCountry);
     setAiFact(null);
   }, [selectedCountry]);
 
-  // SEO & Title Update
+  // --- AUDIO OYNATMA ---
   useEffect(() => {
-    const countryName = COUNTRIES.find(c => c.code === selectedCountry)?.name || selectedCountry;
-    if (currentStation) {
-      updateSEO(`${currentStation.name} - Radiocu`, `${t.live}: ${currentStation.name}. ${t.seoDesc}`, appLang);
-    } else {
-      updateSEO(`Radiocu - ${t.seoTitle} (${countryName})`, `${countryName} - ${t.seoDesc}`, appLang);
-    }
-  }, [currentStation, selectedCountry, appLang]);
+    currentStationRef.current = currentStation;
 
-  useEffect(() => { isPlaying ? audioRef.current.play().catch(() => {}) : audioRef.current.pause(); }, [isPlaying]);
+    if (currentStation) {
+      setError(null); setIsBuffering(true);
+      
+      let streamUrl = currentStation.url_resolved;
+      if (!currentStation.is_vip && streamUrl.startsWith('http://')) {
+         streamUrl = streamUrl.replace('http://', 'https://');
+      }
+
+      audioRef.current.src = streamUrl;
+      audioRef.current.load();
+      
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) { 
+        playPromise.catch(err => { 
+           if(err.name !== 'AbortError') { 
+             console.warn("Auto-play blocked");
+             setIsBuffering(false);
+             setIsPlaying(false);
+           }
+        }); 
+      }
+      updateSEO(`${currentStation.name} - Radiocu`, `${t.live}: ${currentStation.name}. ${t.seoDesc}`, appLang.toLowerCase());
+    } else {
+      const cName = COUNTRIES.find(c => c.code === selectedCountry)?.name || selectedCountry;
+      updateSEO(`Radiocu - ${t.seoTitle}`, `${cName} - ${t.seoDesc}`, appLang.toLowerCase());
+    }
+  }, [currentStation]);
+
+  useEffect(() => { 
+    if (isPlaying) {
+      audioRef.current.play().catch(e => console.error("Playback failed:", e));
+    } else {
+      audioRef.current.pause();
+    }
+  }, [isPlaying]);
+  
   useEffect(() => { audioRef.current.volume = volume; localStorage.setItem('rs_volume', volume); }, [volume]);
 
+  // --- HANDLERS ---
   const handleMoodSubmit = async (e) => {
-    e.preventDefault();
-    if (!aiMoodInput.trim()) return;
+    e.preventDefault(); if (!aiMoodInput.trim()) return;
     setAiLoading(true); setAiSuggestion(null);
-    const promptLang = appLang === 'TR' ? 'Türkçe' : 'English';
-    const result = await callGemini(`User mood: "${aiMoodInput}". Suggest 3 radio genres (comma separated, in English). Reply in ${promptLang}.`);
+    const langName = appLang === 'TR' ? 'Türkçe' : (appLang === 'DE' ? 'Deutsch' : 'English');
+    const result = await callGemini(`User mood: "${aiMoodInput}". Suggest 3 radio genres (comma separated, English keys). Reply in ${langName}.`);
     if (result) { setSearchQuery(result.replace(/\n/g, '').trim()); setAiSuggestion(`"${aiMoodInput}": ${result}`); }
     setAiLoading(false);
   };
 
   const handleGetCountryFact = async () => {
-    if (aiFact) return;
-    setAiLoading(true);
+    if (aiFact) return; setAiLoading(true);
     const countryName = COUNTRIES.find(c => c.code === selectedCountry)?.name;
-    const promptLang = appLang === 'TR' ? 'Türkçe' : (appLang === 'DE' ? 'Deutsch' : 'English');
-    const result = await callGemini(`Tell me a very short interesting fact about music culture in ${countryName}. Write in ${promptLang}.`);
+    const langName = appLang === 'TR' ? 'Türkçe' : (appLang === 'DE' ? 'Deutsch' : 'English');
+    const result = await callGemini(`Tell me a short interesting music fact about ${countryName} in ${langName}.`);
     setAiFact(result); setAiLoading(false);
   };
 
@@ -379,8 +510,7 @@ export default function App() {
                 {COUNTRIES.map(c => <option key={c.code} value={c.code} className="bg-slate-900">{c.flag} {c.name}</option>)}
                 </select>
             </div>
-            {/* Dil Göstergesi */}
-            <div className="hidden md:flex items-center justify-center w-8 h-8 bg-slate-800 rounded text-xs font-bold text-slate-400 border border-slate-700">
+            <div className="hidden md:flex items-center justify-center w-8 h-8 bg-slate-800 rounded text-xs font-bold text-slate-400 border border-slate-700 uppercase" title="Language">
                 {appLang}
             </div>
         </div>
@@ -398,7 +528,7 @@ export default function App() {
         </div>
       )}
 
-      {/* MAIN LAYOUT */}
+      {/* MAIN */}
       <div className="flex flex-1 overflow-hidden relative">
         <aside className={`w-64 ${theme.bgPanel} border-r ${theme.border} hidden md:flex flex-col backdrop-blur-xl`}>
           <div className="p-6 overflow-y-auto flex-1">
@@ -411,12 +541,9 @@ export default function App() {
                 </button>
               ))}
             </div>
-            <div className="mt-8"><AdSenseUnit slotId="sidebar-ad" label="Sidebar Reklam" style={{ height: '250px' }} /></div>
+            <div className="mt-8"><AdSenseUnit slotId="sidebar-ad" label="Sidebar" style={{ height: '250px' }} /></div>
           </div>
-          <div className="p-6 border-t border-slate-800 text-center flex flex-col gap-1">
-             <p className="text-xs text-slate-600 font-mono">© 2024 Radiocu</p>
-             <p className="text-[9px] text-slate-700">{t.footerRights}</p>
-          </div>
+          <div className="p-6 border-t border-slate-800 text-center flex flex-col gap-1"><p className="text-xs text-slate-600 font-mono">© 2024 Radiocu</p></div>
         </aside>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-40">
@@ -439,20 +566,18 @@ export default function App() {
               </div>
 
               <div className="md:hidden mb-6">
-                <div className={`flex items-center w-full ${theme.bgCard} rounded-lg px-4 py-3 border ${theme.border}`}>
-                    <Search className="text-slate-500 w-4 h-4 mr-2" />
-                    <input type="text" placeholder={t.searchPlaceholder} className="bg-transparent w-full border-none outline-none text-sm text-white" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                </div>
+                <div className={`flex items-center w-full ${theme.bgCard} rounded-lg px-4 py-3 border ${theme.border}`}><Search className="text-slate-500 w-4 h-4 mr-2" /><input type="text" placeholder={t.searchPlaceholder} className="bg-transparent w-full border-none outline-none text-sm text-white placeholder-slate-500" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div>
               </div>
 
-              {aiSuggestion && (
-                 <div className="mb-6 p-4 rounded-xl bg-indigo-900/20 border border-indigo-500/30 flex justify-between items-center animate-in fade-in">
-                    <div className="flex items-center gap-3"><Bot className="w-5 h-5 text-indigo-400" /><span className="text-indigo-200 text-sm">{aiSuggestion}</span></div>
-                    <button onClick={() => { setSearchQuery(''); setAiSuggestion(null); }} className="text-xs text-indigo-400 hover:text-white underline">{t.clear}</button>
-                 </div>
-              )}
+              {aiSuggestion && <div className="mb-6 p-4 rounded-xl bg-indigo-900/20 border border-indigo-500/30 flex justify-between items-center animate-in fade-in"><div className="flex items-center gap-3"><Bot className="w-5 h-5 text-indigo-400" /><span className="text-indigo-200 text-sm">{aiSuggestion}</span></div><button onClick={() => { setSearchQuery(''); setAiSuggestion(null); }} className="text-xs text-indigo-400 hover:text-white underline">{t.clear}</button></div>}
 
-              {error && <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-300 text-sm"><AlertCircle className="w-5 h-5 shrink-0" />{error}</div>}
+              {error && (
+                  <div className="mb-6 p-6 bg-red-500/10 border border-red-500/20 rounded-xl flex flex-col items-center justify-center text-center gap-3 animate-in fade-in">
+                      <AlertCircle className="w-8 h-8 text-red-400" />
+                      <p className="text-red-200 text-sm">{error}</p>
+                      <button onClick={() => fetchWithFailover(selectedCountry)} className="mt-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-200 rounded-lg text-sm transition flex items-center gap-2"><RefreshCw className="w-4 h-4"/> {t.retry}</button>
+                  </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                  {loading ? [...Array(8)].map((_, i) => <div key={i} className={`h-24 ${theme.bgCard} rounded-xl animate-pulse border ${theme.border}`}></div>) : 
@@ -460,6 +585,7 @@ export default function App() {
                     <React.Fragment key={s.stationuuid}>
                         {idx > 0 && idx % 12 === 0 && <div className="col-span-full"><AdSenseUnit slotId="feed-ad" label="Feed Ads" style={{ height: '90px' }} /></div>}
                         <div onClick={() => setCurrentStation(s)} className={`group relative ${theme.bgCard} hover:bg-slate-800 rounded-xl p-3 transition-all cursor-pointer border ${currentStation?.stationuuid === s.stationuuid ? 'border-indigo-500 bg-indigo-500/10' : theme.border} hover:shadow-lg hover:-translate-y-0.5`}>
+                            {/* VIP etiketi kaldırıldı, doğal liste görünümü */}
                             <div className="flex items-center gap-3">
                                 <div className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 relative bg-slate-900 border ${theme.border}`}>
                                     <StationLogo url={s.favicon} alt={s.name} />
@@ -477,30 +603,16 @@ export default function App() {
                   ))
                  }
               </div>
-              <div className="mt-12 mb-8"><AdSenseUnit slotId="footer-ad" label="Footer Reklam" style={{ height: '120px' }} /></div>
+              <div className="mt-12 mb-8"><AdSenseUnit slotId="footer-ad" label="Footer" style={{ height: '120px' }} /></div>
            </div>
         </main>
 
         <div className={`fixed inset-y-0 right-0 w-full sm:w-96 ${theme.bgPanel} backdrop-blur-xl border-l ${theme.border} shadow-2xl transform transition-transform duration-300 z-50 ${showAiPanel ? 'translate-x-0' : 'translate-x-full'}`}>
             <div className="flex flex-col h-full p-6">
-                <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
-                    <h2 className="text-lg font-bold text-indigo-400 flex items-center gap-2"><Sparkles className="w-4 h-4"/> {t.aiBtn}</h2>
-                    <button onClick={() => setShowAiPanel(false)}><X className="w-5 h-5 text-slate-500 hover:text-white"/></button>
-                </div>
+                <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4"><h2 className="text-lg font-bold text-indigo-400 flex items-center gap-2"><Sparkles className="w-4 h-4"/> {t.aiBtn}</h2><button onClick={() => setShowAiPanel(false)}><X className="w-5 h-5 text-slate-500 hover:text-white"/></button></div>
                 <div className="space-y-6 flex-1 overflow-y-auto">
-                    <div className="p-5 rounded-xl border border-indigo-500/20 bg-indigo-500/5">
-                        <p className="text-xs text-slate-400 mb-2 font-bold uppercase">{t.moodTitle}</p>
-                        <p className="text-[10px] text-slate-500 mb-2">{t.moodDesc}</p>
-                        <form onSubmit={handleMoodSubmit} className="relative">
-                            <input type="text" value={aiMoodInput} onChange={(e) => setAiMoodInput(e.target.value)} placeholder={t.moodInput} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none" />
-                            <button type="submit" disabled={aiLoading} className="absolute right-2 top-2 p-1.5 bg-indigo-600 rounded text-white">{aiLoading ? <Loader2 className="w-4 h-4 animate-spin"/> : <Zap className="w-4 h-4"/>}</button>
-                        </form>
-                    </div>
-                    <div className="p-5 rounded-xl border border-slate-700 bg-slate-800/20">
-                        <p className="text-xs text-slate-400 mb-2 font-bold uppercase">{t.factTitle}</p>
-                        <p className="text-xs text-slate-500 mb-4">{t.factDesc} {COUNTRIES.find(c => c.code === selectedCountry)?.name}</p>
-                        {!aiFact ? ( <button onClick={handleGetCountryFact} disabled={aiLoading} className="w-full py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-xs font-bold text-slate-300 transition">{aiLoading ? t.btnLoad : t.btnGetInfo}</button> ) : ( <div className="animate-in fade-in"><p className="text-sm text-slate-300 italic mb-3">"{aiFact}"</p><button onClick={() => setAiFact(null)} className="text-xs text-indigo-400 underline">{t.btnNewInfo}</button></div> )}
-                    </div>
+                    <div className="p-5 rounded-xl border border-indigo-500/20 bg-indigo-500/5"><p className="text-xs text-slate-400 mb-2 font-bold uppercase">{t.moodTitle}</p><form onSubmit={handleMoodSubmit} className="relative"><input type="text" value={aiMoodInput} onChange={(e) => setAiMoodInput(e.target.value)} placeholder={t.moodInput} className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none" /><button type="submit" disabled={aiLoading} className="absolute right-2 top-2 p-1.5 bg-indigo-600 rounded text-white">{aiLoading ? <Loader2 className="w-4 h-4 animate-spin"/> : <Zap className="w-4 h-4"/>}</button></form></div>
+                    <div className="p-5 rounded-xl border border-slate-700 bg-slate-800/20"><p className="text-xs text-slate-400 mb-2 font-bold uppercase">{t.factTitle}</p><p className="text-xs text-slate-500 mb-4">{t.factDesc} {COUNTRIES.find(c => c.code === selectedCountry)?.name}</p>{!aiFact ? ( <button onClick={handleGetCountryFact} disabled={aiLoading} className="w-full py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-xs font-bold text-slate-300 transition">{aiLoading ? t.btnLoad : t.btnGetInfo}</button> ) : ( <div className="animate-in fade-in"><p className="text-sm text-slate-300 italic mb-3">"{aiFact}"</p><button onClick={() => setAiFact(null)} className="text-xs text-indigo-400 underline">{t.btnNewInfo}</button></div> )}</div>
                 </div>
             </div>
         </div>
@@ -524,13 +636,31 @@ export default function App() {
          </div>
          <div className="w-1/3 flex justify-center gap-4 sm:gap-6 items-center">
              <button className="text-slate-500 hover:text-white transition"><SkipBack className="w-5 h-5"/></button>
-             <button onClick={() => currentStation && (isPlaying ? audioRef.current.pause() : audioRef.current.play())} disabled={!currentStation || isBuffering} className={`w-12 h-12 rounded-full flex items-center justify-center transition shadow-lg ${!currentStation ? 'bg-slate-800 text-slate-600' : 'bg-indigo-600 text-white hover:scale-105 hover:bg-indigo-500'}`}>{isBuffering ? <Loader2 className="w-6 h-6 animate-spin"/> : (isPlaying ? <Pause className="w-5 h-5 fill-current"/> : <Play className="w-5 h-5 fill-current ml-1"/>)}</button>
+             <button 
+               onClick={() => {
+                 if (currentStation) {
+                   if (isPlaying) {
+                     audioRef.current.pause();
+                   } else {
+                     if (audioRef.current.error || error) {
+                        console.log("Hata sonrası yeniden yükleniyor...");
+                        audioRef.current.load();
+                     }
+                     audioRef.current.play().catch(e => {
+                        console.error("Manual play error:", e);
+                        if(e.name !== 'AbortError') setError(t.playingError);
+                     });
+                   }
+                 }
+               }}
+               disabled={!currentStation || isBuffering} 
+               className={`w-12 h-12 rounded-full flex items-center justify-center transition shadow-lg ${!currentStation ? 'bg-slate-800 text-slate-600' : 'bg-indigo-600 text-white hover:scale-105 hover:bg-indigo-500'}`}
+             >
+                {isBuffering ? <Loader2 className="w-6 h-6 animate-spin"/> : (isPlaying ? <Pause className="w-5 h-5 fill-current"/> : <Play className="w-5 h-5 fill-current ml-1"/>)}
+             </button>
              <button className="text-slate-500 hover:text-white transition"><SkipForward className="w-5 h-5"/></button>
          </div>
-         <div className="w-1/3 flex justify-end items-center gap-3">
-             <button onClick={() => setVolume(v => v === 0 ? 0.8 : 0)} className="text-slate-400 hover:text-white transition hidden sm:block">{volume === 0 ? <VolumeX className="w-5 h-5"/> : <Volume2 className="w-5 h-5"/>}</button>
-             <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} className="w-20 sm:w-28 h-1 bg-slate-700 rounded-full cursor-pointer accent-indigo-500" />
-         </div>
+         <div className="w-1/3 flex justify-end items-center gap-3"><button onClick={() => setVolume(v => v === 0 ? 0.8 : 0)} className="text-slate-400 hover:text-white transition hidden sm:block">{volume === 0 ? <VolumeX className="w-5 h-5"/> : <Volume2 className="w-5 h-5"/>}</button><input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} className="w-20 sm:w-28 h-1 bg-slate-700 rounded-full cursor-pointer accent-indigo-500" /></div>
       </div>
     </div>
   );

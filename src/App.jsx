@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe, Radio, MapPin, Music, Wifi, AlertCircle, Sparkles, X, Bot, MessageSquare, Loader2, Activity, Zap, Waves, Menu, RefreshCw, Star } from 'lucide-react';
 
 // --- AYARLAR ---
-const GOOGLE_AD_CLIENT_ID = "ca-pub-3676498147737928"; // Sizin ID'niz eklendi
-const IS_ADSENSE_LIVE = true; // Reklamlar aktif edildi
+const GOOGLE_AD_CLIENT_ID = "ca-pub-3676498147737928"; 
+const IS_ADSENSE_LIVE = true; 
 const apiKey = ""; 
 
 // --- VIP İSTASYONLAR ---
@@ -217,10 +217,9 @@ const StationLogo = ({ url, alt, className }) => {
   return <img src={url} alt={alt} className={`w-full h-full object-contain p-1 bg-slate-800 ${className}`} onError={() => setError(true)} loading="lazy" referrerPolicy="no-referrer" />;
 };
 
-// --- GÜNCELLENMİŞ ADSENSE BİLEŞENİ ---
+// ADSENSE BİLEŞENİ
 const AdSenseUnit = ({ slotId, style = {}, label }) => {
   useEffect(() => {
-    // Script zaten main useEffect'te yükleniyor, burada sadece push yapıyoruz
     if (IS_ADSENSE_LIVE && window.adsbygoogle) {
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -241,11 +240,10 @@ const AdSenseUnit = ({ slotId, style = {}, label }) => {
 
   return (
     <div className="ad-container my-4 bg-slate-900 flex justify-center items-center text-center">
-      {/* Google AdSense Otomatik Reklam Kodu */}
       <ins className="adsbygoogle"
            style={{ display: 'block', ...style }}
            data-ad-client={GOOGLE_AD_CLIENT_ID}
-           data-ad-slot={slotId} // Eğer slot ID yoksa (Auto Ads kullanıyorsanız) bu kısmı boş bırakabilirsiniz ama genelde gereklidir.
+           data-ad-slot={slotId} 
            data-full-width-responsive="true"></ins>
     </div>
   );
@@ -324,15 +322,7 @@ export default function App() {
   // --- INIT ---
   useEffect(() => {
     const initApp = async () => {
-      // 1. ADSENSE SCRIPT ENJEKSİYONU
-      if (IS_ADSENSE_LIVE && !document.getElementById('adsense-script')) {
-        const script = document.createElement('script');
-        script.id = 'adsense-script';
-        script.async = true;
-        script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${GOOGLE_AD_CLIENT_ID}`;
-        script.crossOrigin = "anonymous";
-        document.head.appendChild(script);
-      }
+      // AdSense Injection removed from here (moved to index.html for verification)
 
       const browserLang = navigator.language.split('-')[0].toUpperCase();
       if (TRANSLATIONS[browserLang]) {
@@ -585,7 +575,6 @@ export default function App() {
                     <React.Fragment key={s.stationuuid}>
                         {idx > 0 && idx % 12 === 0 && <div className="col-span-full"><AdSenseUnit slotId="feed-ad" label="Feed Ads" style={{ height: '90px' }} /></div>}
                         <div onClick={() => setCurrentStation(s)} className={`group relative ${theme.bgCard} hover:bg-slate-800 rounded-xl p-3 transition-all cursor-pointer border ${currentStation?.stationuuid === s.stationuuid ? 'border-indigo-500 bg-indigo-500/10' : theme.border} hover:shadow-lg hover:-translate-y-0.5`}>
-                            {/* VIP etiketi kaldırıldı, doğal liste görünümü */}
                             <div className="flex items-center gap-3">
                                 <div className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 relative bg-slate-900 border ${theme.border}`}>
                                     <StationLogo url={s.favicon} alt={s.name} />

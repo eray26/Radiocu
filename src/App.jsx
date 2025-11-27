@@ -4,9 +4,9 @@ import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe, Ra
 // --- GLOBAL AYARLAR ---
 const GOOGLE_AD_CLIENT_ID = "ca-pub-3676498147737928"; 
 const IS_ADSENSE_LIVE = true; 
-const apiKey = ""; // Gemini API Key
+const apiKey = ""; 
 
-// --- API KAYNAKLARI ---
+// --- API ---
 const API_MIRRORS = [
   "https://at1.api.radio-browser.info",
   "https://de1.api.radio-browser.info", 
@@ -14,7 +14,7 @@ const API_MIRRORS = [
   "https://us1.api.radio-browser.info"
 ];
 
-// --- VIP İSTASYONLAR (Logoları ve Web Siteleri Güncel) ---
+// --- VIP LİSTESİ (AYNI KALDI) ---
 const VIP_STATIONS = {
   TR: [
     { name: "Power Türk", url_resolved: "https://listen.powerapp.com.tr/powerturk/mpeg/icecast.audio", favicon: "https://upload.wikimedia.org/wikipedia/commons/2/2b/Power_T%C3%BCrk_logo.svg", homepage: "https://www.powerapp.com.tr", tags: "pop,türkçe" },
@@ -28,26 +28,83 @@ const VIP_STATIONS = {
     { name: "Number1 FM", url_resolved: "https://n101.rcs.revma.com/3d095282k2zuv", favicon: "https://www.numberone.com.tr/wp-content/uploads/2018/05/number1-logo-1.png", homepage: "https://www.numberone.com.tr", tags: "hit,dance" }
   ],
   US: [
-    { name: "KEXP 90.3", url_resolved: "https://kexp-mp3-128.streamguys1.com/kexp128.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/e/e8/KEXP_logo_black.svg", homepage: "https://kexp.org", tags: "alternative" },
-    { name: "NPR News", url_resolved: "https://npr-ice.streamguys1.com/live.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/d/d7/National_Public_Radio_logo.svg", homepage: "https://npr.org", tags: "news" }
+    { name: "KEXP 90.3", url_resolved: "https://kexp-mp3-128.streamguys1.com/kexp128.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/e/e8/KEXP_logo_black.svg", homepage: "https://kexp.org", tags: "alternative,rock" },
+    { name: "NPR News", url_resolved: "https://npr-ice.streamguys1.com/live.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/d/d7/National_Public_Radio_logo.svg", homepage: "https://npr.org", tags: "news,talk" },
+    { name: "Hot 97", url_resolved: "https://ais-sa1.streamon.fm/7008_64k.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/b/b8/WQHT_logo.png", homepage: "https://www.hot97.com", tags: "hiphop,rap" }
   ],
   DE: [
-    { name: "1LIVE", url_resolved: "https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/e/ee/1_Live_Logo.svg", homepage: "https://www1.wdr.de/radio/1live", tags: "pop" }
+    { name: "1LIVE", url_resolved: "https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/e/ee/1_Live_Logo.svg", homepage: "https://www1.wdr.de/radio/1live", tags: "pop,hits" },
+    { name: "Antenne Bayern", url_resolved: "https://s2-webradio.antenne.de/antenne", favicon: "https://upload.wikimedia.org/wikipedia/commons/6/62/Antenne_Bayern_logo.svg", homepage: "https://www.antenne.de", tags: "pop,rock" },
+    { name: "BigFM", url_resolved: "https://streams.bigfm.de/bigfm-deutschland-128-mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/1/1a/BigFM_Logo.png", homepage: "https://www.bigfm.de", tags: "hiphop,dance" }
   ]
 };
 
+// --- TAM KAPSAMLI DİL DESTEĞİ (GLOBAL SEO İÇİN) ---
 const TRANSLATIONS = {
-  TR: { code: "tr", searchPlaceholder: "Radyo ara...", categories: "Kategoriler", allRadios: "Tüm Radyolar", aiBtn: "AI Asistan", moodTitle: "Ruh Hali", moodDesc: "Modun nedir?", moodInput: "Örn: Çalışıyorum...", factTitle: "Yerel Bilgi", factDesc: "hakkında bilgi.", btnLoad: "Yükleniyor...", btnGetInfo: "Bilgi Getir", btnNewInfo: "Yeni Bilgi", clear: "Temizle", live: "CANLI", paused: "DURAKLATILDI", stations: "İstasyon", locationDetected: "Konum", footerRights: "Tüm Hakları Saklıdır.", errorMsg: "Liste alınamadı.", retry: "Tekrar Dene", playingError: "Yayın açılmadı.", seoTitle: "Canlı Radyo Dinle", seoDesc: "Kesintisiz radyo keyfi." },
-  EN: { code: "en", searchPlaceholder: "Search...", categories: "Genres", allRadios: "All Radios", aiBtn: "AI Assistant", moodTitle: "Current Mood", moodDesc: "Your vibe?", moodInput: "Ex: Working...", factTitle: "Facts", factDesc: "About", btnLoad: "Loading...", btnGetInfo: "Get Info", btnNewInfo: "New Fact", clear: "Clear", live: "LIVE", paused: "PAUSED", stations: "Stations", locationDetected: "Location", footerRights: "All Rights Reserved.", errorMsg: "Failed load.", retry: "Retry", playingError: "Stream failed.", seoTitle: "Listen Live Radio", seoDesc: "Listen online radio." },
-  DE: { code: "de", searchPlaceholder: "Suche...", categories: "Genres", allRadios: "Alle Radios", aiBtn: "KI-Assistent", moodTitle: "Stimmung", moodDesc: "Wie fühlst du dich?", moodInput: "Z.B.: Arbeiten...", factTitle: "Fakten", factDesc: "Infos über", btnLoad: "Laden...", btnGetInfo: "Info", btnNewInfo: "Neu", clear: "Löschen", live: "LIVE", paused: "PAUSE", stations: "Sender", locationDetected: "Standort", footerRights: "Rechte vorbehalten.", errorMsg: "Fehler.", retry: "Erneut versuchen", playingError: "Fehler.", seoTitle: "Radio Hören", seoDesc: "Online Radio." }
+  TR: { // Türkçe
+    code: "tr",
+    searchPlaceholder: "Radyo veya şehir ara...", categories: "Kategoriler", allRadios: "Tüm Radyolar", aiBtn: "AI Asistan", moodTitle: "Ruh Hali", moodDesc: "Modun nedir?", moodInput: "Örn: Çalışıyorum...", factTitle: "Yerel Bilgi", factDesc: "hakkında bilgi.", btnLoad: "Yükleniyor...", btnGetInfo: "Bilgi Getir", btnNewInfo: "Yeni Bilgi", clear: "Temizle", live: "CANLI", paused: "DURAKLATILDI", stations: "İstasyon", locationDetected: "Konum Algılandı", footerRights: "Tüm Hakları Saklıdır.", errorMsg: "Radyolar yüklenemedi.", retry: "Tekrar Dene", playingError: "Yayın formatı desteklenmiyor.",
+    seoTitle: "Canlı Radyo Dinle", seoDesc: "Dünyanın en iyi radyolarını kesintisiz dinleyin."
+  },
+  EN: { // İngilizce (Global)
+    code: "en",
+    searchPlaceholder: "Search stations...", categories: "Genres", allRadios: "All Radios", aiBtn: "AI Assistant", moodTitle: "Current Mood", moodDesc: "Your vibe?", moodInput: "Ex: Working...", factTitle: "Facts", factDesc: "About", btnLoad: "Loading...", btnGetInfo: "Get Info", btnNewInfo: "New Fact", clear: "Clear", live: "LIVE", paused: "PAUSED", stations: "Stations", locationDetected: "Location", footerRights: "All Rights Reserved.", errorMsg: "Failed to load radios.", retry: "Retry", playingError: "Stream not supported.",
+    seoTitle: "Listen Live Radio", seoDesc: "Listen to thousands of radio stations worldwide for free."
+  },
+  DE: { // Almanca
+    code: "de",
+    searchPlaceholder: "Suche...", categories: "Genres", allRadios: "Alle Radios", aiBtn: "KI-Assistent", moodTitle: "Stimmung", moodDesc: "Wie fühlst du dich?", moodInput: "Z.B.: Arbeiten...", factTitle: "Fakten", factDesc: "Infos über", btnLoad: "Laden...", btnGetInfo: "Info", btnNewInfo: "Neu", clear: "Löschen", live: "LIVE", paused: "PAUSE", stations: "Sender", locationDetected: "Standort", footerRights: "Rechte vorbehalten.", errorMsg: "Laden fehlgeschlagen.", retry: "Erneut versuchen", playingError: "Format nicht unterstützt.",
+    seoTitle: "Radio Hören", seoDesc: "Hören Sie Radiosender weltweit kostenlos."
+  },
+  FR: { // Fransızca
+    code: "fr",
+    searchPlaceholder: "Rechercher...", categories: "Genres", allRadios: "Toutes", aiBtn: "Assistant IA", moodTitle: "Humeur", moodDesc: "Votre ambiance ?", moodInput: "Ex: Travail...", factTitle: "Infos", factDesc: "Sur", btnLoad: "Chargement...", btnGetInfo: "Infos", btnNewInfo: "Nouveau", clear: "Effacer", live: "EN DIRECT", paused: "PAUSE", stations: "Stations", locationDetected: "Localisation", footerRights: "Tous droits réservés.", errorMsg: "Erreur de chargement.", retry: "Réessayer", playingError: "Format non supporté.",
+    seoTitle: "Écouter la Radio", seoDesc: "Écoutez des radios du monde entier gratuitement."
+  },
+  ES: { // İspanyolca
+    code: "es",
+    searchPlaceholder: "Buscar...", categories: "Géneros", allRadios: "Todas", aiBtn: "Asistente IA", moodTitle: "Estado de Ánimo", moodDesc: "¿Tu vibra?", moodInput: "Ej: Trabajando...", factTitle: "Datos", factDesc: "Sobre", btnLoad: "Cargando...", btnGetInfo: "Info", btnNewInfo: "Nuevo", clear: "Borrar", live: "EN VIVO", paused: "PAUSADO", stations: "Emisoras", locationDetected: "Ubicación", footerRights: "Derechos reservados.", errorMsg: "Error al cargar.", retry: "Reintentar", playingError: "Formato no soportado.",
+    seoTitle: "Radio en Vivo", seoDesc: "Escucha radios de todo el mundo gratis."
+  },
+  IT: { // İtalyanca
+    code: "it",
+    searchPlaceholder: "Cerca...", categories: "Generi", allRadios: "Tutte", aiBtn: "Assistente IA", moodTitle: "Umore", moodDesc: "Come ti senti?", moodInput: "Es: Lavoro...", factTitle: "Fatti", factDesc: "Su", btnLoad: "Caricamento...", btnGetInfo: "Info", btnNewInfo: "Nuovo", clear: "Cancella", live: "IN DIRETTA", paused: "PAUSA", stations: "Stazioni", locationDetected: "Posizione", footerRights: "Tutti i diritti riservati.", errorMsg: "Errore di caricamento.", retry: "Riprova", playingError: "Formato non supportato.",
+    seoTitle: "Ascolta Radio Online", seoDesc: "Ascolta stazioni radio di tutto il mondo gratis."
+  },
+  NL: { // Flemenkçe
+    code: "nl",
+    searchPlaceholder: "Zoeken...", categories: "Genres", allRadios: "Alle", aiBtn: "AI Assistent", moodTitle: "Stemming", moodDesc: "Je vibe?", moodInput: "Bijv: Werken...", factTitle: "Feiten", factDesc: "Over", btnLoad: "Laden...", btnGetInfo: "Info", btnNewInfo: "Nieuw", clear: "Wissen", live: "LIVE", paused: "GEPAUZEERD", stations: "Zenders", locationDetected: "Locatie", footerRights: "Alle rechten voorbehouden.", errorMsg: "Laden mislukt.", retry: "Opnieuw", playingError: "Formaat niet ondersteund.",
+    seoTitle: "Luister Online Radio", seoDesc: "Luister gratis naar radiostations wereldwijd."
+  },
+  PT: { // Portekizce (Brezilya)
+    code: "pt",
+    searchPlaceholder: "Buscar...", categories: "Gêneros", allRadios: "Todas", aiBtn: "Assistente IA", moodTitle: "Humor", moodDesc: "Sua vibe?", moodInput: "Ex: Trabalhando...", factTitle: "Fatos", factDesc: "Sobre", btnLoad: "Carregando...", btnGetInfo: "Info", btnNewInfo: "Novo", clear: "Limpar", live: "AO VIVO", paused: "PAUSADO", stations: "Estações", locationDetected: "Localização", footerRights: "Todos os direitos reservados.", errorMsg: "Erro ao carregar.", retry: "Tentar novamente", playingError: "Formato não suportado.",
+    seoTitle: "Ouvir Rádio Online", seoDesc: "Ouça estações de rádio de todo o mundo gratuitamente."
+  },
+  RU: { // Rusça
+    code: "ru",
+    searchPlaceholder: "Поиск...", categories: "Жанры", allRadios: "Все", aiBtn: "AI Ассистент", moodTitle: "Настроение", moodDesc: "Как дела?", moodInput: "Напр: Работа...", factTitle: "Факты", factDesc: "О", btnLoad: "Загрузка...", btnGetInfo: "Инфо", btnNewInfo: "Новый", clear: "Очистить", live: "ЭФИР", paused: "ПАУЗА", stations: "Станции", locationDetected: "Локация", footerRights: "Все права защищены.", errorMsg: "Ошибка загрузки.", retry: "Повторить", playingError: "Формат не поддерживается.",
+    seoTitle: "Слушать Радио Онлайн", seoDesc: "Слушайте радиостанции со всего мира бесплатно."
+  },
+  AZ: { // Azerbaycan Türkçesi
+    code: "az",
+    searchPlaceholder: "Axtarış...", categories: "Kateqoriyalar", allRadios: "Hamısı", aiBtn: "AI Köməkçi", moodTitle: "Əhval", moodDesc: "Necəsən?", moodInput: "Məs: İşləyirəm...", factTitle: "Məlumat", factDesc: "Haqqında", btnLoad: "Yüklənir...", btnGetInfo: "Məlumat Al", btnNewInfo: "Yeni", clear: "Təmizlə", live: "CANLI", paused: "DAYANDI", stations: "Stansiya", locationDetected: "Məkan", footerRights: "Bütün hüquqlar qorunur.", errorMsg: "Xəta baş verdi.", retry: "Yenidən cəhd et", playingError: "Format dəstəklənmir.",
+    seoTitle: "Canlı Radio Dinlə", seoDesc: "Dünyanın ən yaxşı radiolarını pulsuz dinləyin."
+  }
 };
 
 const COUNTRIES = [
-  { code: 'TR', name: 'Türkiye', flag: '🇹🇷' }, { code: 'DE', name: 'Deutschland', flag: '🇩🇪' }, { code: 'US', name: 'USA', flag: '🇺🇸' }, { code: 'GB', name: 'UK', flag: '🇬🇧' }, { code: 'FR', name: 'France', flag: '🇫🇷' }, { code: 'IT', name: 'Italia', flag: '🇮🇹' }, { code: 'ES', name: 'España', flag: '🇪🇸' }, { code: 'NL', name: 'Netherlands', flag: '🇳🇱' }, { code: 'BR', name: 'Brasil', flag: '🇧🇷' }, { code: 'AZ', name: 'Azerbaycan', flag: '🇦🇿' }
+  { code: 'TR', name: 'Türkiye', flag: '🇹🇷' }, { code: 'DE', name: 'Deutschland', flag: '🇩🇪' }, 
+  { code: 'US', name: 'USA', flag: '🇺🇸' }, { code: 'GB', name: 'UK', flag: '🇬🇧' }, 
+  { code: 'FR', name: 'France', flag: '🇫🇷' }, { code: 'IT', name: 'Italia', flag: '🇮🇹' }, 
+  { code: 'ES', name: 'España', flag: '🇪🇸' }, { code: 'NL', name: 'Netherlands', flag: '🇳🇱' }, 
+  { code: 'BR', name: 'Brasil', flag: '🇧🇷' }, { code: 'RU', name: 'Russia', flag: '🇷🇺' },
+  { code: 'AZ', name: 'Azerbaycan', flag: '🇦🇿' }, { code: 'JP', name: 'Japan', flag: '🇯🇵' }
 ];
 
 const GENRES = ['all', 'pop', 'rock', 'jazz', 'news', 'classical', 'dance', 'folk', 'rap', 'electronic', 'lofi', 'arabesque'];
 
+// --- SEO FONKSİYONU ---
 const updateSEO = (title, description, langCode) => {
   document.title = title;
   document.documentElement.lang = langCode;
@@ -69,52 +126,18 @@ const callGemini = async (prompt) => {
   } catch (error) { return "Unavailable."; }
 };
 
-// --- DÜZELTİLEN LOGO BİLEŞENİ ---
+// --- BİLEŞENLER ---
 const StationLogo = ({ url, alt, homepage, className }) => {
   const [imgSrc, setImgSrc] = useState(url);
   const [hasError, setHasError] = useState(false);
-
   useEffect(() => {
-    // 1. URL boşsa veya HTTP ise -> Direkt Google Favicon'a git
     if (!url || url.startsWith('http://')) {
-        if (homepage) {
-            setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`);
-        } else {
-            setHasError(true);
-        }
-    } else {
-        // 2. HTTPS ise kendi logosunu dene
-        setImgSrc(url);
-    }
+        if (homepage) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } else { setHasError(true); }
+    } else { setImgSrc(url); }
     setHasError(false);
   }, [url, homepage]);
-
-  // Hata durumunda veya resim yoksa Baş Harfi göster
-  if (hasError || !imgSrc) {
-    return (
-      <div className={`flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 text-slate-500 font-bold select-none ${className}`}>
-        {alt ? alt.charAt(0).toUpperCase() : <Radio className="w-1/2 h-1/2 opacity-50"/>}
-      </div>
-    );
-  }
-
-  return (
-    <img 
-      src={imgSrc} 
-      alt={alt} 
-      className={`object-contain bg-white/5 p-1 ${className}`}
-      onError={() => {
-        // Resim yüklenemezse (404/CORS) Google Favicon'a düş (Fallback)
-        if (homepage && !imgSrc.includes('google.com')) {
-            setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`);
-        } else {
-            setHasError(true);
-        }
-      }} 
-      loading="lazy" 
-      referrerPolicy="no-referrer"
-    />
-  );
+  if (hasError || !imgSrc) { return (<div className={`flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 text-slate-500 font-bold select-none ${className}`}>{alt ? alt.charAt(0).toUpperCase() : <Radio className="w-1/2 h-1/2 opacity-50"/>}</div>); }
+  return (<img src={imgSrc} alt={alt} className={`object-contain bg-white/5 p-1 ${className}`} onError={() => { if (homepage && !imgSrc.includes('google.com')) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } else { setHasError(true); } }} loading="lazy" referrerPolicy="no-referrer" />);
 };
 
 const AdSenseUnit = ({ slotId, style = {}, label }) => {
@@ -125,17 +148,15 @@ const AdSenseUnit = ({ slotId, style = {}, label }) => {
 
 const SeoContent = ({ country, lang }) => {
   const countryName = COUNTRIES.find(c => c.code === country)?.name || country;
-  const texts = {
-    TR: { h2: `${countryName} Radyoları`, p: `Radiocu ile ${countryName} genelindeki en popüler radyo istasyonlarını ücretsiz dinleyin.` },
-    EN: { h2: `${countryName} Radio Stations`, p: `Listen to popular radio stations in ${countryName} for free with Radiocu.` },
-    DE: { h2: `${countryName} Radiosender`, p: `Hören Sie beliebte Radiosender in ${countryName} kostenlos mit Radiocu.` }
-  };
-  const content = texts[lang] || texts['EN'];
+  const t = TRANSLATIONS[lang] || TRANSLATIONS['EN'];
+  
   return (
     <div className="mt-12 mb-8 p-6 bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-sm leading-relaxed">
-      <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><Globe className="w-5 h-5 text-indigo-500"/> {content.h2}</h2>
-      <p>{content.p}</p>
-      <div className="mt-6 pt-6 border-t border-slate-800 flex flex-wrap gap-2 text-[10px] opacity-50"><span>Radio</span> • <span>Live</span> • <span>{countryName}</span></div>
+      <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><Globe className="w-5 h-5 text-indigo-500"/> {t.seoTitle} {countryName}</h2>
+      <p className="mb-4">{t.seoDesc} {countryName}...</p>
+      <div className="mt-6 pt-6 border-t border-slate-800 flex flex-wrap gap-2 text-[10px] opacity-50">
+        <span>{t.seoTitle}</span> • <span>Online</span> • <span>{countryName}</span>
+      </div>
     </div>
   );
 };
@@ -148,8 +169,14 @@ export default function App() {
   const [selectedGenre, setSelectedGenre] = useState('all');
   const [autoLocated, setAutoLocated] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [appLang, setAppLang] = useState('EN');
+  
+  // DİL AYARI
+  const [appLang, setAppLang] = useState(() => {
+    const browserLang = navigator.language.split('-')[0].toUpperCase();
+    return TRANSLATIONS[browserLang] ? browserLang : 'EN';
+  });
   const t = TRANSLATIONS[appLang] || TRANSLATIONS['EN'];
+
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [aiMoodInput, setAiMoodInput] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
@@ -170,7 +197,7 @@ export default function App() {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3500);
-        const res = await fetch(`${server}/json/stations/bycountrycodeexact/${countryCode}?limit=120&order=votes&reverse=true`, { signal: controller.signal });
+        const res = await fetch(`${server}/json/stations/bycountrycodeexact/${countryCode}?limit=150&order=votes&reverse=true`, { signal: controller.signal });
         clearTimeout(timeoutId);
         if (res.ok) { data = await res.json(); break; }
       } catch (e) {}
@@ -194,6 +221,7 @@ export default function App() {
         if (data?.country_code) {
           const code = data.country_code;
           if (COUNTRIES.find(c => c.code === code)) { setSelectedCountry(code); setAutoLocated(true); }
+          // Dili de güncelle
           if (TRANSLATIONS[code]) setAppLang(code);
         }
       } catch (e) {}
@@ -219,7 +247,7 @@ export default function App() {
     };
     audio.addEventListener('waiting', onWaiting); audio.addEventListener('playing', onPlaying); audio.addEventListener('pause', onPause); audio.addEventListener('error', onError);
     return () => { audio.removeEventListener('waiting', onWaiting); audio.removeEventListener('playing', onPlaying); audio.removeEventListener('pause', onPause); audio.removeEventListener('error', onError); audio.pause(); };
-  }, [t]); 
+  }, [t]); // Dil değişimi için t eklendi
 
   useEffect(() => { fetchWithFailover(selectedCountry); setAiFact(null); }, [selectedCountry]);
 
@@ -245,8 +273,10 @@ export default function App() {
   const handleMoodSubmit = async (e) => {
     e.preventDefault(); if (!aiMoodInput.trim()) return;
     setAiLoading(true); setAiSuggestion(null);
-    const langName = appLang === 'TR' ? 'Türkçe' : 'English';
-    const result = await callGemini(`User mood: "${aiMoodInput}". Suggest 3 radio genres (comma separated, English keys). Reply in ${langName}.`);
+    // Dil seçimi AI için de yapılıyor
+    const langMap = { 'TR': 'Turkish', 'DE': 'German', 'FR': 'French', 'ES': 'Spanish', 'IT': 'Italian', 'NL': 'Dutch', 'PT': 'Portuguese', 'RU': 'Russian', 'AZ': 'Azerbaijani' };
+    const targetLang = langMap[appLang] || 'English';
+    const result = await callGemini(`User mood: "${aiMoodInput}". Suggest 3 radio genres (comma separated, English keys). Reply in ${targetLang}.`);
     if (result) { setSearchQuery(result.replace(/\n/g, '').trim()); setAiSuggestion(`"${aiMoodInput}": ${result}`); }
     setAiLoading(false);
   };
@@ -254,8 +284,9 @@ export default function App() {
   const handleGetCountryFact = async () => {
     if (aiFact) return; setAiLoading(true);
     const countryName = COUNTRIES.find(c => c.code === selectedCountry)?.name;
-    const langName = appLang === 'TR' ? 'Türkçe' : 'English';
-    const result = await callGemini(`Tell me a short interesting music fact about ${countryName} in ${langName}.`);
+    const langMap = { 'TR': 'Turkish', 'DE': 'German', 'FR': 'French', 'ES': 'Spanish', 'IT': 'Italian', 'NL': 'Dutch', 'PT': 'Portuguese', 'RU': 'Russian', 'AZ': 'Azerbaijani' };
+    const targetLang = langMap[appLang] || 'English';
+    const result = await callGemini(`Tell me a short interesting music fact about ${countryName} in ${targetLang}.`);
     setAiFact(result); setAiLoading(false);
   };
 
@@ -291,7 +322,7 @@ export default function App() {
       </header>
       {mobileMenuOpen && (<div className="absolute top-16 left-0 w-full bg-slate-900 border-b border-slate-800 z-20 p-4 md:hidden animate-in slide-in-from-top-2"><div className="mb-4"><select value={selectedCountry} onChange={(e) => { setSelectedCountry(e.target.value); setMobileMenuOpen(false); }} className="w-full bg-slate-800 p-3 rounded-lg text-white border border-slate-700">{COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name}</option>)}</select></div><button onClick={() => { setShowAiPanel(true); setMobileMenuOpen(false); }} className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg font-bold flex items-center justify-center gap-2"><Sparkles className="w-4 h-4"/> {t.aiBtn}</button></div>)}
       <div className="flex flex-1 overflow-hidden relative">
-        <aside className={`w-64 ${theme.bgPanel} border-r ${theme.border} hidden md:flex flex-col backdrop-blur-xl`}><div className="p-6 overflow-y-auto flex-1"><h3 className="text-xs font-bold text-slate-500 uppercase mb-4 flex items-center gap-2"><Waves className="w-3 h-3"/> {t.categories}</h3><div className="space-y-1">{GENRES.map(g => (<button key={g} onClick={() => { setSelectedGenre(g); setSearchQuery(''); }} className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-3 ${selectedGenre === g ? `bg-indigo-500/10 ${theme.textAccent} border border-indigo-500/20` : `text-slate-400 hover:text-white hover:bg-white/5`}`}><span className={`w-1.5 h-1.5 rounded-full ${selectedGenre === g ? 'bg-indigo-400' : 'bg-slate-700'}`}></span><span className="capitalize">{g === 'all' ? t.allRadios : g}</span></button>))}</div><div className="mt-8"><AdSenseUnit slotId="sidebar-ad" label="Sidebar" style={{ height: '250px' }} /></div></div><div className="p-6 border-t border-slate-800 text-center flex flex-col gap-1"><p className="text-xs text-slate-600 font-mono">© 2024 Radiocu</p></div></aside>
+        <aside className={`w-64 ${theme.bgPanel} border-r ${theme.border} hidden md:flex flex-col backdrop-blur-xl`}><div className="p-6 overflow-y-auto flex-1"><h3 className="text-xs font-bold text-slate-500 uppercase mb-4 flex items-center gap-2"><Waves className="w-3 h-3"/> {t.categories}</h3><div className="space-y-1">{GENRES.map(g => (<button key={g} onClick={() => { setSelectedGenre(g); setSearchQuery(''); }} className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-3 ${selectedGenre === g ? `bg-indigo-500/10 ${theme.textAccent} border border-indigo-500/20` : `text-slate-400 hover:text-white hover:bg-white/5`}`}><span className={`w-1.5 h-1.5 rounded-full ${selectedGenre === g ? 'bg-indigo-400' : 'bg-slate-700'}`}></span><span className="capitalize">{g === 'all' ? t.allRadios : g}</span></button>))}</div><div className="mt-8"><AdSenseUnit slotId="sidebar-ad" label="Sidebar" style={{ height: '250px' }} /></div></div><div className="p-6 border-t border-slate-800 text-center flex flex-col gap-1"><p className="text-xs text-slate-600 font-mono">© 2024 Radiocu</p><p className="text-[9px] text-slate-700">{t.footerRights}</p></div></aside>
         <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-40">
            <div className="max-w-6xl mx-auto">
               <AdSenseUnit slotId="header-ad" label="Header Leaderboard" style={{ height: '90px' }} />
@@ -305,7 +336,7 @@ export default function App() {
                     <React.Fragment key={s.stationuuid}>
                         {idx > 0 && idx % 12 === 0 && <div className="col-span-full"><AdSenseUnit slotId="feed-ad" label="Feed Ads" style={{ height: '90px' }} /></div>}
                         <div onClick={() => setCurrentStation(s)} className={`group relative ${theme.bgCard} hover:bg-slate-800 rounded-xl p-3 transition-all cursor-pointer border ${currentStation?.stationuuid === s.stationuuid ? 'border-indigo-500 bg-indigo-500/10' : theme.border} hover:shadow-lg hover:-translate-y-0.5`}>
-                            {/* DÜZELTME BURADA: StationLogo'ya homepage prop'u eklendi */}
+                            {/* VIP ETİKETİ YOK (Kullanıcı isteği üzerine kaldırıldı) */}
                             <div className="flex items-center gap-3">
                                 <div className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 relative bg-slate-900 border ${theme.border}`}><StationLogo url={s.favicon} homepage={s.homepage} alt={s.name} /><div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><Play className="w-6 h-6 text-white fill-current"/></div>{currentStation?.stationuuid === s.stationuuid && isPlaying && <div className="absolute inset-0 bg-black/60 flex items-center justify-center"><Activity className="w-6 h-6 text-indigo-400 animate-pulse" /></div>}</div>
                                 <div className="flex-1 min-w-0"><h3 className={`font-bold truncate text-sm ${currentStation?.stationuuid === s.stationuuid ? 'text-indigo-400' : 'text-slate-200'}`}>{s.name}</h3><p className="text-xs text-slate-500 truncate mt-0.5">{s.tags ? s.tags.split(',').slice(0, 2).join(', ') : 'Radyo'}</p><div className="flex items-center mt-1.5 gap-2"><span className="text-[10px] bg-slate-700/50 px-1.5 py-0.5 rounded text-slate-400 border border-slate-700">{s.bitrate || 128}k</span></div></div>
@@ -333,7 +364,6 @@ export default function App() {
          <div className="w-1/3 flex items-center gap-4">
             {currentStation ? (
                 <>
-                    {/* DÜZELTME BURADA: Player içindeki StationLogo'ya da homepage eklendi */}
                     <div className={`w-14 h-14 rounded-xl border ${theme.border} bg-slate-900 hidden sm:block relative overflow-hidden`}><StationLogo url={currentStation.favicon} homepage={currentStation.homepage} alt={currentStation.name} /></div>
                     <div><h4 className="text-white font-bold text-sm line-clamp-1">{currentStation.name}</h4><div className="flex items-center gap-2 mt-1">{isBuffering ? <span className="text-xs text-yellow-500 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin"/> {t.btnLoad}</span> : <span className={`text-[10px] font-mono uppercase tracking-wide flex items-center gap-1 ${isPlaying ? 'text-green-400' : 'text-slate-500'}`}><span className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-green-500 animate-pulse' : 'bg-slate-600'}`}></span>{isPlaying ? t.live : t.paused}</span>}</div></div>
                 </>

@@ -1,20 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe, Radio, MapPin, Music, Wifi, AlertCircle, Sparkles, X, Bot, MessageSquare, Loader2, Activity, Zap, Waves, Menu, RefreshCw, Star, Info, Headphones } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe, Radio, MapPin, Music, Wifi, AlertCircle, Sparkles, X, Bot, MessageSquare, Loader2, Activity, Zap, Waves, Menu, RefreshCw, Star, Info, Shield, FileText, Mail, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 
-// --- GLOBAL AYARLAR ---
+// --- AYARLAR ---
 const GOOGLE_AD_CLIENT_ID = "ca-pub-3676498147737928"; 
 const IS_ADSENSE_LIVE = true; 
 const apiKey = ""; 
 
-// --- API VE VERİ KAYNAKLARI ---
+// --- API ---
 const API_MIRRORS = [
   "https://at1.api.radio-browser.info",
   "https://de1.api.radio-browser.info", 
   "https://nl1.api.radio-browser.info",
+  "https://fr1.api.radio-browser.info",
   "https://us1.api.radio-browser.info"
 ];
 
-// --- VIP İSTASYONLAR ---
+// --- VIP LİSTE (GÜVENLİ) ---
 const VIP_STATIONS = {
   TR: [
     { name: "Power Türk", url_resolved: "https://listen.powerapp.com.tr/powerturk/mpeg/icecast.audio", favicon: "https://upload.wikimedia.org/wikipedia/commons/2/2b/Power_T%C3%BCrk_logo.svg", homepage: "https://www.powerapp.com.tr", tags: "pop,türkçe" },
@@ -29,263 +30,164 @@ const VIP_STATIONS = {
   ],
   US: [
     { name: "KEXP 90.3", url_resolved: "https://kexp-mp3-128.streamguys1.com/kexp128.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/e/e8/KEXP_logo_black.svg", homepage: "https://kexp.org", tags: "alternative,rock" },
-    { name: "NPR News", url_resolved: "https://npr-ice.streamguys1.com/live.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/d/d7/National_Public_Radio_logo.svg", homepage: "https://npr.org", tags: "news,talk" },
-    { name: "Hot 97", url_resolved: "https://ais-sa1.streamon.fm/7008_64k.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/b/b8/WQHT_logo.png", homepage: "https://www.hot97.com", tags: "hiphop,rap" }
+    { name: "NPR News", url_resolved: "https://npr-ice.streamguys1.com/live.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/d/d7/National_Public_Radio_logo.svg", homepage: "https://npr.org", tags: "news,talk" }
   ],
   DE: [
-    { name: "1LIVE", url_resolved: "https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/e/ee/1_Live_Logo.svg", homepage: "https://www1.wdr.de/radio/1live", tags: "pop,hits" },
-    { name: "Antenne Bayern", url_resolved: "https://s2-webradio.antenne.de/antenne", favicon: "https://upload.wikimedia.org/wikipedia/commons/6/62/Antenne_Bayern_logo.svg", homepage: "https://www.antenne.de", tags: "pop,rock" }
+    { name: "1LIVE", url_resolved: "https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/e/ee/1_Live_Logo.svg", homepage: "https://www1.wdr.de/radio/1live", tags: "pop" }
   ]
 };
 
-// --- GELİŞTİRİLMİŞ DİL VE SEO METİNLERİ ---
 const TRANSLATIONS = {
-  TR: {
-    code: "tr",
-    searchPlaceholder: "Radyo ara (Örn: Kral Pop)...",
-    categories: "Kategoriler",
-    allRadios: "Tüm Radyolar",
-    aiBtn: "AI Asistan",
-    moodTitle: "Ruh Hali",
-    moodDesc: "Şu anki modun nedir?",
-    moodInput: "Örn: Çalışıyorum, Hüzünlü...",
-    factTitle: "Yerel Bilgi",
-    factDesc: "hakkında bilgi al.",
-    btnLoad: "Yükleniyor...",
-    btnGetInfo: "Bilgi Getir",
-    btnNewInfo: "Yeni Bilgi",
-    clear: "Temizle",
-    live: "CANLI",
-    paused: "DURAKLATILDI",
-    stations: "İstasyon",
-    locationDetected: "Konum Algılandı",
-    footerRights: "Tüm Hakları Saklıdır.",
-    errorMsg: "Radyolar yüklenemedi.",
-    retry: "Tekrar Dene",
-    playingError: "Yayın formatı desteklenmiyor.",
-    // SEO Specific
-    mainTitle: "Canlı Radyo Dinle",
-    seoTitle: "Canlı Radyo Dinle - Kesintisiz FM & Online Radyolar",
-    seoDesc: "Radiocu ile Türkiye ve dünyadan binlerce canlı radyo istasyonunu donmadan, ücretsiz ve yüksek kalitede dinleyin. Pop, Haber, Arabesk ve Spor radyoları bir arada."
-  },
-  EN: {
-    code: "en",
-    searchPlaceholder: "Search stations...",
-    categories: "Genres",
-    allRadios: "All Radios",
-    aiBtn: "AI Assistant",
-    moodTitle: "Current Mood",
-    moodDesc: "What is your vibe?",
-    moodInput: "Ex: Working, Sad...",
-    factTitle: "Local Facts",
-    factDesc: "Learn about",
-    btnLoad: "Loading...",
-    btnGetInfo: "Get Info",
-    btnNewInfo: "New Fact",
-    clear: "Clear",
-    live: "LIVE",
-    paused: "PAUSED",
-    stations: "Stations",
-    locationDetected: "Location Detected",
-    footerRights: "All Rights Reserved.",
-    errorMsg: "Failed to load radios.",
-    retry: "Retry",
-    playingError: "Stream not supported.",
-    // SEO Specific
-    mainTitle: "Listen Live Radio",
-    seoTitle: "Listen Live Radio - Online Global Tuner Free",
-    seoDesc: "Listen to thousands of radio stations worldwide for free and uninterrupted with Radiocu. Pop, News, Sports and Music stations in high quality."
-  },
-  DE: {
-    code: "de",
-    searchPlaceholder: "Suche...",
-    categories: "Genres",
-    allRadios: "Alle Radios",
-    aiBtn: "KI-Assistent",
-    moodTitle: "Stimmung",
-    moodDesc: "Wie fühlst du dich?",
-    moodInput: "Z.B.: Arbeiten...",
-    factTitle: "Fakten",
-    factDesc: "Infos über",
-    btnLoad: "Laden...",
-    btnGetInfo: "Info",
-    btnNewInfo: "Neu",
-    clear: "Löschen",
-    live: "LIVE",
-    paused: "PAUSE",
-    stations: "Sender",
-    locationDetected: "Standort",
-    footerRights: "Rechte vorbehalten.",
-    errorMsg: "Laden fehlgeschlagen.",
-    retry: "Erneut versuchen",
-    playingError: "Format nicht unterstützt.",
-    // SEO Specific
-    mainTitle: "Live Radio Hören",
-    seoTitle: "Live Radio Hören - Kostenlos & Online",
-    seoDesc: "Hören Sie mit Radiocu tausende Radiosender weltweit kostenlos, ohne Unterbrechung und in bester Qualität."
-  }
+  TR: { code: "tr", searchPlaceholder: "Radyo ara...", categories: "Kategoriler", allRadios: "Tüm Radyolar", aiBtn: "AI Asistan", moodTitle: "Ruh Hali", moodDesc: "Modun nedir?", moodInput: "Örn: Çalışıyorum...", factTitle: "Yerel Bilgi", factDesc: "hakkında bilgi.", btnLoad: "Yükleniyor...", btnGetInfo: "Bilgi Getir", btnNewInfo: "Yeni Bilgi", clear: "Temizle", live: "CANLI", paused: "DURAKLATILDI", stations: "İstasyon", locationDetected: "Konum Algılandı", footerRights: "Tüm Hakları Saklıdır.", errorMsg: "Liste alınamadı.", retry: "Tekrar Dene", playingError: "Yayın açılmadı.", seoTitle: "Canlı Radyo Dinle", seoDesc: "Kesintisiz radyo keyfi." },
+  EN: { code: "en", searchPlaceholder: "Search...", categories: "Genres", allRadios: "All Radios", aiBtn: "AI Assistant", moodTitle: "Current Mood", moodDesc: "Your vibe?", moodInput: "Ex: Working...", factTitle: "Facts", factDesc: "About", btnLoad: "Loading...", btnGetInfo: "Get Info", btnNewInfo: "New Fact", clear: "Clear", live: "LIVE", paused: "PAUSED", stations: "Stations", locationDetected: "Location", footerRights: "All Rights Reserved.", errorMsg: "Failed load.", retry: "Retry", playingError: "Stream failed.", seoTitle: "Listen Live Radio", seoDesc: "Listen online radio." },
+  DE: { code: "de", searchPlaceholder: "Suche...", categories: "Genres", allRadios: "Alle Radios", aiBtn: "KI-Assistent", moodTitle: "Stimmung", moodDesc: "Wie fühlst du dich?", moodInput: "Z.B.: Arbeiten...", factTitle: "Fakten", factDesc: "Infos über", btnLoad: "Laden...", btnGetInfo: "Info", btnNewInfo: "Neu", clear: "Löschen", live: "LIVE", paused: "PAUSE", stations: "Sender", locationDetected: "Standort", footerRights: "Rechte vorbehalten.", errorMsg: "Fehler.", retry: "Erneut versuchen", playingError: "Fehler.", seoTitle: "Radio Hören", seoDesc: "Online Radio." }
 };
 
 const COUNTRIES = [
-  { code: 'TR', name: 'Türkiye', flag: '🇹🇷' },
-  { code: 'DE', name: 'Deutschland', flag: '🇩🇪' },
-  { code: 'US', name: 'USA', flag: '🇺🇸' },
-  { code: 'GB', name: 'UK', flag: '🇬🇧' },
-  { code: 'FR', name: 'France', flag: '🇫🇷' },
-  { code: 'IT', name: 'Italia', flag: '🇮🇹' },
-  { code: 'ES', name: 'España', flag: '🇪🇸' },
-  { code: 'NL', name: 'Netherlands', flag: '🇳🇱' },
-  { code: 'BR', name: 'Brasil', flag: '🇧🇷' },
-  { code: 'AZ', name: 'Azerbaycan', flag: '🇦🇿' },
+  { code: 'TR', name: 'Türkiye', flag: '🇹🇷' }, { code: 'DE', name: 'Deutschland', flag: '🇩🇪' }, { code: 'US', name: 'USA', flag: '🇺🇸' }, { code: 'GB', name: 'UK', flag: '🇬🇧' }, { code: 'FR', name: 'France', flag: '🇫🇷' }, { code: 'IT', name: 'Italia', flag: '🇮🇹' }, { code: 'ES', name: 'España', flag: '🇪🇸' }, { code: 'NL', name: 'Netherlands', flag: '🇳🇱' }, { code: 'BR', name: 'Brasil', flag: '🇧🇷' }, { code: 'AZ', name: 'Azerbaycan', flag: '🇦🇿' }
 ];
 
 const GENRES = ['all', 'pop', 'rock', 'jazz', 'news', 'classical', 'dance', 'folk', 'rap', 'electronic', 'lofi', 'arabesque'];
 
-// --- SEO YÖNETİCİSİ (GÜÇLENDİRİLMİŞ) ---
 const updateSEO = (title, description, langCode) => {
   document.title = title;
   document.documentElement.lang = langCode;
-  
-  // Standart Meta Description
   let metaDesc = document.querySelector("meta[name='description']");
-  if (!metaDesc) {
-    metaDesc = document.createElement('meta');
-    metaDesc.name = "description";
-    document.head.appendChild(metaDesc);
-  }
+  if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = "description"; document.head.appendChild(metaDesc); }
   metaDesc.setAttribute("content", description);
-
-  // Keywords Meta (Google pek bakmaz ama diğer motorlar bakar)
-  let metaKeys = document.querySelector("meta[name='keywords']");
-  if (!metaKeys) {
-      metaKeys = document.createElement('meta');
-      metaKeys.name = "keywords";
-      document.head.appendChild(metaKeys);
-  }
-  metaKeys.setAttribute("content", "canlı radyo, radyo dinle, online radyo, kesintisiz radyo, fm dinle, radyo frekansları, live radio, music player");
-
-  // JSON-LD (Google için Uygulama Yapısı)
   let script = document.querySelector("#schema-struct");
-  if(!script) {
-      script = document.createElement('script');
-      script.id = "schema-struct";
-      script.type = "application/ld+json";
-      document.head.appendChild(script);
-  }
-  script.text = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "RadioStation",
-      "name": "Radiocu",
-      "alternateName": "Radiocu - Canlı Radyo Dinle",
-      "url": "https://radiocu.com",
-      "description": description,
-      "inLanguage": langCode,
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://radiocu.com/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-  });
+  if(!script) { script = document.createElement('script'); script.id = "schema-struct"; script.type = "application/ld+json"; document.head.appendChild(script); }
+  script.text = JSON.stringify({ "@context": "https://schema.org", "@type": "RadioStation", "name": "Radiocu", "url": "https://radiocu.com", "description": description, "inLanguage": langCode });
 };
 
 const callGemini = async (prompt) => {
   if (!apiKey) return "API Error.";
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) }
-    );
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
     if (!response.ok) throw new Error('API Error');
     const data = await response.json();
     return data.candidates?.[0]?.content?.parts?.[0]?.text || "Error.";
   } catch (error) { return "Unavailable."; }
 };
 
-// --- BİLEŞENLER ---
+const StationLogo = ({ url, alt, homepage, className }) => {
+  const [imgSrc, setImgSrc] = useState(url);
+  const [hasError, setHasError] = useState(false);
+  useEffect(() => {
+    if (!url || url.startsWith('http://')) {
+        if (homepage) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } else { setHasError(true); }
+    } else { setImgSrc(url); }
+    setHasError(false);
+  }, [url, homepage]);
+  if (hasError || !imgSrc) { return (<div className={`flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 text-slate-500 font-bold select-none ${className}`}>{alt ? alt.charAt(0).toUpperCase() : <Radio className="w-1/2 h-1/2 opacity-50"/>}</div>); }
+  return (<img src={imgSrc} alt={alt} className={`object-contain bg-white/5 p-1 ${className}`} onError={() => { if (homepage && !imgSrc.includes('google.com')) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } else { setHasError(true); } }} loading="lazy" referrerPolicy="no-referrer" />);
+};
 
-// 1. SEO İçerik Alanı (KEYWORD YOĞUN)
+const AdSenseUnit = ({ slotId, style = {}, label }) => {
+  useEffect(() => { if (IS_ADSENSE_LIVE && window.adsbygoogle) try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {} }, []);
+  if (!IS_ADSENSE_LIVE) return <div className="w-full bg-slate-800/30 border border-slate-700/50 border-dashed rounded-lg flex flex-col items-center justify-center text-slate-500 p-2 my-4 select-none" style={{ ...style, minHeight: style.height || '100px' }}><span className="text-[10px] uppercase tracking-widest bg-slate-800 px-2 py-0.5 rounded mb-1 text-slate-400">Reklam</span><p className="text-[10px] opacity-60 font-mono">{label}</p></div>;
+  return <div className="ad-container my-4 bg-slate-900 flex justify-center items-center"><ins className="adsbygoogle" style={{ display: 'block', ...style }} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>;
+};
+
+// --- YENİ: AdSense Onayı İçin Gerekli SSS (FAQ) Bileşeni ---
+const FAQSection = ({ lang }) => {
+  const faqs = {
+    TR: [
+      { q: "Radiocu ücretsiz mi?", a: "Evet, Radiocu üzerinden tüm radyoları dinlemek tamamen ücretsizdir." },
+      { q: "Radyolar neden açılmıyor?", a: "Bazı radyolar eski yayın formatlarını (HTTP) kullanıyor olabilir. Radiocu en güncel HTTPS yayınları otomatik bulur." },
+      { q: "İnternet kotamı çok yer mi?", a: "Radyo yayınları video sitelerine göre çok daha az (yaklaşık 10 kat daha az) veri tüketir." },
+      { q: "Mobil uygulaması var mı?", a: "Radiocu.com mobil uyumludur, tarayıcınızdan 'Ana Ekrana Ekle' diyerek uygulama gibi kullanabilirsiniz." }
+    ],
+    EN: [
+      { q: "Is Radiocu free?", a: "Yes, listening to all radio stations on Radiocu is completely free." },
+      { q: "Why stations won't play?", a: "Some stations use old formats. We try to fetch the best available streams." },
+      { q: "Does it consume much data?", a: "Audio streaming consumes very little data compared to video streaming." },
+      { q: "Is there a mobile app?", a: "Our website is fully responsive. You can 'Add to Homescreen' for an app-like experience." }
+    ]
+  };
+  const list = faqs[lang] || faqs['EN'];
+
+  return (
+    <div className="mt-12 mb-8">
+       <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><HelpCircle className="w-5 h-5 text-indigo-500"/> Sıkça Sorulan Sorular</h3>
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {list.map((item, i) => (
+             <div key={i} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50">
+                <h4 className="text-sm font-bold text-slate-200 mb-2">{item.q}</h4>
+                <p className="text-xs text-slate-400">{item.a}</p>
+             </div>
+          ))}
+       </div>
+    </div>
+  );
+};
+
+// --- YENİ: Footer (Gizlilik & İletişim) ---
+const Footer = ({ lang }) => {
+    const texts = {
+        TR: { privacy: "Gizlilik Politikası", terms: "Kullanım Şartları", contact: "İletişim", about: "Hakkımızda" },
+        EN: { privacy: "Privacy Policy", terms: "Terms of Use", contact: "Contact", about: "About Us" }
+    };
+    const t = texts[lang] || texts['EN'];
+
+    return (
+        <footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50">
+            <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
+                <div>
+                    <h3 className="font-bold text-white mb-4 flex items-center gap-2"><Radio className="w-4 h-4 text-indigo-500"/> Radiocu</h3>
+                    <p className="text-slate-500 text-xs leading-relaxed">
+                        Dünyanın sesini cebinize getiren global radyo platformu. Kesintisiz, ücretsiz ve yüksek kaliteli müzik deneyimi.
+                    </p>
+                </div>
+                <div>
+                    <h4 className="font-bold text-slate-300 mb-4">Kurumsal</h4>
+                    <ul className="space-y-2 text-slate-500 text-xs">
+                        <li><a href="#" className="hover:text-indigo-400">{t.about}</a></li>
+                        <li><a href="#" className="hover:text-indigo-400">{t.contact}</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 className="font-bold text-slate-300 mb-4">Yasal</h4>
+                    <ul className="space-y-2 text-slate-500 text-xs">
+                        {/* Google bu linkleri görmeyi sever */}
+                        <li><a href="#" className="hover:text-indigo-400">{t.privacy}</a></li>
+                        <li><a href="#" className="hover:text-indigo-400">{t.terms}</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 className="font-bold text-slate-300 mb-4">İletişim</h4>
+                    <p className="text-slate-500 text-xs mb-2">info@radiocu.com</p>
+                    <div className="flex gap-3 mt-4">
+                       {/* Sosyal Medya Placeholder */}
+                       <div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Globe className="w-4 h-4 text-white"/></div>
+                       <div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Mail className="w-4 h-4 text-white"/></div>
+                    </div>
+                </div>
+            </div>
+            <div className="text-center text-[10px] text-slate-700 mt-12">
+                &copy; 2024 Radiocu.com - All rights reserved.
+            </div>
+        </footer>
+    );
+};
+
 const SeoContent = ({ country, lang }) => {
   const countryName = COUNTRIES.find(c => c.code === country)?.name || country;
-  
   const texts = {
-    TR: {
-      h2: `${countryName} Canlı Radyo Dinle`, // H2'de anahtar kelime
-      p1: `Radiocu ile **${countryName}** genelindeki en popüler radyo istasyonlarını ücretsiz, şifresiz ve kesintisiz dinleyebilirsiniz. Arabeskten pop müziğe, haberden spora kadar binlerce seçenek parmaklarınızın ucunda.`,
-      p2: `Web sitemiz üzerinden Power FM, Kral Pop, Metro FM gibi devlerin yanı sıra yerel **${countryName} radyolarına** anında ulaşabilirsiniz. Mobil uyumlu yapısı ile radyo keyfiniz hiç bölünmesin.`,
-      tags: ["Canlı Radyo Dinle", "Online Radyo", "Kesintisiz FM", "Bedava Radyo", `${countryName} Radyo Frekansları`, "Mobil Radyo", "İnternetten Radyo"]
-    },
-    EN: {
-      h2: `Listen Live ${countryName} Radio`,
-      p1: `Listen to the most popular radio stations in **${countryName}** for free and uninterrupted with Radiocu. Thousands of options are at your fingertips.`,
-      p2: `Access local **${countryName} radios** as well as global hits directly through our website. High quality streaming without freezing.`,
-      tags: ["Listen Live Radio", "Online Radio", "Free Radio Streaming", `${countryName} FM Stations`, "Internet Radio", "Mobile Radio"]
-    },
-    DE: {
-      h2: `Live ${countryName} Radio Hören`,
-      p1: `Hören Sie die beliebtesten Radiosender in **${countryName}** kostenlos und ununterbrochen mit Radiocu.`,
-      p2: `Greifen Sie über unsere Website auf lokale **${countryName}-Radios** zu. Beste Qualität ohne Unterbrechung.`,
-      tags: ["Radio Hören", "Live Radio", "Kostenlos Radio", `${countryName} Radiosender`, "Online Radio", "Internetradio"]
-    }
+    TR: { h2: `${countryName} Radyoları`, p: `Radiocu ile ${countryName} genelindeki en popüler radyo istasyonlarını ücretsiz dinleyin.` },
+    EN: { h2: `${countryName} Radio Stations`, p: `Listen to popular radio stations in ${countryName} for free with Radiocu.` },
+    DE: { h2: `${countryName} Radiosender`, p: `Hören Sie beliebte Radiosender in ${countryName} kostenlos mit Radiocu.` }
   };
-
   const content = texts[lang] || texts['EN'];
-
   return (
-    <div className="mt-16 mb-12">
-      <div className="p-8 bg-slate-900/80 rounded-3xl border border-slate-800/50 text-slate-400 text-sm leading-relaxed shadow-2xl">
-        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-          <Headphones className="w-6 h-6 text-indigo-500"/> {content.h2}
-        </h2>
-        <p className="mb-4" dangerouslySetInnerHTML={{ __html: content.p1.replace(/\*\*(.*?)\*\*/g, '<strong class="text-indigo-200">$1</strong>') }}></p>
-        <p className="mb-8" dangerouslySetInnerHTML={{ __html: content.p2.replace(/\*\*(.*?)\*\*/g, '<strong class="text-indigo-200">$1</strong>') }}></p>
-        
-        {/* Anahtar Kelime Bulutu (SEO İçin Kritik) */}
-        <div className="pt-6 border-t border-slate-800">
-           <h3 className="text-xs font-bold text-slate-500 uppercase mb-3 tracking-wider">Popüler Aramalar</h3>
-           <div className="flex flex-wrap gap-2">
-              {content.tags.map((tag, i) => (
-                 <span key={i} className="px-3 py-1 bg-slate-800 hover:bg-indigo-900/30 rounded-full text-[11px] text-slate-300 border border-slate-700 transition cursor-default">
-                    #{tag}
-                 </span>
-              ))}
-           </div>
-        </div>
-      </div>
+    <div className="mt-12 mb-8 p-6 bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-sm leading-relaxed">
+      <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><Globe className="w-5 h-5 text-indigo-500"/> {content.h2}</h2>
+      <p>{content.p}</p>
+      <div className="mt-6 pt-6 border-t border-slate-800 flex flex-wrap gap-2 text-[10px] opacity-50"><span>Radio</span> • <span>Live</span> • <span>{countryName}</span></div>
     </div>
   );
 };
 
-// 2. Logo Bileşeni
-const StationLogo = ({ url, alt, className }) => {
-  const [error, setError] = useState(false);
-  useEffect(() => { setError(false); }, [url]);
-  if (!url || error) return <div className={`w-full h-full flex items-center justify-center bg-slate-800 ${className}`}><Radio className="w-1/2 h-1/2 text-slate-600 opacity-50" /></div>;
-  return <img src={url} alt={alt} className={`w-full h-full object-contain p-1 bg-slate-800 ${className}`} onError={() => setError(true)} loading="lazy" referrerPolicy="no-referrer" />;
-};
-
-// 3. AdSense Bileşeni
-const AdSenseUnit = ({ slotId, style = {}, label }) => {
-  useEffect(() => {
-    if (IS_ADSENSE_LIVE && window.adsbygoogle) {
-      try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
-    }
-  }, []);
-
-  if (!IS_ADSENSE_LIVE) {
-    return (
-      <div className="w-full bg-slate-800/30 border border-slate-700/50 border-dashed rounded-lg flex flex-col items-center justify-center text-slate-500 p-2 my-4 select-none" style={{ ...style, minHeight: style.height || '100px' }}>
-        <span className="text-[10px] uppercase tracking-widest bg-slate-800 px-2 py-0.5 rounded mb-1 text-slate-400">Reklam</span><p className="text-[10px] opacity-60 font-mono">{label}</p>
-      </div>
-    );
-  }
-  return (
-    <div className="ad-container my-4 bg-slate-900 flex justify-center items-center">
-      <ins className="adsbygoogle" style={{ display: 'block', ...style }} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins>
-    </div>
-  );
-};
-
-// --- ANA UYGULAMA (APP) ---
 export default function App() {
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -294,63 +196,41 @@ export default function App() {
   const [selectedGenre, setSelectedGenre] = useState('all');
   const [autoLocated, setAutoLocated] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
-  // DİL AYARI (Varsayılan Tarayıcı Dili)
-  const [appLang, setAppLang] = useState(() => {
-    const browserLang = navigator.language.split('-')[0].toUpperCase();
-    return TRANSLATIONS[browserLang] ? browserLang : 'EN';
-  });
+  const [appLang, setAppLang] = useState('EN');
   const t = TRANSLATIONS[appLang] || TRANSLATIONS['EN'];
-
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [aiMoodInput, setAiMoodInput] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiFact, setAiFact] = useState(null);
   const [aiSuggestion, setAiSuggestion] = useState(null);
-  
   const [currentStation, setCurrentStation] = useState(null);
   const currentStationRef = useRef(null); 
-
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
   const [volume, setVolume] = useState(() => parseFloat(localStorage.getItem('rs_volume')) || 0.8);
   const [error, setError] = useState(null);
   const audioRef = useRef(new Audio());
 
-  // --- API ÇEKME VE FİLTRELEME ---
   const fetchWithFailover = async (countryCode) => {
     setLoading(true); setError(null);
     let data = [];
-    
     for (const server of API_MIRRORS) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3500);
-        const res = await fetch(`${server}/json/stations/bycountrycodeexact/${countryCode}?limit=200&order=votes&reverse=true`, { signal: controller.signal });
+        const res = await fetch(`${server}/json/stations/bycountrycodeexact/${countryCode}?limit=120&order=votes&reverse=true`, { signal: controller.signal });
         clearTimeout(timeoutId);
         if (res.ok) { data = await res.json(); break; }
       } catch (e) {}
     }
-
-    // Filtrele (Sadece Sağlam Linkler)
-    let cleanData = data.filter(s => 
-      s.url_resolved && 
-      s.name.trim().length > 0 && 
-      !s.name.toLowerCase().includes("test") &&
-      s.url_resolved.startsWith("https") && // HTTPS Zorunlu
-      !s.url_resolved.includes(".m3u8") // HLS Engelle
-    );
-
-    // VIP Ekle (En Başa)
+    let cleanData = data.filter(s => s.url_resolved && s.name.trim().length > 0 && !s.name.toLowerCase().includes("test") && !s.url_resolved.includes(".m3u8"));
     const vipList = VIP_STATIONS[countryCode] || [];
     cleanData = cleanData.filter(s => !vipList.some(v => v.name.toLowerCase() === s.name.toLowerCase()));
     const finalData = [...vipList.map(v => ({ ...v, stationuuid: `vip-${v.name}`, is_vip: true })), ...cleanData];
-
     if (finalData.length > 0) { setStations(finalData); } else { setError(t.errorMsg); }
     setLoading(false);
   };
 
-  // --- BAŞLANGIÇ ---
   useEffect(() => {
     const initApp = async () => {
       audioRef.current.crossOrigin = "anonymous";
@@ -367,14 +247,23 @@ export default function App() {
       } catch (e) {}
     };
     initApp();
-
     const audio = audioRef.current;
     const onWaiting = () => setIsBuffering(true);
     const onPlaying = () => { setIsBuffering(false); setIsPlaying(true); setError(null); };
     const onPause = () => setIsPlaying(false);
     const onError = (e) => { 
       setIsBuffering(false); setIsPlaying(false);
-      if (audio.error && audio.error.code === 4) { setError(t.playingError + " (Format)"); } else { setError(t.playingError); }
+      const activeStation = currentStationRef.current;
+      if (activeStation) {
+          const currentSrc = audio.src;
+          if (!activeStation.is_vip && currentSrc.startsWith("https://") && activeStation.url_resolved.startsWith("http://")) {
+              console.warn("HTTPS fail, fallback to HTTP");
+              audio.src = activeStation.url_resolved;
+              audio.play().catch(() => setError(t.playingError));
+              return;
+          }
+      }
+      setError(t.playingError); 
     };
     audio.addEventListener('waiting', onWaiting); audio.addEventListener('playing', onPlaying); audio.addEventListener('pause', onPause); audio.addEventListener('error', onError);
     return () => { audio.removeEventListener('waiting', onWaiting); audio.removeEventListener('playing', onPlaying); audio.removeEventListener('pause', onPause); audio.removeEventListener('error', onError); audio.pause(); };
@@ -382,7 +271,6 @@ export default function App() {
 
   useEffect(() => { fetchWithFailover(selectedCountry); setAiFact(null); }, [selectedCountry]);
 
-  // --- AUDIO OYNATMA ---
   useEffect(() => {
     currentStationRef.current = currentStation;
     if (currentStation) {
@@ -391,21 +279,17 @@ export default function App() {
       if (!currentStation.is_vip && streamUrl.startsWith('http://')) { streamUrl = streamUrl.replace('http://', 'https://'); }
       audioRef.current.src = streamUrl; audioRef.current.load();
       const playPromise = audioRef.current.play();
-      if (playPromise !== undefined) { playPromise.catch(err => { if(err.name !== 'AbortError') { console.warn("Autoplay blocked"); setIsBuffering(false); setIsPlaying(false); } }); }
-      
-      // DİNAMİK SEO BAŞLIĞI (Radyo Adıyla)
-      updateSEO(`${currentStation.name} Canlı Dinle - Radiocu`, `${t.live}: ${currentStation.name} keyfini Radiocu.com'da çıkarın. ${t.seoDesc}`, appLang.toLowerCase());
+      if (playPromise !== undefined) { playPromise.catch(err => { if(err.name !== 'AbortError') { setIsBuffering(false); setIsPlaying(false); } }); }
+      updateSEO(`${currentStation.name} - Radiocu`, `${t.live}: ${currentStation.name}. ${t.seoDesc}`, appLang.toLowerCase());
     } else {
-      // VARSAYILAN SEO BAŞLIĞI
       const cName = COUNTRIES.find(c => c.code === selectedCountry)?.name || selectedCountry;
-      updateSEO(`${t.seoTitle} - ${cName} | Radiocu`, `${cName} - ${t.seoDesc}`, appLang.toLowerCase());
+      updateSEO(`Radiocu - ${t.seoTitle}`, `${cName} - ${t.seoDesc}`, appLang.toLowerCase());
     }
-  }, [currentStation, selectedCountry, appLang]);
+  }, [currentStation]);
 
   useEffect(() => { if (isPlaying) { audioRef.current.play().catch(e => {}); } else { audioRef.current.pause(); } }, [isPlaying]);
   useEffect(() => { audioRef.current.volume = volume; localStorage.setItem('rs_volume', volume); }, [volume]);
 
-  // --- AI HANDLERS ---
   const handleMoodSubmit = async (e) => {
     e.preventDefault(); if (!aiMoodInput.trim()) return;
     setAiLoading(true); setAiSuggestion(null);
@@ -459,7 +343,7 @@ export default function App() {
         <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-40">
            <div className="max-w-6xl mx-auto">
               <AdSenseUnit slotId="header-ad" label="Header Leaderboard" style={{ height: '90px' }} />
-              <div className="mb-6 mt-6 border-b border-white/5 pb-4"><div className="flex flex-col md:flex-row md:items-center justify-between gap-4"><div><h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3"><span className="text-3xl">{COUNTRIES.find(c => c.code === selectedCountry)?.flag}</span>{COUNTRIES.find(c => c.code === selectedCountry)?.name} {t.mainTitle}</h1><p className="text-sm text-slate-400 mt-2 flex items-center gap-2">{autoLocated && <span className="bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded text-xs border border-indigo-500/20 flex items-center gap-1"><Zap className="w-3 h-3"/> {t.locationDetected}</span>}<span className="bg-slate-800 px-2 py-0.5 rounded text-xs border border-slate-700">{filteredStations.length} {t.stations}</span></p></div><button onClick={() => fetchWithFailover(selectedCountry)} className="p-2 bg-slate-800 rounded-full text-slate-400 hover:text-white hover:bg-slate-700 transition self-end md:self-auto"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button></div></div>
+              <div className="mb-6 mt-6 border-b border-white/5 pb-4"><div className="flex flex-col md:flex-row md:items-center justify-between gap-4"><div><h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3"><span className="text-3xl">{COUNTRIES.find(c => c.code === selectedCountry)?.flag}</span>{COUNTRIES.find(c => c.code === selectedCountry)?.name}</h1><p className="text-sm text-slate-400 mt-2 flex items-center gap-2">{autoLocated && <span className="bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded text-xs border border-indigo-500/20 flex items-center gap-1"><Zap className="w-3 h-3"/> {t.locationDetected}</span>}<span className="bg-slate-800 px-2 py-0.5 rounded text-xs border border-slate-700">{filteredStations.length} {t.stations}</span></p></div><button onClick={() => fetchWithFailover(selectedCountry)} className="p-2 bg-slate-800 rounded-full text-slate-400 hover:text-white hover:bg-slate-700 transition self-end md:self-auto"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button></div></div>
               <div className="md:hidden mb-6"><div className={`flex items-center w-full ${theme.bgCard} rounded-lg px-4 py-3 border ${theme.border}`}><Search className="text-slate-500 w-4 h-4 mr-2" /><input type="text" placeholder={t.searchPlaceholder} className="bg-transparent w-full border-none outline-none text-sm text-white placeholder-slate-500" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div></div>
               {aiSuggestion && <div className="mb-6 p-4 rounded-xl bg-indigo-900/20 border border-indigo-500/30 flex justify-between items-center animate-in fade-in"><div className="flex items-center gap-3"><Bot className="w-5 h-5 text-indigo-400" /><span className="text-indigo-200 text-sm">{aiSuggestion}</span></div><button onClick={() => { setSearchQuery(''); setAiSuggestion(null); }} className="text-xs text-indigo-400 hover:text-white underline">{t.clear}</button></div>}
               {error && (<div className="mb-6 p-6 bg-red-500/10 border border-red-500/20 rounded-xl flex flex-col items-center justify-center text-center gap-3 animate-in fade-in"><AlertCircle className="w-8 h-8 text-red-400" /><p className="text-red-200 text-sm">{error}</p><button onClick={() => fetchWithFailover(selectedCountry)} className="mt-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-200 rounded-lg text-sm transition flex items-center gap-2"><RefreshCw className="w-4 h-4"/> {t.retry}</button></div>)}
@@ -469,6 +353,7 @@ export default function App() {
                     <React.Fragment key={s.stationuuid}>
                         {idx > 0 && idx % 12 === 0 && <div className="col-span-full"><AdSenseUnit slotId="feed-ad" label="Feed Ads" style={{ height: '90px' }} /></div>}
                         <div onClick={() => setCurrentStation(s)} className={`group relative ${theme.bgCard} hover:bg-slate-800 rounded-xl p-3 transition-all cursor-pointer border ${currentStation?.stationuuid === s.stationuuid ? 'border-indigo-500 bg-indigo-500/10' : theme.border} hover:shadow-lg hover:-translate-y-0.5`}>
+                            {/* VIP etiketi kaldırıldı */}
                             <div className="flex items-center gap-3">
                                 <div className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 relative bg-slate-900 border ${theme.border}`}><StationLogo url={s.favicon} homepage={s.homepage} alt={s.name} /><div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><Play className="w-6 h-6 text-white fill-current"/></div>{currentStation?.stationuuid === s.stationuuid && isPlaying && <div className="absolute inset-0 bg-black/60 flex items-center justify-center"><Activity className="w-6 h-6 text-indigo-400 animate-pulse" /></div>}</div>
                                 <div className="flex-1 min-w-0"><h3 className={`font-bold truncate text-sm ${currentStation?.stationuuid === s.stationuuid ? 'text-indigo-400' : 'text-slate-200'}`}>{s.name}</h3><p className="text-xs text-slate-500 truncate mt-0.5">{s.tags ? s.tags.split(',').slice(0, 2).join(', ') : 'Radyo'}</p><div className="flex items-center mt-1.5 gap-2"><span className="text-[10px] bg-slate-700/50 px-1.5 py-0.5 rounded text-slate-400 border border-slate-700">{s.bitrate || 128}k</span></div></div>
@@ -478,8 +363,13 @@ export default function App() {
                   ))
                  }
               </div>
+              
+              {/* --- YENİ EKLENEN İÇERİKLER (Google Onayı İçin) --- */}
               <SeoContent country={selectedCountry} lang={appLang} />
-              <div className="mt-12 mb-8"><AdSenseUnit slotId="footer-ad" label="Footer" style={{ height: '120px' }} /></div>
+              <FAQSection lang={appLang} />
+              <Footer lang={appLang} />
+
+              <div className="mt-12 mb-24"><AdSenseUnit slotId="footer-ad" label="Footer" style={{ height: '120px' }} /></div>
            </div>
         </main>
         <div className={`fixed inset-y-0 right-0 w-full sm:w-96 ${theme.bgPanel} backdrop-blur-xl border-l ${theme.border} shadow-2xl transform transition-transform duration-300 z-50 ${showAiPanel ? 'translate-x-0' : 'translate-x-full'}`}>

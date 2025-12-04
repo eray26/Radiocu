@@ -1,10 +1,51 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe, Radio, MapPin, Music, Wifi, AlertCircle, Sparkles, X, Bot, MessageSquare, Loader2, Activity, Zap, Waves, Menu, RefreshCw, Star, Info, Shield, FileText, Mail, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe, Radio, MapPin, Music, Wifi, AlertCircle, Sparkles, X, Bot, MessageSquare, Loader2, Activity, Zap, Waves, Menu, RefreshCw, Star, Info, Shield, FileText, Mail, HelpCircle, ChevronRight, BookOpen, Headphones, Signal, Smartphone } from 'lucide-react';
 
-// --- AYARLAR ---
+// --- GLOBAL AYARLAR ---
 const GOOGLE_AD_CLIENT_ID = "ca-pub-3676498147737928"; 
 const IS_ADSENSE_LIVE = true; 
 const apiKey = ""; 
+
+// --- ÖZEL MARKA LOGOSU (SVG) ---
+// Dosya yüklemeye gerek kalmadan çalışan vektörel logo
+const BrandLogo = ({ className }) => (
+  <div className={className}>
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+      <rect width="24" height="24" rx="6" fill="url(#brand_grad)" />
+      <path d="M7 7H11C13.2 7 15 8.8 15 11V11C15 13.2 13.2 15 11 15H7V7Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M7 15L11.5 20" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M16.5 10C17.2 10.8 17.5 11.8 17.5 13" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
+      <path d="M19 8C20.2 9.2 21 11 21 13" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+      <defs>
+        <linearGradient id="brand_grad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#4f46e5" />
+          <stop offset="1" stopColor="#9333ea" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+);
+
+// --- VIP LİSTE ---
+const VIP_STATIONS = {
+  TR: [
+    { name: "Power Türk", url_resolved: "https://listen.powerapp.com.tr/powerturk/mpeg/icecast.audio", favicon: "https://upload.wikimedia.org/wikipedia/commons/2/2b/Power_T%C3%BCrk_logo.svg", homepage: "https://www.powerapp.com.tr", tags: "pop,türkçe" },
+    { name: "Power FM", url_resolved: "https://listen.powerapp.com.tr/powerfm/mpeg/icecast.audio", favicon: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Power_FM_logo.svg", homepage: "https://www.powerapp.com.tr", tags: "pop,hit" },
+    { name: "Metro FM", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/METRO_FM_SC", favicon: "https://upload.wikimedia.org/wikipedia/tr/f/f7/Metro_FM_logo.png", homepage: "https://karnaval.com", tags: "pop,yabancı" },
+    { name: "Süper FM", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/SUPER_FM_SC", favicon: "https://upload.wikimedia.org/wikipedia/tr/b/b5/S%C3%BCper_FM_logo.png", homepage: "https://karnaval.com", tags: "pop,türkçe" },
+    { name: "Joy Türk", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/JOY_TURK_SC", favicon: "https://upload.wikimedia.org/wikipedia/tr/0/09/Joy_FM_logo.png", homepage: "https://karnaval.com", tags: "slow,aşk" },
+    { name: "Fenomen Türk", url_resolved: "https://listen.radyofenomen.com/fenomenturk/256/icecast.audio", favicon: "https://radyofenomen.com/assets/images/logo.png", homepage: "https://radyofenomen.com", tags: "pop,hit" },
+    { name: "Kafa Radyo", url_resolved: "https://kafaradyo.live/kafaradyo/128/icecast.audio", favicon: "https://kafaradyo.com/assets/img/logo.png", homepage: "https://kafaradyo.com", tags: "talk,haber" },
+    { name: "Number1 FM", url_resolved: "https://n101.rcs.revma.com/3d095282k2zuv", favicon: "https://www.numberone.com.tr/wp-content/uploads/2018/05/number1-logo-1.png", homepage: "https://www.numberone.com.tr", tags: "hit,dance" }
+  ],
+  US: [
+    { name: "KEXP 90.3", url_resolved: "https://kexp-mp3-128.streamguys1.com/kexp128.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/e/e8/KEXP_logo_black.svg", homepage: "https://kexp.org", tags: "alternative,rock" },
+    { name: "NPR News", url_resolved: "https://npr-ice.streamguys1.com/live.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/d/d7/National_Public_Radio_logo.svg", homepage: "https://npr.org", tags: "news" }
+  ],
+  DE: [
+    { name: "1LIVE", url_resolved: "https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/e/ee/1_Live_Logo.svg", homepage: "https://www1.wdr.de/radio/1live", tags: "pop" }
+  ]
+};
 
 // --- API ---
 const API_MIRRORS = [
@@ -14,28 +55,6 @@ const API_MIRRORS = [
   "https://fr1.api.radio-browser.info",
   "https://us1.api.radio-browser.info"
 ];
-
-// --- VIP LİSTE (GÜVENLİ) ---
-const VIP_STATIONS = {
-  TR: [
-    { name: "Power Türk", url_resolved: "https://listen.powerapp.com.tr/powerturk/mpeg/icecast.audio", favicon: "https://upload.wikimedia.org/wikipedia/commons/2/2b/Power_T%C3%BCrk_logo.svg", homepage: "https://www.powerapp.com.tr", tags: "pop,türkçe" },
-    { name: "Power FM", url_resolved: "https://listen.powerapp.com.tr/powerfm/mpeg/icecast.audio", favicon: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Power_FM_logo.svg", homepage: "https://www.powerapp.com.tr", tags: "pop,hit" },
-    { name: "Metro FM", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/METRO_FM_SC", favicon: "https://upload.wikimedia.org/wikipedia/tr/f/f7/Metro_FM_logo.png", homepage: "https://karnaval.com", tags: "pop,yabancı" },
-    { name: "Süper FM", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/SUPER_FM_SC", favicon: "https://upload.wikimedia.org/wikipedia/tr/b/b5/S%C3%BCper_FM_logo.png", homepage: "https://karnaval.com", tags: "pop,türkçe" },
-    { name: "Joy Türk", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/JOY_TURK_SC", favicon: "https://upload.wikimedia.org/wikipedia/tr/0/09/Joy_FM_logo.png", homepage: "https://karnaval.com", tags: "slow,aşk" },
-    { name: "Joy FM", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/JOY_FM_SC", favicon: "https://upload.wikimedia.org/wikipedia/en/7/70/Joy_Fm_Logo.jpg", homepage: "https://karnaval.com", tags: "yabancı,slow" },
-    { name: "Fenomen Türk", url_resolved: "https://listen.radyofenomen.com/fenomenturk/256/icecast.audio", favicon: "https://radyofenomen.com/assets/images/logo.png", homepage: "https://radyofenomen.com", tags: "pop,hit" },
-    { name: "Kafa Radyo", url_resolved: "https://kafaradyo.live/kafaradyo/128/icecast.audio", favicon: "https://kafaradyo.com/assets/img/logo.png", homepage: "https://kafaradyo.com", tags: "talk,haber" },
-    { name: "Number1 FM", url_resolved: "https://n101.rcs.revma.com/3d095282k2zuv", favicon: "https://www.numberone.com.tr/wp-content/uploads/2018/05/number1-logo-1.png", homepage: "https://www.numberone.com.tr", tags: "hit,dance" }
-  ],
-  US: [
-    { name: "KEXP 90.3", url_resolved: "https://kexp-mp3-128.streamguys1.com/kexp128.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/e/e8/KEXP_logo_black.svg", homepage: "https://kexp.org", tags: "alternative,rock" },
-    { name: "NPR News", url_resolved: "https://npr-ice.streamguys1.com/live.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/d/d7/National_Public_Radio_logo.svg", homepage: "https://npr.org", tags: "news,talk" }
-  ],
-  DE: [
-    { name: "1LIVE", url_resolved: "https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3", favicon: "https://upload.wikimedia.org/wikipedia/commons/e/ee/1_Live_Logo.svg", homepage: "https://www1.wdr.de/radio/1live", tags: "pop" }
-  ]
-};
 
 const TRANSLATIONS = {
   TR: { code: "tr", searchPlaceholder: "Radyo ara...", categories: "Kategoriler", allRadios: "Tüm Radyolar", aiBtn: "AI Asistan", moodTitle: "Ruh Hali", moodDesc: "Modun nedir?", moodInput: "Örn: Çalışıyorum...", factTitle: "Yerel Bilgi", factDesc: "hakkında bilgi.", btnLoad: "Yükleniyor...", btnGetInfo: "Bilgi Getir", btnNewInfo: "Yeni Bilgi", clear: "Temizle", live: "CANLI", paused: "DURAKLATILDI", stations: "İstasyon", locationDetected: "Konum Algılandı", footerRights: "Tüm Hakları Saklıdır.", errorMsg: "Liste alınamadı.", retry: "Tekrar Dene", playingError: "Yayın açılmadı.", seoTitle: "Canlı Radyo Dinle", seoDesc: "Kesintisiz radyo keyfi." },
@@ -49,6 +68,7 @@ const COUNTRIES = [
 
 const GENRES = ['all', 'pop', 'rock', 'jazz', 'news', 'classical', 'dance', 'folk', 'rap', 'electronic', 'lofi', 'arabesque'];
 
+// --- SEO & UTILS ---
 const updateSEO = (title, description, langCode) => {
   document.title = title;
   document.documentElement.lang = langCode;
@@ -70,6 +90,7 @@ const callGemini = async (prompt) => {
   } catch (error) { return "Unavailable."; }
 };
 
+// --- BİLEŞENLER ---
 const StationLogo = ({ url, alt, homepage, className }) => {
   const [imgSrc, setImgSrc] = useState(url);
   const [hasError, setHasError] = useState(false);
@@ -89,7 +110,85 @@ const AdSenseUnit = ({ slotId, style = {}, label }) => {
   return <div className="ad-container my-4 bg-slate-900 flex justify-center items-center"><ins className="adsbygoogle" style={{ display: 'block', ...style }} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>;
 };
 
-// --- YENİ: AdSense Onayı İçin Gerekli SSS (FAQ) Bileşeni ---
+// --- YENİ: ÖZELLİKLER BÖLÜMÜ (Zengin İçerik 1) ---
+const FeaturesSection = ({ lang }) => {
+    const content = {
+        TR: [
+            { icon: <Wifi className="w-6 h-6"/>, title: "Kesintisiz Yayın", desc: "Düşük internet hızlarında bile donmayan özel altyapı." },
+            { icon: <Headphones className="w-6 h-6"/>, title: "Yüksek Kalite", desc: "Radyoların en yüksek bit hızındaki (HD) yayınları." },
+            { icon: <Globe className="w-6 h-6"/>, title: "Global Erişim", desc: "Dünyanın her yerinden binlerce yerel istasyon." },
+            { icon: <Smartphone className="w-6 h-6"/>, title: "Mobil Uyumlu", desc: "Telefon, tablet ve bilgisayarda mükemmel deneyim." }
+        ],
+        EN: [
+            { icon: <Wifi className="w-6 h-6"/>, title: "Uninterrupted", desc: "Stream without freezing even on low connections." },
+            { icon: <Headphones className="w-6 h-6"/>, title: "High Quality", desc: "HD streams with the highest bitrate available." },
+            { icon: <Globe className="w-6 h-6"/>, title: "Global Access", desc: "Thousands of local stations from around the world." },
+            { icon: <Smartphone className="w-6 h-6"/>, title: "Mobile Ready", desc: "Perfect experience on phone, tablet, and desktop." }
+        ]
+    };
+    const features = content[lang] || content['EN'];
+    
+    return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 mb-12">
+            {features.map((f, i) => (
+                <div key={i} className="p-5 bg-slate-800/30 border border-slate-700/50 rounded-xl flex flex-col items-center text-center hover:bg-slate-800/50 transition">
+                    <div className="mb-3 p-3 bg-indigo-500/10 rounded-full text-indigo-400">{f.icon}</div>
+                    <h4 className="text-white font-bold mb-1">{f.title}</h4>
+                    <p className="text-xs text-slate-400">{f.desc}</p>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+// --- YENİ: BLOG BÖLÜMÜ (Zengin İçerik 2 - AdSense İçin Kritik) ---
+const BlogSection = ({ lang }) => {
+  const articles = {
+    TR: [
+      {
+        title: "Dijital Radyonun Yükselişi",
+        date: "24 Kasım 2024",
+        content: "Radyo yayıncılığı son 10 yılda büyük bir değişim geçirdi. FM frekanslarının yerini dijital streamler alırken, dinleyiciler artık coğrafi sınırlarla kısıtlı kalmıyor. Radiocu gibi platformlar sayesinde, dünyanın öbür ucundaki bir yerel radyoyu, sanki oradaymışsınız gibi net bir kalitede dinleyebiliyorsunuz."
+      },
+      {
+        title: "İnternet Radyosu Neden Daha Avantajlı?",
+        date: "20 Kasım 2024",
+        content: "Geleneksel radyolar cızırtı, frekans karışması ve kapsama alanı sorunları yaşatabilir. Oysa internet radyoları (Web Radio), internetin olduğu her yerde CD kalitesinde ses sunar. Ayrıca, dinlediğiniz şarkının adını görme ve favori listesi oluşturma gibi interaktif özellikler deneyimi artırır."
+      },
+      {
+        title: "Müzik ve Ruh Hali İlişkisi",
+        date: "15 Kasım 2024",
+        content: "Bilimsel araştırmalar, müziğin insan psikolojisi üzerindeki doğrudan etkisini kanıtlamıştır. Hüzünlü anlarda slow müzik dinlemek duygusal deşarj sağlarken, spor yaparken yüksek tempolu (BPM) şarkılar performansı artırır. Radiocu AI asistanı tam da bunun için tasarlandı."
+      }
+    ],
+    EN: [
+       { title: "The Rise of Digital Radio", date: "Nov 24, 2024", content: "Radio broadcasting has transformed. Digital streams replace FM, removing borders." },
+       { title: "Why Internet Radio?", date: "Nov 20, 2024", content: "CD-quality sound everywhere without static noise. Interactive features enhance the experience." },
+       { title: "Music and Mood", date: "Nov 15, 2024", content: "Music impacts psychology directly. Radiocu AI helps you find the perfect track for your mood." }
+    ]
+  };
+
+  const list = articles[lang] || articles['EN'];
+
+  return (
+    <div className="mt-12 mb-12">
+       <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><BookOpen className="w-5 h-5 text-indigo-500"/> Radyo Blog</h3>
+       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {list.map((article, i) => (
+            <div key={i} className="p-6 bg-slate-900/60 rounded-2xl border border-slate-800/60 hover:border-indigo-500/30 transition group flex flex-col">
+                <div className="text-xs text-indigo-400 mb-2 font-mono">{article.date}</div>
+                <h3 className="text-lg font-bold text-slate-200 mb-3 group-hover:text-white transition">{article.title}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed flex-1">{article.content}</p>
+                <div className="mt-4 flex items-center text-xs text-slate-400 font-medium group-hover:text-indigo-400 transition cursor-pointer">
+                    Devamını Oku <ChevronRight className="w-3 h-3 ml-1"/>
+                </div>
+            </div>
+          ))}
+       </div>
+    </div>
+  );
+};
+
 const FAQSection = ({ lang }) => {
   const faqs = {
     TR: [
@@ -101,20 +200,19 @@ const FAQSection = ({ lang }) => {
     EN: [
       { q: "Is Radiocu free?", a: "Yes, listening to all radio stations on Radiocu is completely free." },
       { q: "Why stations won't play?", a: "Some stations use old formats. We try to fetch the best available streams." },
-      { q: "Does it consume much data?", a: "Audio streaming consumes very little data compared to video streaming." },
+      { q: "Data usage?", a: "Audio streaming consumes very little data compared to video streaming." },
       { q: "Is there a mobile app?", a: "Our website is fully responsive. You can 'Add to Homescreen' for an app-like experience." }
     ]
   };
   const list = faqs[lang] || faqs['EN'];
-
   return (
-    <div className="mt-12 mb-8">
+    <div className="mt-8 mb-12">
        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><HelpCircle className="w-5 h-5 text-indigo-500"/> Sıkça Sorulan Sorular</h3>
        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {list.map((item, i) => (
-             <div key={i} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50">
+             <div key={i} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 hover:bg-slate-800/50 transition">
                 <h4 className="text-sm font-bold text-slate-200 mb-2">{item.q}</h4>
-                <p className="text-xs text-slate-400">{item.a}</p>
+                <p className="text-xs text-slate-400 leading-relaxed">{item.a}</p>
              </div>
           ))}
        </div>
@@ -122,14 +220,7 @@ const FAQSection = ({ lang }) => {
   );
 };
 
-// --- YENİ: Footer (Gizlilik & İletişim) ---
 const Footer = ({ lang }) => {
-    const texts = {
-        TR: { privacy: "Gizlilik Politikası", terms: "Kullanım Şartları", contact: "İletişim", about: "Hakkımızda" },
-        EN: { privacy: "Privacy Policy", terms: "Terms of Use", contact: "Contact", about: "About Us" }
-    };
-    const t = texts[lang] || texts['EN'];
-
     return (
         <footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50">
             <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
@@ -139,34 +230,11 @@ const Footer = ({ lang }) => {
                         Dünyanın sesini cebinize getiren global radyo platformu. Kesintisiz, ücretsiz ve yüksek kaliteli müzik deneyimi.
                     </p>
                 </div>
-                <div>
-                    <h4 className="font-bold text-slate-300 mb-4">Kurumsal</h4>
-                    <ul className="space-y-2 text-slate-500 text-xs">
-                        <li><a href="#" className="hover:text-indigo-400">{t.about}</a></li>
-                        <li><a href="#" className="hover:text-indigo-400">{t.contact}</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 className="font-bold text-slate-300 mb-4">Yasal</h4>
-                    <ul className="space-y-2 text-slate-500 text-xs">
-                        {/* Google bu linkleri görmeyi sever */}
-                        <li><a href="#" className="hover:text-indigo-400">{t.privacy}</a></li>
-                        <li><a href="#" className="hover:text-indigo-400">{t.terms}</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 className="font-bold text-slate-300 mb-4">İletişim</h4>
-                    <p className="text-slate-500 text-xs mb-2">info@radiocu.com</p>
-                    <div className="flex gap-3 mt-4">
-                       {/* Sosyal Medya Placeholder */}
-                       <div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Globe className="w-4 h-4 text-white"/></div>
-                       <div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Mail className="w-4 h-4 text-white"/></div>
-                    </div>
-                </div>
+                <div><h4 className="font-bold text-slate-300 mb-4">Kurumsal</h4><ul className="space-y-2 text-slate-500 text-xs"><li><a href="#" className="hover:text-indigo-400">Hakkımızda</a></li><li><a href="#" className="hover:text-indigo-400">İletişim</a></li></ul></div>
+                <div><h4 className="font-bold text-slate-300 mb-4">Yasal</h4><ul className="space-y-2 text-slate-500 text-xs"><li><a href="#" className="hover:text-indigo-400">Gizlilik Politikası</a></li><li><a href="#" className="hover:text-indigo-400">Kullanım Şartları</a></li></ul></div>
+                <div><p className="text-slate-500 text-xs mb-2">info@radiocu.com</p><div className="flex gap-3 mt-4"><div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Globe className="w-4 h-4 text-white"/></div><div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Mail className="w-4 h-4 text-white"/></div></div></div>
             </div>
-            <div className="text-center text-[10px] text-slate-700 mt-12">
-                &copy; 2024 Radiocu.com - All rights reserved.
-            </div>
+            <div className="text-center text-[10px] text-slate-700 mt-12">&copy; 2024 Radiocu.com - All rights reserved.</div>
         </footer>
     );
 };
@@ -175,15 +243,13 @@ const SeoContent = ({ country, lang }) => {
   const countryName = COUNTRIES.find(c => c.code === country)?.name || country;
   const texts = {
     TR: { h2: `${countryName} Radyoları`, p: `Radiocu ile ${countryName} genelindeki en popüler radyo istasyonlarını ücretsiz dinleyin.` },
-    EN: { h2: `${countryName} Radio Stations`, p: `Listen to popular radio stations in ${countryName} for free with Radiocu.` },
-    DE: { h2: `${countryName} Radiosender`, p: `Hören Sie beliebte Radiosender in ${countryName} kostenlos mit Radiocu.` }
+    EN: { h2: `${countryName} Radio Stations`, p: `Listen to popular radio stations in ${countryName} for free with Radiocu.` }
   };
   const content = texts[lang] || texts['EN'];
   return (
     <div className="mt-12 mb-8 p-6 bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-sm leading-relaxed">
       <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><Globe className="w-5 h-5 text-indigo-500"/> {content.h2}</h2>
       <p>{content.p}</p>
-      <div className="mt-6 pt-6 border-t border-slate-800 flex flex-wrap gap-2 text-[10px] opacity-50"><span>Radio</span> • <span>Live</span> • <span>{countryName}</span></div>
     </div>
   );
 };
@@ -321,8 +387,8 @@ export default function App() {
       <header className={`h-16 ${theme.bgPanel} backdrop-blur-md border-b ${theme.border} flex items-center justify-between px-4 z-30 shrink-0`}>
         <div className="flex items-center gap-3 select-none cursor-pointer" onClick={() => {setCurrentStation(null); setSearchQuery('');}}>
           <div className="w-10 h-10 shrink-0 rounded-xl overflow-hidden shadow-lg shadow-indigo-500/20 bg-white/5 border border-white/10">
-             <img src="/logo.png" alt="Radiocu" className="w-full h-full object-cover transform hover:scale-110 transition duration-500" onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-             <div className="hidden w-full h-full items-center justify-center bg-indigo-600"><Radio className="text-white w-6 h-6" /></div>
+             {/* YENİ LOGO BİLEŞENİ (SVG) - Asla kaybolmaz */}
+             <BrandLogo className="w-full h-full" />
           </div>
           <div className="flex flex-col justify-center h-10">
             <h1 className="text-xl font-bold tracking-tight text-white leading-none">Radiocu</h1>
@@ -353,7 +419,6 @@ export default function App() {
                     <React.Fragment key={s.stationuuid}>
                         {idx > 0 && idx % 12 === 0 && <div className="col-span-full"><AdSenseUnit slotId="feed-ad" label="Feed Ads" style={{ height: '90px' }} /></div>}
                         <div onClick={() => setCurrentStation(s)} className={`group relative ${theme.bgCard} hover:bg-slate-800 rounded-xl p-3 transition-all cursor-pointer border ${currentStation?.stationuuid === s.stationuuid ? 'border-indigo-500 bg-indigo-500/10' : theme.border} hover:shadow-lg hover:-translate-y-0.5`}>
-                            {/* VIP etiketi kaldırıldı */}
                             <div className="flex items-center gap-3">
                                 <div className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 relative bg-slate-900 border ${theme.border}`}><StationLogo url={s.favicon} homepage={s.homepage} alt={s.name} /><div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><Play className="w-6 h-6 text-white fill-current"/></div>{currentStation?.stationuuid === s.stationuuid && isPlaying && <div className="absolute inset-0 bg-black/60 flex items-center justify-center"><Activity className="w-6 h-6 text-indigo-400 animate-pulse" /></div>}</div>
                                 <div className="flex-1 min-w-0"><h3 className={`font-bold truncate text-sm ${currentStation?.stationuuid === s.stationuuid ? 'text-indigo-400' : 'text-slate-200'}`}>{s.name}</h3><p className="text-xs text-slate-500 truncate mt-0.5">{s.tags ? s.tags.split(',').slice(0, 2).join(', ') : 'Radyo'}</p><div className="flex items-center mt-1.5 gap-2"><span className="text-[10px] bg-slate-700/50 px-1.5 py-0.5 rounded text-slate-400 border border-slate-700">{s.bitrate || 128}k</span></div></div>
@@ -364,7 +429,9 @@ export default function App() {
                  }
               </div>
               
-              {/* --- YENİ EKLENEN İÇERİKLER (Google Onayı İçin) --- */}
+              {/* --- YENİ EKLENEN ZENGİN İÇERİKLER --- */}
+              <FeaturesSection lang={appLang} />
+              <BlogSection lang={appLang} />
               <SeoContent country={selectedCountry} lang={appLang} />
               <FAQSection lang={appLang} />
               <Footer lang={appLang} />

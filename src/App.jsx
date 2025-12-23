@@ -7,7 +7,6 @@ const IS_ADSENSE_LIVE = true;
 const apiKey = ""; 
 
 // --- ÖZEL MARKA LOGOSU (SVG) ---
-// Dosya yüklemeye gerek kalmadan çalışan vektörel logo
 const BrandLogo = ({ className }) => (
   <div className={className}>
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
@@ -110,7 +109,7 @@ const AdSenseUnit = ({ slotId, style = {}, label }) => {
   return <div className="ad-container my-4 bg-slate-900 flex justify-center items-center"><ins className="adsbygoogle" style={{ display: 'block', ...style }} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>;
 };
 
-// --- YENİ: ÖZELLİKLER BÖLÜMÜ (Zengin İçerik 1) ---
+// --- YENİ: ÖZELLİKLER BÖLÜMÜ ---
 const FeaturesSection = ({ lang }) => {
     const content = {
         TR: [
@@ -127,7 +126,6 @@ const FeaturesSection = ({ lang }) => {
         ]
     };
     const features = content[lang] || content['EN'];
-    
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 mb-12">
             {features.map((f, i) => (
@@ -141,7 +139,7 @@ const FeaturesSection = ({ lang }) => {
     );
 };
 
-// --- YENİ: BLOG BÖLÜMÜ (Zengin İçerik 2 - AdSense İçin Kritik) ---
+// --- YENİ: BLOG BÖLÜMÜ ---
 const BlogSection = ({ lang }) => {
   const articles = {
     TR: [
@@ -220,6 +218,7 @@ const FAQSection = ({ lang }) => {
   );
 };
 
+// --- GÜNCELLENMİŞ FOOTER ---
 const Footer = ({ lang }) => {
     return (
         <footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50">
@@ -230,9 +229,27 @@ const Footer = ({ lang }) => {
                         Dünyanın sesini cebinize getiren global radyo platformu. Kesintisiz, ücretsiz ve yüksek kaliteli müzik deneyimi.
                     </p>
                 </div>
-                <div><h4 className="font-bold text-slate-300 mb-4">Kurumsal</h4><ul className="space-y-2 text-slate-500 text-xs"><li><a href="#" className="hover:text-indigo-400">Hakkımızda</a></li><li><a href="#" className="hover:text-indigo-400">İletişim</a></li></ul></div>
-                <div><h4 className="font-bold text-slate-300 mb-4">Yasal</h4><ul className="space-y-2 text-slate-500 text-xs"><li><a href="#" className="hover:text-indigo-400">Gizlilik Politikası</a></li><li><a href="#" className="hover:text-indigo-400">Kullanım Şartları</a></li></ul></div>
-                <div><p className="text-slate-500 text-xs mb-2">info@radiocu.com</p><div className="flex gap-3 mt-4"><div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Globe className="w-4 h-4 text-white"/></div><div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Mail className="w-4 h-4 text-white"/></div></div></div>
+                <div>
+                    <h4 className="font-bold text-slate-300 mb-4">Kurumsal</h4>
+                    <ul className="space-y-2 text-slate-500 text-xs">
+                        <li><a href="/hakkimizda.html" className="hover:text-indigo-400 transition">Hakkımızda</a></li>
+                        <li><a href="mailto:info@radiocu.com" className="hover:text-indigo-400 transition">İletişim</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 className="font-bold text-slate-300 mb-4">Yasal</h4>
+                    <ul className="space-y-2 text-slate-500 text-xs">
+                        <li><a href="/gizlilik-politikasi.html" className="hover:text-indigo-400 transition">Gizlilik Politikası</a></li>
+                        <li><a href="/kullanim-sartlari.html" className="hover:text-indigo-400 transition">Kullanım Şartları</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <p className="text-slate-500 text-xs mb-2">info@radiocu.com</p>
+                    <div className="flex gap-3 mt-4">
+                       <div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Globe className="w-4 h-4 text-white"/></div>
+                       <div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Mail className="w-4 h-4 text-white"/></div>
+                    </div>
+                </div>
             </div>
             <div className="text-center text-[10px] text-slate-700 mt-12">&copy; 2024 Radiocu.com - All rights reserved.</div>
         </footer>
@@ -387,7 +404,7 @@ export default function App() {
       <header className={`h-16 ${theme.bgPanel} backdrop-blur-md border-b ${theme.border} flex items-center justify-between px-4 z-30 shrink-0`}>
         <div className="flex items-center gap-3 select-none cursor-pointer" onClick={() => {setCurrentStation(null); setSearchQuery('');}}>
           <div className="w-10 h-10 shrink-0 rounded-xl overflow-hidden shadow-lg shadow-indigo-500/20 bg-white/5 border border-white/10">
-             {/* YENİ LOGO BİLEŞENİ (SVG) - Asla kaybolmaz */}
+             {/* YENİ VEKTÖREL LOGO (Dosya gerektirmez) */}
              <BrandLogo className="w-full h-full" />
           </div>
           <div className="flex flex-col justify-center h-10">
@@ -429,7 +446,7 @@ export default function App() {
                  }
               </div>
               
-              {/* --- YENİ EKLENEN ZENGİN İÇERİKLER --- */}
+              {/* --- ZENGİN İÇERİK BÖLGESİ (ADSENSE ONAYI İÇİN) --- */}
               <FeaturesSection lang={appLang} />
               <BlogSection lang={appLang} />
               <SeoContent country={selectedCountry} lang={appLang} />

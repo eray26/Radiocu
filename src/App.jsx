@@ -33,6 +33,7 @@ const VIP_STATIONS = {
     { name: "Metro FM", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/METRO_FM_SC", favicon: "https://upload.wikimedia.org/wikipedia/tr/f/f7/Metro_FM_logo.png", homepage: "https://karnaval.com", tags: "pop,yabancı" },
     { name: "Süper FM", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/SUPER_FM_SC", favicon: "https://upload.wikimedia.org/wikipedia/tr/b/b5/S%C3%BCper_FM_logo.png", homepage: "https://karnaval.com", tags: "pop,türkçe" },
     { name: "Joy Türk", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/JOY_TURK_SC", favicon: "https://upload.wikimedia.org/wikipedia/tr/0/09/Joy_FM_logo.png", homepage: "https://karnaval.com", tags: "slow,aşk" },
+    { name: "Joy FM", url_resolved: "https://playerservices.streamtheworld.com/api/livestream-redirect/JOY_FM_SC", favicon: "https://upload.wikimedia.org/wikipedia/en/7/70/Joy_Fm_Logo.jpg", homepage: "https://karnaval.com", tags: "yabancı,slow" },
     { name: "Fenomen Türk", url_resolved: "https://listen.radyofenomen.com/fenomenturk/256/icecast.audio", favicon: "https://radyofenomen.com/assets/images/logo.png", homepage: "https://radyofenomen.com", tags: "pop,hit" },
     { name: "Kafa Radyo", url_resolved: "https://kafaradyo.live/kafaradyo/128/icecast.audio", favicon: "https://kafaradyo.com/assets/img/logo.png", homepage: "https://kafaradyo.com", tags: "talk,haber" },
     { name: "Number1 FM", url_resolved: "https://n101.rcs.revma.com/3d095282k2zuv", favicon: "https://www.numberone.com.tr/wp-content/uploads/2018/05/number1-logo-1.png", homepage: "https://www.numberone.com.tr", tags: "hit,dance" }
@@ -109,168 +110,46 @@ const AdSenseUnit = ({ slotId, style = {}, label }) => {
   return <div className="ad-container my-4 bg-slate-900 flex justify-center items-center"><ins className="adsbygoogle" style={{ display: 'block', ...style }} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>;
 };
 
-// --- YENİ: ÖZELLİKLER BÖLÜMÜ ---
+// --- İÇERİK BİLEŞENLERİ ---
 const FeaturesSection = ({ lang }) => {
     const content = {
-        TR: [
-            { icon: <Wifi className="w-6 h-6"/>, title: "Kesintisiz Yayın", desc: "Düşük internet hızlarında bile donmayan özel altyapı." },
-            { icon: <Headphones className="w-6 h-6"/>, title: "Yüksek Kalite", desc: "Radyoların en yüksek bit hızındaki (HD) yayınları." },
-            { icon: <Globe className="w-6 h-6"/>, title: "Global Erişim", desc: "Dünyanın her yerinden binlerce yerel istasyon." },
-            { icon: <Smartphone className="w-6 h-6"/>, title: "Mobil Uyumlu", desc: "Telefon, tablet ve bilgisayarda mükemmel deneyim." }
-        ],
-        EN: [
-            { icon: <Wifi className="w-6 h-6"/>, title: "Uninterrupted", desc: "Stream without freezing even on low connections." },
-            { icon: <Headphones className="w-6 h-6"/>, title: "High Quality", desc: "HD streams with the highest bitrate available." },
-            { icon: <Globe className="w-6 h-6"/>, title: "Global Access", desc: "Thousands of local stations from around the world." },
-            { icon: <Smartphone className="w-6 h-6"/>, title: "Mobile Ready", desc: "Perfect experience on phone, tablet, and desktop." }
-        ]
+        TR: [ { icon: <Wifi className="w-6 h-6"/>, title: "Kesintisiz Yayın", desc: "Düşük internet hızlarında bile donmayan özel altyapı." }, { icon: <Headphones className="w-6 h-6"/>, title: "Yüksek Kalite", desc: "Radyoların en yüksek bit hızındaki (HD) yayınları." }, { icon: <Globe className="w-6 h-6"/>, title: "Global Erişim", desc: "Dünyanın her yerinden binlerce yerel istasyon." }, { icon: <Smartphone className="w-6 h-6"/>, title: "Mobil Uyumlu", desc: "Telefon, tablet ve bilgisayarda mükemmel deneyim." } ],
+        EN: [ { icon: <Wifi className="w-6 h-6"/>, title: "Uninterrupted", desc: "Stream without freezing even on low connections." }, { icon: <Headphones className="w-6 h-6"/>, title: "High Quality", desc: "HD streams with the highest bitrate available." }, { icon: <Globe className="w-6 h-6"/>, title: "Global Access", desc: "Thousands of local stations from around the world." }, { icon: <Smartphone className="w-6 h-6"/>, title: "Mobile Ready", desc: "Perfect experience on phone, tablet, and desktop." } ]
     };
     const features = content[lang] || content['EN'];
-    return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 mb-12">
-            {features.map((f, i) => (
-                <div key={i} className="p-5 bg-slate-800/30 border border-slate-700/50 rounded-xl flex flex-col items-center text-center hover:bg-slate-800/50 transition">
-                    <div className="mb-3 p-3 bg-indigo-500/10 rounded-full text-indigo-400">{f.icon}</div>
-                    <h4 className="text-white font-bold mb-1">{f.title}</h4>
-                    <p className="text-xs text-slate-400">{f.desc}</p>
-                </div>
-            ))}
-        </div>
-    );
+    return (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 mb-12">{features.map((f, i) => (<div key={i} className="p-5 bg-slate-800/30 border border-slate-700/50 rounded-xl flex flex-col items-center text-center hover:bg-slate-800/50 transition"><div className="mb-3 p-3 bg-indigo-500/10 rounded-full text-indigo-400">{f.icon}</div><h4 className="text-white font-bold mb-1">{f.title}</h4><p className="text-xs text-slate-400">{f.desc}</p></div>))}</div>);
 };
 
-// --- YENİ: BLOG BÖLÜMÜ ---
 const BlogSection = ({ lang }) => {
   const articles = {
-    TR: [
-      {
-        title: "Dijital Radyonun Yükselişi",
-        date: "24 Kasım 2024",
-        content: "Radyo yayıncılığı son 10 yılda büyük bir değişim geçirdi. FM frekanslarının yerini dijital streamler alırken, dinleyiciler artık coğrafi sınırlarla kısıtlı kalmıyor. Radiocu gibi platformlar sayesinde, dünyanın öbür ucundaki bir yerel radyoyu, sanki oradaymışsınız gibi net bir kalitede dinleyebiliyorsunuz."
-      },
-      {
-        title: "İnternet Radyosu Neden Daha Avantajlı?",
-        date: "20 Kasım 2024",
-        content: "Geleneksel radyolar cızırtı, frekans karışması ve kapsama alanı sorunları yaşatabilir. Oysa internet radyoları (Web Radio), internetin olduğu her yerde CD kalitesinde ses sunar. Ayrıca, dinlediğiniz şarkının adını görme ve favori listesi oluşturma gibi interaktif özellikler deneyimi artırır."
-      },
-      {
-        title: "Müzik ve Ruh Hali İlişkisi",
-        date: "15 Kasım 2024",
-        content: "Bilimsel araştırmalar, müziğin insan psikolojisi üzerindeki doğrudan etkisini kanıtlamıştır. Hüzünlü anlarda slow müzik dinlemek duygusal deşarj sağlarken, spor yaparken yüksek tempolu (BPM) şarkılar performansı artırır. Radiocu AI asistanı tam da bunun için tasarlandı."
-      }
-    ],
-    EN: [
-       { title: "The Rise of Digital Radio", date: "Nov 24, 2024", content: "Radio broadcasting has transformed. Digital streams replace FM, removing borders." },
-       { title: "Why Internet Radio?", date: "Nov 20, 2024", content: "CD-quality sound everywhere without static noise. Interactive features enhance the experience." },
-       { title: "Music and Mood", date: "Nov 15, 2024", content: "Music impacts psychology directly. Radiocu AI helps you find the perfect track for your mood." }
-    ]
+    TR: [ { title: "Dijital Radyonun Yükselişi", date: "24.11.2024", content: "FM frekanslarının yerini dijital streamler alıyor. Radiocu ile sınırları aşın." }, { title: "Neden Online Radyo?", date: "20.11.2024", content: "Cızırtı yok, kesinti yok. İnternetin olduğu her yerde CD kalitesinde müzik." }, { title: "Müzik ve Psikoloji", date: "15.11.2024", content: "Müziğin insan psikolojisi üzerindeki doğrudan etkisi bilimsel olarak kanıtlanmıştır." } ],
+    EN: [ { title: "Digital Radio", date: "Nov 24", content: "Digital streams replace FM, removing borders." }, { title: "Why Online?", date: "Nov 20", content: "CD-quality sound everywhere without static noise." }, { title: "Music & Mood", date: "Nov 15", content: "Music impacts psychology directly." } ]
   };
-
   const list = articles[lang] || articles['EN'];
-
-  return (
-    <div className="mt-12 mb-12">
-       <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><BookOpen className="w-5 h-5 text-indigo-500"/> Radyo Blog</h3>
-       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {list.map((article, i) => (
-            <div key={i} className="p-6 bg-slate-900/60 rounded-2xl border border-slate-800/60 hover:border-indigo-500/30 transition group flex flex-col">
-                <div className="text-xs text-indigo-400 mb-2 font-mono">{article.date}</div>
-                <h3 className="text-lg font-bold text-slate-200 mb-3 group-hover:text-white transition">{article.title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed flex-1">{article.content}</p>
-                <div className="mt-4 flex items-center text-xs text-slate-400 font-medium group-hover:text-indigo-400 transition cursor-pointer">
-                    Devamını Oku <ChevronRight className="w-3 h-3 ml-1"/>
-                </div>
-            </div>
-          ))}
-       </div>
-    </div>
-  );
+  return (<div className="mt-12 mb-12"><h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><BookOpen className="w-5 h-5 text-indigo-500"/> Blog</h3><div className="grid grid-cols-1 md:grid-cols-3 gap-6">{list.map((article, i) => (<div key={i} className="p-6 bg-slate-900/60 rounded-2xl border border-slate-800/60 hover:border-indigo-500/30 transition group flex flex-col"><div className="text-xs text-indigo-400 mb-2 font-mono">{article.date}</div><h3 className="text-lg font-bold text-slate-200 mb-3 group-hover:text-white transition">{article.title}</h3><p className="text-sm text-slate-500 leading-relaxed flex-1">{article.content}</p><div className="mt-4 flex items-center text-xs text-slate-400 font-medium group-hover:text-indigo-400 transition cursor-pointer">Devamını Oku <ChevronRight className="w-3 h-3 ml-1"/></div></div>))}</div></div>);
 };
 
 const FAQSection = ({ lang }) => {
   const faqs = {
-    TR: [
-      { q: "Radiocu ücretsiz mi?", a: "Evet, Radiocu üzerinden tüm radyoları dinlemek tamamen ücretsizdir." },
-      { q: "Radyolar neden açılmıyor?", a: "Bazı radyolar eski yayın formatlarını (HTTP) kullanıyor olabilir. Radiocu en güncel HTTPS yayınları otomatik bulur." },
-      { q: "İnternet kotamı çok yer mi?", a: "Radyo yayınları video sitelerine göre çok daha az (yaklaşık 10 kat daha az) veri tüketir." },
-      { q: "Mobil uygulaması var mı?", a: "Radiocu.com mobil uyumludur, tarayıcınızdan 'Ana Ekrana Ekle' diyerek uygulama gibi kullanabilirsiniz." }
-    ],
-    EN: [
-      { q: "Is Radiocu free?", a: "Yes, listening to all radio stations on Radiocu is completely free." },
-      { q: "Why stations won't play?", a: "Some stations use old formats. We try to fetch the best available streams." },
-      { q: "Data usage?", a: "Audio streaming consumes very little data compared to video streaming." },
-      { q: "Is there a mobile app?", a: "Our website is fully responsive. You can 'Add to Homescreen' for an app-like experience." }
-    ]
+    TR: [ { q: "Ücretli mi?", a: "Hayır, tamamen ücretsizdir." }, { q: "Radyo ekleyebilir miyim?", a: "İletişim bölümünden ulaşabilirsiniz." }, { q: "Mobil uygulama?", a: "Sitemiz %100 mobil uyumludur." }, { q: "Kota dostu mu?", a: "Ses verisi çok az internet harcar." } ],
+    EN: [ { q: "Is it free?", a: "Yes, completely free." }, { q: "Add station?", a: "Contact us via email." }, { q: "Mobile app?", a: "Fully responsive web app." }, { q: "Data usage?", a: "Audio consumes very little data." } ]
   };
   const list = faqs[lang] || faqs['EN'];
-  return (
-    <div className="mt-8 mb-12">
-       <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><HelpCircle className="w-5 h-5 text-indigo-500"/> Sıkça Sorulan Sorular</h3>
-       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {list.map((item, i) => (
-             <div key={i} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 hover:bg-slate-800/50 transition">
-                <h4 className="text-sm font-bold text-slate-200 mb-2">{item.q}</h4>
-                <p className="text-xs text-slate-400 leading-relaxed">{item.a}</p>
-             </div>
-          ))}
-       </div>
-    </div>
-  );
+  return (<div className="mt-8 mb-12"><h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><HelpCircle className="w-5 h-5 text-indigo-500"/> Sıkça Sorulan Sorular</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{list.map((item, i) => (<div key={i} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 hover:bg-slate-800/50 transition"><h4 className="text-sm font-bold text-slate-200 mb-2">{item.q}</h4><p className="text-xs text-slate-400 leading-relaxed">{item.a}</p></div>))}</div></div>);
 };
 
-// --- GÜNCELLENMİŞ FOOTER ---
 const Footer = ({ lang }) => {
-    return (
-        <footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50">
-            <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
-                <div>
-                    <h3 className="font-bold text-white mb-4 flex items-center gap-2"><Radio className="w-4 h-4 text-indigo-500"/> Radiocu</h3>
-                    <p className="text-slate-500 text-xs leading-relaxed">
-                        Dünyanın sesini cebinize getiren global radyo platformu. Kesintisiz, ücretsiz ve yüksek kaliteli müzik deneyimi.
-                    </p>
-                </div>
-                <div>
-                    <h4 className="font-bold text-slate-300 mb-4">Kurumsal</h4>
-                    <ul className="space-y-2 text-slate-500 text-xs">
-                        <li><a href="/hakkimizda.html" className="hover:text-indigo-400 transition">Hakkımızda</a></li>
-                        <li><a href="mailto:info@radiocu.com" className="hover:text-indigo-400 transition">İletişim</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 className="font-bold text-slate-300 mb-4">Yasal</h4>
-                    <ul className="space-y-2 text-slate-500 text-xs">
-                        <li><a href="/gizlilik-politikasi.html" className="hover:text-indigo-400 transition">Gizlilik Politikası</a></li>
-                        <li><a href="/kullanim-sartlari.html" className="hover:text-indigo-400 transition">Kullanım Şartları</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <p className="text-slate-500 text-xs mb-2">info@radiocu.com</p>
-                    <div className="flex gap-3 mt-4">
-                       <div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Globe className="w-4 h-4 text-white"/></div>
-                       <div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Mail className="w-4 h-4 text-white"/></div>
-                    </div>
-                </div>
-            </div>
-            <div className="text-center text-[10px] text-slate-700 mt-12">&copy; 2024 Radiocu.com - All rights reserved.</div>
-        </footer>
-    );
+    return (<footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50"><div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 text-sm"><div><h3 className="font-bold text-white mb-4 flex items-center gap-2"><BrandLogo className="w-5 h-5"/> Radiocu</h3><p className="text-slate-500 text-xs leading-relaxed">Dünyanın sesini cebinize getiren global radyo platformu. Kesintisiz, ücretsiz ve yüksek kaliteli müzik deneyimi.</p></div><div><h4 className="font-bold text-slate-300 mb-4">Kurumsal</h4><ul className="space-y-2 text-slate-500 text-xs"><li><a href="/hakkimizda.html" className="hover:text-indigo-400 transition">Hakkımızda</a></li><li><a href="mailto:info@radiocu.com" className="hover:text-indigo-400 transition">İletişim</a></li></ul></div><div><h4 className="font-bold text-slate-300 mb-4">Yasal</h4><ul className="space-y-2 text-slate-500 text-xs"><li><a href="/gizlilik-politikasi.html" className="hover:text-indigo-400 transition">Gizlilik Politikası</a></li><li><a href="/kullanim-sartlari.html" className="hover:text-indigo-400 transition">Kullanım Şartları</a></li></ul></div><div><p className="text-slate-500 text-xs mb-2">info@radiocu.com</p><div className="flex gap-3 mt-4"><div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Globe className="w-4 h-4 text-white"/></div><div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Mail className="w-4 h-4 text-white"/></div></div></div></div><div className="text-center text-[10px] text-slate-700 mt-12">&copy; 2024 Radiocu.com - All rights reserved.</div></footer>);
 };
 
 const SeoContent = ({ country, lang }) => {
   const countryName = COUNTRIES.find(c => c.code === country)?.name || country;
-  const texts = {
-    TR: { h2: `${countryName} Radyoları`, p: `Radiocu ile ${countryName} genelindeki en popüler radyo istasyonlarını ücretsiz dinleyin.` },
-    EN: { h2: `${countryName} Radio Stations`, p: `Listen to popular radio stations in ${countryName} for free with Radiocu.` }
-  };
+  const texts = { TR: { h2: `${countryName} Radyoları`, p: `Radiocu ile ${countryName} genelindeki en popüler radyo istasyonlarını ücretsiz dinleyin.` }, EN: { h2: `${countryName} Radio Stations`, p: `Listen to popular radio stations in ${countryName} for free with Radiocu.` } };
   const content = texts[lang] || texts['EN'];
-  return (
-    <div className="mt-12 mb-8 p-6 bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-sm leading-relaxed">
-      <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><Globe className="w-5 h-5 text-indigo-500"/> {content.h2}</h2>
-      <p>{content.p}</p>
-    </div>
-  );
+  return (<div className="mt-12 mb-8 p-6 bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-sm leading-relaxed"><h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><Globe className="w-5 h-5 text-indigo-500"/> {content.h2}</h2><p>{content.p}</p></div>);
 };
 
+// --- APP ---
 export default function App() {
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -297,16 +176,18 @@ export default function App() {
   const fetchWithFailover = async (countryCode) => {
     setLoading(true); setError(null);
     let data = [];
+    // API Limit 600
     for (const server of API_MIRRORS) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3500);
-        const res = await fetch(`${server}/json/stations/bycountrycodeexact/${countryCode}?limit=120&order=votes&reverse=true`, { signal: controller.signal });
+        const res = await fetch(`${server}/json/stations/bycountrycodeexact/${countryCode}?limit=600&order=votes&reverse=true`, { signal: controller.signal });
         clearTimeout(timeoutId);
         if (res.ok) { data = await res.json(); break; }
       } catch (e) {}
     }
-    let cleanData = data.filter(s => s.url_resolved && s.name.trim().length > 0 && !s.name.toLowerCase().includes("test") && !s.url_resolved.includes(".m3u8"));
+    // Sıkı Filtreleme
+    let cleanData = data.filter(s => s.url_resolved && s.name.trim().length > 0 && !s.name.toLowerCase().includes("test") && s.url_resolved.startsWith("https") && !s.url_resolved.includes(".m3u8"));
     const vipList = VIP_STATIONS[countryCode] || [];
     cleanData = cleanData.filter(s => !vipList.some(v => v.name.toLowerCase() === s.name.toLowerCase()));
     const finalData = [...vipList.map(v => ({ ...v, stationuuid: `vip-${v.name}`, is_vip: true })), ...cleanData];
@@ -403,14 +284,8 @@ export default function App() {
     <div className={`flex flex-col h-screen ${theme.bgMain} text-white font-sans overflow-hidden selection:bg-indigo-500/30`}>
       <header className={`h-16 ${theme.bgPanel} backdrop-blur-md border-b ${theme.border} flex items-center justify-between px-4 z-30 shrink-0`}>
         <div className="flex items-center gap-3 select-none cursor-pointer" onClick={() => {setCurrentStation(null); setSearchQuery('');}}>
-          <div className="w-10 h-10 shrink-0 rounded-xl overflow-hidden shadow-lg shadow-indigo-500/20 bg-white/5 border border-white/10">
-             {/* YENİ VEKTÖREL LOGO (Dosya gerektirmez) */}
-             <BrandLogo className="w-full h-full" />
-          </div>
-          <div className="flex flex-col justify-center h-10">
-            <h1 className="text-xl font-bold tracking-tight text-white leading-none">Radiocu</h1>
-            <span className="text-[10px] text-slate-400 font-mono tracking-widest uppercase leading-none mt-1">Global Player</span>
-          </div>
+          <div className="w-10 h-10 shrink-0 rounded-xl overflow-hidden shadow-lg shadow-indigo-500/20 bg-white/5 border border-white/10"><BrandLogo className="w-full h-full" /></div>
+          <div className="flex flex-col justify-center h-10"><h1 className="text-xl font-bold tracking-tight text-white leading-none">Radiocu</h1><span className="text-[10px] text-slate-400 font-mono tracking-widest uppercase leading-none mt-1">Global Player</span></div>
         </div>
         <div className="hidden md:flex flex-1 max-w-md mx-6"><div className={`flex items-center w-full ${theme.bgCard} rounded-lg px-4 py-2 border ${theme.border} focus-within:border-indigo-500/50 transition-colors`}><Search className="text-slate-500 w-4 h-4 mr-2" /><input type="text" placeholder={t.searchPlaceholder} className="bg-transparent w-full border-none outline-none text-sm text-white placeholder-slate-500" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div></div>
         <div className="flex items-center gap-2">
@@ -445,14 +320,11 @@ export default function App() {
                   ))
                  }
               </div>
-              
-              {/* --- ZENGİN İÇERİK BÖLGESİ (ADSENSE ONAYI İÇİN) --- */}
               <FeaturesSection lang={appLang} />
               <BlogSection lang={appLang} />
               <SeoContent country={selectedCountry} lang={appLang} />
               <FAQSection lang={appLang} />
               <Footer lang={appLang} />
-
               <div className="mt-12 mb-24"><AdSenseUnit slotId="footer-ad" label="Footer" style={{ height: '120px' }} /></div>
            </div>
         </main>
@@ -477,7 +349,7 @@ export default function App() {
          </div>
          <div className="w-1/3 flex justify-center gap-4 sm:gap-6 items-center">
              <button className="text-slate-500 hover:text-white transition"><SkipBack className="w-5 h-5"/></button>
-             <button onClick={() => { if (currentStation) { if (isPlaying) { audioRef.current.pause(); } else { if (audioRef.current.error || error) { audioRef.current.load(); } audioRef.current.play().catch(e => { console.error("Manual play error:", e); }); } } }} disabled={!currentStation || isBuffering} className={`w-12 h-12 rounded-full flex items-center justify-center transition shadow-lg ${!currentStation ? 'bg-slate-800 text-slate-600' : 'bg-indigo-600 text-white hover:scale-105 hover:bg-indigo-500'}`}>{isBuffering ? <Loader2 className="w-6 h-6 animate-spin"/> : (isPlaying ? <Pause className="w-5 h-5 fill-current"/> : <Play className="w-5 h-5 fill-current ml-1"/>)}</button>
+             <button onClick={() => { if (currentStation) { if (isPlaying) { audioRef.current.pause(); } else { if (audioRef.current.error) { audioRef.current.load(); } audioRef.current.play().catch(e => { console.error(e); }); } } }} disabled={!currentStation || isBuffering} className={`w-12 h-12 rounded-full flex items-center justify-center transition shadow-lg ${!currentStation ? 'bg-slate-800 text-slate-600' : 'bg-indigo-600 text-white hover:scale-105 hover:bg-indigo-500'}`}>{isBuffering ? <Loader2 className="w-6 h-6 animate-spin"/> : (isPlaying ? <Pause className="w-5 h-5 fill-current"/> : <Play className="w-5 h-5 fill-current ml-1"/>)}</button>
              <button className="text-slate-500 hover:text-white transition"><SkipForward className="w-5 h-5"/></button>
          </div>
          <div className="w-1/3 flex justify-end items-center gap-3"><button onClick={() => setVolume(v => v === 0 ? 0.8 : 0)} className="text-slate-400 hover:text-white transition hidden sm:block">{volume === 0 ? <VolumeX className="w-5 h-5"/> : <Volume2 className="w-5 h-5"/>}</button><input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} className="w-20 sm:w-28 h-1 bg-slate-700 rounded-full cursor-pointer accent-indigo-500" /></div>

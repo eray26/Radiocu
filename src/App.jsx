@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe as GlobeIcon, Radio, MapPin, Music, Wifi, AlertCircle, Sparkles, X, Bot, MessageSquare, Loader2, Activity, Zap, Waves, Menu, RefreshCw, Star, Info, Shield, FileText, Mail, HelpCircle, ChevronRight, BookOpen, Headphones, Signal, Smartphone, Lock, LogIn, Plus, Trash2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe as GlobeIcon, Radio, MapPin, Music, Wifi, AlertCircle, Sparkles, X, Bot, MessageSquare, Loader2, Activity, Zap, Waves, Menu, RefreshCw, Star, Info, Shield, FileText, Mail, HelpCircle, ChevronRight, BookOpen, Headphones, Signal, Smartphone, Lock, LogIn, Plus, Trash2, Settings, Ban, Flag } from 'lucide-react';
 
-// FIREBASE İMPORTLARI
+// FIREBASE İMPORTLARI (Tüm fonksiyonlar dahil)
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, updateDoc } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 
 // --- GLOBAL AYARLAR ---
@@ -32,94 +32,68 @@ try {
     console.warn("Firebase hatası:", e);
 }
 
-// --- SABİT LİSTELER (Yedek Veritabanı) ---
+// --- SABİT LİSTELER (Yedek) ---
 const VIP_STATIONS_DEFAULT = {
   TR: [
     { name: "Power Türk", url: "https://listen.powerapp.com.tr/powerturk/mpeg/icecast.audio", logo: "https://upload.wikimedia.org/wikipedia/commons/2/2b/Power_T%C3%BCrk_logo.svg", site: "https://powerapp.com.tr", tag: "pop,türkçe" },
     { name: "Power FM", url: "https://listen.powerapp.com.tr/powerfm/mpeg/icecast.audio", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Power_FM_logo.svg", site: "https://powerapp.com.tr", tag: "pop,hit" },
-    { name: "Metro FM", url: "https://playerservices.streamtheworld.com/api/livestream-redirect/METRO_FM_SC", logo: "https://upload.wikimedia.org/wikipedia/tr/f/f7/Metro_FM_logo.png", site: "https://karnaval.com", tag: "pop,yabancı" },
-    { name: "Süper FM", url: "https://playerservices.streamtheworld.com/api/livestream-redirect/SUPER_FM_SC", logo: "https://upload.wikimedia.org/wikipedia/tr/b/b5/S%C3%BCper_FM_logo.png", site: "https://karnaval.com", tag: "pop,türkçe" },
-    { name: "Joy Türk", url: "https://playerservices.streamtheworld.com/api/livestream-redirect/JOY_TURK_SC", logo: "https://upload.wikimedia.org/wikipedia/tr/0/09/Joy_FM_logo.png", site: "https://karnaval.com", tag: "slow,aşk" },
-    { name: "Kafa Radyo", url: "https://kafaradyo.live/kafaradyo/128/icecast.audio", logo: "https://kafaradyo.com/assets/img/logo.png", site: "https://kafaradyo.com", tag: "talk" },
-    { name: "Alem FM", url: "https://turkmedya.radyotvonline.net/alemfm", logo: "https://upload.wikimedia.org/wikipedia/tr/6/62/Alem_FM_logo.png", site: "https://alemfm.com", tag: "pop,türkçe" }
+    { name: "Metro FM", url: "https://playerservices.streamtheworld.com/api/livestream-redirect/METRO_FM_SC", logo: "https://upload.wikimedia.org/wikipedia/tr/f/f7/Metro_FM_logo.png", site: "https://karnaval.com", tag: "pop,yabancı" }
   ]
 };
+
+const DEFAULT_COUNTRIES = [
+  { code: 'TR', name: 'Türkiye', flag: '🇹🇷' }, 
+  { code: 'DE', name: 'Deutschland', flag: '🇩🇪' }, 
+  { code: 'US', name: 'USA', flag: '🇺🇸' },
+  { code: 'GB', name: 'UK', flag: '🇬🇧' }
+];
 
 const API_MIRRORS = ["https://at1.api.radio-browser.info", "https://de1.api.radio-browser.info"];
 const TRANSLATIONS = {
   TR: { code: "tr", admin: "Yönetici", addStation: "Radyo Ekle", logout: "Çıkış", login: "Giriş", email: "E-posta", pass: "Şifre", searchPlaceholder: "Radyo ara...", categories: "Kategoriler", allRadios: "Tüm Radyolar", btnLoad: "Yükleniyor...", live: "CANLI", paused: "DURAKLATILDI", stations: "İstasyon", locationDetected: "Konum Algılandı", footerRights: "Tüm Hakları Saklıdır.", errorMsg: "Liste alınamadı.", retry: "Tekrar Dene", playingError: "Yayın açılmadı.", seoTitle: "Canlı Radyo Dinle", seoDesc: "Kesintisiz radyo keyfi." },
   EN: { code: "en", admin: "Admin", addStation: "Add Station", logout: "Logout", login: "Login", email: "Email", pass: "Password", searchPlaceholder: "Search...", categories: "Genres", allRadios: "All Radios", btnLoad: "Loading...", live: "LIVE", paused: "PAUSED", stations: "Stations", locationDetected: "Location", footerRights: "All Rights Reserved.", errorMsg: "Failed load.", retry: "Retry", playingError: "Stream failed.", seoTitle: "Listen Live Radio", seoDesc: "Listen online radio." }
 };
-const COUNTRIES = [{ code: 'TR', name: 'Türkiye', flag: '🇹🇷' }, { code: 'DE', name: 'Deutschland', flag: '🇩🇪' }, { code: 'US', name: 'USA', flag: '🇺🇸' }, { code: 'GB', name: 'UK', flag: '🇬🇧' }, { code: 'FR', name: 'France', flag: '🇫🇷' }, { code: 'IT', name: 'Italia', flag: '🇮🇹' }, { code: 'ES', name: 'España', flag: '🇪🇸' }, { code: 'NL', name: 'Netherlands', flag: '🇳🇱' }, { code: 'BR', name: 'Brasil', flag: '🇧🇷' }, { code: 'AZ', name: 'Azerbaycan', flag: '🇦🇿' }];
 const GENRES = ['all', 'pop', 'rock', 'jazz', 'news', 'classical', 'dance', 'folk', 'rap', 'arabesque'];
 
 // --- BİLEŞENLER ---
 const BrandLogo = ({ className }) => (<div className={className}><svg viewBox="0 0 24 24" fill="none" className="w-full h-full"><rect width="24" height="24" rx="6" fill="url(#brand_grad)" /><path d="M7 7H11C13.2 7 15 8.8 15 11V11C15 13.2 13.2 15 11 15H7V7Z" stroke="white" strokeWidth="2"/><path d="M7 15L11.5 20" stroke="white" strokeWidth="2"/><defs><linearGradient id="brand_grad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stopColor="#4f46e5" /><stop offset="1" stopColor="#9333ea" /></linearGradient></defs></svg></div>);
-
 const StationLogo = ({ url, alt, homepage, className }) => {
   const [imgSrc, setImgSrc] = useState(url);
-  useEffect(() => { 
-    if (!url || url.startsWith('http://')) { 
-      if (homepage) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } 
-    } else { setImgSrc(url); } 
-  }, [url, homepage]);
+  useEffect(() => { if (!url || url.startsWith('http://')) { if (homepage) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } } else { setImgSrc(url); } }, [url, homepage]);
   return <img src={imgSrc} alt={alt} className={`object-contain bg-white/5 p-1 ${className}`} onError={() => { if (homepage && !imgSrc.includes('google.com')) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } }} loading="lazy" referrerPolicy="no-referrer" />;
 };
+const AdSenseUnit = ({ slotId }) => { useEffect(() => { if (IS_ADSENSE_LIVE && window.adsbygoogle) try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {} }, []); if (!IS_ADSENSE_LIVE) return <div className="w-full h-24 bg-slate-800/30 border border-dashed border-slate-700/50 flex items-center justify-center text-slate-500 text-xs">Reklam</div>; return <div className="ad-container my-4 flex justify-center"><ins className="adsbygoogle" style={{display:'block'}} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>; };
+const SeoContent = ({ country, lang, countriesList }) => { const cObj = countriesList.find(c => c.code === country); const cName = cObj ? cObj.name : country; const t = TRANSLATIONS[lang] || TRANSLATIONS['EN']; return (<div className="mt-12 mb-8 p-6 bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-sm"><h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><GlobeIcon className="w-5 h-5 text-indigo-500"/> {t.seoTitle} {cName}</h2><p>{t.seoDesc} {cName}.</p></div>); };
+const Footer = ({ onOpenAdmin }) => (<footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50"><div className="max-w-6xl mx-auto px-4 text-center"><p className="text-slate-500 text-xs mb-4">&copy; 2024 Radiocu.com</p><div className="flex justify-center gap-4 text-xs text-slate-500 mb-4"><a href="/hakkimizda.html" className="hover:text-white">Hakkımızda</a><a href="/gizlilik-politikasi.html" className="hover:text-white">Gizlilik</a><a href="mailto:info@radiocu.com" className="hover:text-white">İletişim</a></div><button onClick={onOpenAdmin} className="text-[10px] text-slate-700 hover:text-indigo-500 transition flex items-center justify-center gap-1 mx-auto"><Lock className="w-3 h-3"/> Yönetici Girişi</button></div></footer>);
 
-const AdSenseUnit = ({ slotId }) => { 
-  useEffect(() => { if (IS_ADSENSE_LIVE && window.adsbygoogle) try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {} }, []); 
-  if (!IS_ADSENSE_LIVE) return <div className="w-full h-24 bg-slate-800/30 border border-dashed border-slate-700/50 flex items-center justify-center text-slate-500 text-xs">Reklam</div>; 
-  return <div className="ad-container my-4 flex justify-center"><ins className="adsbygoogle" style={{display:'block'}} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>; 
-};
+// --- İÇERİK BÖLÜMÜ ---
+const FeaturesSection = () => (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 mb-12">{[{ icon: <Wifi className="w-6 h-6"/>, title: "Kesintisiz", desc: "Donmayan altyapı." }, { icon: <Headphones className="w-6 h-6"/>, title: "HD Kalite", desc: "Yüksek ses kalitesi." }, { icon: <GlobeIcon className="w-6 h-6"/>, title: "Global", desc: "Binlerce dünya radyosu." }, { icon: <Smartphone className="w-6 h-6"/>, title: "Mobil", desc: "%100 mobil uyumlu." }].map((f, i) => (<div key={i} className="p-5 bg-slate-800/30 border border-slate-700/50 rounded-xl flex flex-col items-center text-center hover:bg-slate-800/50 transition"><div className="mb-3 p-3 bg-indigo-500/10 rounded-full text-indigo-400">{f.icon}</div><h4 className="text-white font-bold mb-1">{f.title}</h4><p className="text-xs text-slate-400">{f.desc}</p></div>))}</div>);
+const BlogSection = () => (<div className="mt-12 mb-12"><h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><BookOpen className="w-5 h-5 text-indigo-500"/> Radyo Blog</h3><div className="grid grid-cols-1 md:grid-cols-3 gap-6">{[{ t: "Dijital Radyo", d: "24.11", c: "Radyolar artık dijital dünyada." }, { t: "Neden Online?", d: "20.11", c: "Cızırtı yok, internetin olduğu her yerde." }, { t: "Müzik ve Psikoloji", d: "15.11", c: "Müziğin insan üzerindeki etkisi." }].map((a, i) => (<div key={i} className="p-6 bg-slate-900/60 rounded-2xl border border-slate-800/60 hover:border-indigo-500/30 transition"><div className="text-xs text-indigo-400 mb-2 font-mono">{a.d}</div><h3 className="text-lg font-bold text-slate-200 mb-2">{a.t}</h3><p className="text-sm text-slate-500">{a.c}</p></div>))}</div></div>);
+const FAQSection = () => (<div className="mt-8 mb-12"><h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><HelpCircle className="w-5 h-5 text-indigo-500"/> Sıkça Sorulan Sorular</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{[{ q: "Ücretli mi?", a: "Hayır, tamamen ücretsizdir." }, { q: "Mobil uygulama?", a: "Mobil uyumludur." }].map((item, i) => (<div key={i} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 hover:bg-slate-800/50 transition"><h4 className="text-sm font-bold text-slate-200 mb-2">{item.q}</h4><p className="text-xs text-slate-400 leading-relaxed">{item.a}</p></div>))}</div></div>);
 
-// --- EKSİK OLAN İÇERİK BİLEŞENLERİ (HATAYI ÇÖZEN KISIM) ---
-const FeaturesSection = ({ lang }) => {
-    const content = {
-        TR: [ { icon: <Wifi className="w-6 h-6"/>, title: "Kesintisiz", desc: "Donmayan altyapı." }, { icon: <Headphones className="w-6 h-6"/>, title: "HD Kalite", desc: "Yüksek ses kalitesi." }, { icon: <GlobeIcon className="w-6 h-6"/>, title: "Global", desc: "Binlerce radyo." }, { icon: <Smartphone className="w-6 h-6"/>, title: "Mobil", desc: "%100 mobil uyumlu." } ],
-        EN: [ { icon: <Wifi className="w-6 h-6"/>, title: "Uninterrupted", desc: "Stable streaming." }, { icon: <Headphones className="w-6 h-6"/>, title: "High Quality", desc: "HD audio." }, { icon: <GlobeIcon className="w-6 h-6"/>, title: "Global", desc: "Thousands of stations." }, { icon: <Smartphone className="w-6 h-6"/>, title: "Mobile", desc: "Fully responsive." } ]
-    };
-    const features = content[lang] || content['EN'];
-    return (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 mb-12">{features.map((f, i) => (<div key={i} className="p-5 bg-slate-800/30 border border-slate-700/50 rounded-xl flex flex-col items-center text-center hover:bg-slate-800/50 transition"><div className="mb-3 p-3 bg-indigo-500/10 rounded-full text-indigo-400">{f.icon}</div><h4 className="text-white font-bold mb-1">{f.title}</h4><p className="text-xs text-slate-400">{f.desc}</p></div>))}</div>);
-};
-
-const BlogSection = ({ lang }) => {
-  const articles = {
-    TR: [ { title: "Dijital Radyo", date: "24.11", c: "Radyolar artık dijital dünyada." }, { title: "Neden Online?", d: "20.11", c: "Cızırtı yok, internetin olduğu her yerde." }, { title: "Müzik ve Psikoloji", d: "15.11", c: "Müziğin insan üzerindeki etkisi." }].map((a, i) => (<div key={i} className="p-6 bg-slate-900/60 rounded-2xl border border-slate-800/60 hover:border-indigo-500/30 transition"><div className="text-xs text-indigo-400 mb-2 font-mono">{a.d}</div><h3 className="text-lg font-bold text-slate-200 mb-2">{a.title}</h3><p className="text-sm text-slate-500">{a.c}</p></div>)),
-    EN: [ { title: "Digital Radio", date: "Nov 24", c: "Digital streams replace FM." }, { title: "Why Online?", d: "Nov 20", c: "CD-quality sound everywhere." }, { title: "Music & Mood", d: "Nov 15", c: "Music impacts psychology." }].map((a, i) => (<div key={i} className="p-6 bg-slate-900/60 rounded-2xl border border-slate-800/60 hover:border-indigo-500/30 transition"><div className="text-xs text-indigo-400 mb-2 font-mono">{a.date}</div><h3 className="text-lg font-bold text-slate-200 mb-2">{a.title}</h3><p className="text-sm text-slate-500">{a.c}</p></div>))
-  };
-  return (<div className="mt-12 mb-12"><h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><BookOpen className="w-5 h-5 text-indigo-500"/> Blog</h3><div className="grid grid-cols-1 md:grid-cols-3 gap-6">{articles[lang] || articles['EN']}</div></div>);
-};
-
-const FAQSection = ({ lang }) => {
-  const faqs = {
-    TR: [ { q: "Ücretli mi?", a: "Hayır, tamamen ücretsizdir." }, { q: "Mobil uygulama?", a: "Mobil uyumludur." } ],
-    EN: [ { q: "Is it free?", a: "Yes, completely free." }, { q: "Mobile app?", a: "Mobile ready." } ]
-  };
-  const list = faqs[lang] || faqs['EN'];
-  return (<div className="mt-8 mb-12"><h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><HelpCircle className="w-5 h-5 text-indigo-500"/> Sıkça Sorulan Sorular</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{list.map((item, i) => (<div key={i} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 hover:bg-slate-800/50 transition"><h4 className="text-sm font-bold text-slate-200 mb-2">{item.q}</h4><p className="text-xs text-slate-400 leading-relaxed">{item.a}</p></div>))}</div></div>);
-};
-
-const SeoContent = ({ country, lang }) => { const cName = COUNTRIES.find(c => c.code === country)?.name || country; const t = TRANSLATIONS[lang] || TRANSLATIONS['EN']; return (<div className="mt-12 mb-8 p-6 bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-sm"><h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><GlobeIcon className="w-5 h-5 text-indigo-500"/> {t.seoTitle} {cName}</h2><p>{t.seoDesc} {cName}.</p></div>); };
-
-const Footer = ({ onOpenAdmin, lang }) => {
-    return (<footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50"><div className="max-w-6xl mx-auto px-4 text-center"><p className="text-slate-500 text-xs mb-4">&copy; 2024 Radiocu.com</p><div className="flex justify-center gap-4 text-xs text-slate-500 mb-4"><a href="/hakkimizda.html" className="hover:text-white">Hakkımızda</a><a href="/gizlilik-politikasi.html" className="hover:text-white">Gizlilik</a><a href="mailto:info@radiocu.com" className="hover:text-white">İletişim</a></div><button onClick={onOpenAdmin} className="text-[10px] text-slate-700 hover:text-indigo-500 transition flex items-center justify-center gap-1 mx-auto"><Lock className="w-3 h-3"/> Yönetici Girişi</button></div></footer>);
-};
-
-// --- ADMİN PANELİ ---
-const AdminModal = ({ isOpen, onClose, user }) => {
+// --- ADMİN PANELİ MODALI ---
+const AdminModal = ({ isOpen, onClose, user, countries, setCountries }) => {
+    const [activeTab, setActiveTab] = useState('stations');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    
+    // Radyo State
     const [newStation, setNewStation] = useState({ name: '', url: '', logo: '', country: 'TR', tag: '' });
     const [dbStations, setDbStations] = useState([]);
+    
+    // Ülke State
+    const [newCountry, setNewCountry] = useState({ code: '', name: '', flag: '' });
+    
     const [msg, setMsg] = useState('');
+    const [editingId, setEditingId] = useState(null);
 
     useEffect(() => {
         if (user && isOpen && db) {
             const fetchDb = async () => {
                 try {
                     const q = query(collection(db, "stations"));
-                    const querySnapshot = await getDocs(q);
-                    setDbStations(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                    const snap = await getDocs(q);
+                    setDbStations(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
                 } catch(e) { console.error(e); }
             };
             fetchDb();
@@ -131,25 +105,51 @@ const AdminModal = ({ isOpen, onClose, user }) => {
         try { await signInWithEmailAndPassword(auth, email, password); setMsg(""); } catch (error) { setMsg("Giriş başarısız."); }
     };
 
-    const handleAdd = async (e) => {
+    const handleStationSubmit = async (e) => {
         e.preventDefault();
-        if (!newStation.name || !newStation.url) return;
         try {
-            await addDoc(collection(db, "stations"), newStation);
-            setMsg("Eklendi!");
+            if (editingId) {
+                await updateDoc(doc(db, "stations", editingId), newStation);
+                setMsg("Güncellendi.");
+            } else {
+                await addDoc(collection(db, "stations"), newStation);
+                setMsg("Eklendi.");
+            }
             setNewStation({ name: '', url: '', logo: '', country: 'TR', tag: '' });
-        } catch (e) { setMsg("Hata."); }
+            setEditingId(null);
+        } catch (e) { setMsg("Hata: " + e.message); }
     };
 
-    const handleDelete = async (id) => {
+    const handleStationDelete = async (id) => {
         if(window.confirm("Silinsin mi?")) { await deleteDoc(doc(db, "stations", id)); setMsg("Silindi."); }
+    };
+
+    const handleStationEdit = (s) => {
+        setNewStation(s);
+        setEditingId(s.id);
+    };
+
+    const handleCountrySubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await addDoc(collection(db, "countries"), newCountry);
+            setMsg("Ülke eklendi!");
+            setNewCountry({ code: '', name: '', flag: '' });
+        } catch (e) { setMsg("Hata: " + e.message); }
+    };
+
+    const handleCountryDelete = async (id) => {
+        if(window.confirm("Emin misiniz?")) {
+            await deleteDoc(doc(db, "countries", id));
+            setMsg("Ülke silindi.");
+        }
     };
 
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-lg relative">
+            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-lg relative max-h-[90vh] overflow-y-auto custom-scrollbar">
                 <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X/></button>
                 <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Shield className="text-indigo-500"/> Yönetici Paneli</h2>
                 
@@ -162,28 +162,69 @@ const AdminModal = ({ isOpen, onClose, user }) => {
                     </form>
                 ) : (
                     <div className="space-y-6">
-                        <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-                            <h3 className="text-sm font-bold text-white mb-3 flex gap-2"><Plus className="w-4 h-4"/> Yeni Radyo Ekle</h3>
-                            <form onSubmit={handleAdd} className="space-y-3">
-                                <div className="grid grid-cols-2 gap-3">
-                                    <input type="text" placeholder="Ad" className="bg-slate-900 p-2 rounded text-white text-sm border border-slate-700" value={newStation.name} onChange={e=>setNewStation({...newStation, name: e.target.value})} required/>
-                                    <select className="bg-slate-900 p-2 rounded text-white text-sm border border-slate-700" value={newStation.country} onChange={e=>setNewStation({...newStation, country: e.target.value})}>{COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}</select>
-                                </div>
-                                <input type="url" placeholder="Yayın Linki (HTTPS)" className="w-full bg-slate-900 p-2 rounded text-white text-sm border border-slate-700" value={newStation.url} onChange={e=>setNewStation({...newStation, url: e.target.value})} required/>
-                                <input type="url" placeholder="Logo" className="w-full bg-slate-900 p-2 rounded text-white text-sm border border-slate-700" value={newStation.logo} onChange={e=>setNewStation({...newStation, logo: e.target.value})} />
-                                <button type="submit" className="w-full bg-green-600 hover:bg-green-500 text-white p-2 rounded text-sm font-bold">Kaydet</button>
-                            </form>
-                            {msg && <p className="text-green-400 text-xs mt-2 text-center">{msg}</p>}
+                        <div className="flex border-b border-slate-700">
+                            <button onClick={() => setActiveTab('stations')} className={`flex-1 pb-2 text-sm font-bold ${activeTab === 'stations' ? 'text-indigo-400 border-b-2 border-indigo-400' : 'text-slate-500'}`}>Radyolar</button>
+                            <button onClick={() => setActiveTab('countries')} className={`flex-1 pb-2 text-sm font-bold ${activeTab === 'countries' ? 'text-indigo-400 border-b-2 border-indigo-400' : 'text-slate-500'}`}>Ülkeler</button>
                         </div>
-                        <div className="max-h-60 overflow-y-auto custom-scrollbar">
-                            <h3 className="text-xs font-bold text-slate-500 uppercase mb-2">Veritabanı</h3>
-                            {dbStations.map(s => (
-                                <div key={s.id} className="flex justify-between items-center p-2 hover:bg-slate-800 rounded border-b border-slate-800/50">
-                                    <span className="text-sm text-white">{s.name} ({s.country})</span>
-                                    <button onClick={() => handleDelete(s.id)} className="text-red-400 hover:text-red-300"><Trash2 className="w-4 h-4"/></button>
+
+                        {activeTab === 'stations' && (
+                            <>
+                                <div className={`p-4 rounded-xl border ${editingId ? 'bg-indigo-900/20 border-indigo-500/50' : 'bg-slate-800/50 border-slate-700'}`}>
+                                    <h3 className="text-sm font-bold text-white mb-3">{editingId ? "Düzenle" : "Yeni Ekle"}</h3>
+                                    <form onSubmit={handleStationSubmit} className="space-y-3">
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <input type="text" placeholder="Ad" className="bg-slate-900 p-2 rounded text-white text-sm border border-slate-700" value={newStation.name} onChange={e=>setNewStation({...newStation, name: e.target.value})} required/>
+                                            <select className="bg-slate-900 p-2 rounded text-white text-sm border border-slate-700" value={newStation.country} onChange={e=>setNewStation({...newStation, country: e.target.value})}>
+                                                {countries.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                                            </select>
+                                        </div>
+                                        <input type="url" placeholder="Yayın Linki (HTTPS)" className="w-full bg-slate-900 p-2 rounded text-white text-sm border border-slate-700" value={newStation.url} onChange={e=>setNewStation({...newStation, url: e.target.value})} required/>
+                                        <input type="url" placeholder="Logo Linki" className="w-full bg-slate-900 p-2 rounded text-white text-sm border border-slate-700" value={newStation.logo} onChange={e=>setNewStation({...newStation, logo: e.target.value})} />
+                                        <div className="flex gap-2">
+                                            <button type="submit" className="flex-1 bg-green-600 hover:bg-green-500 text-white p-2 rounded text-sm font-bold">{editingId ? "Güncelle" : "Kaydet"}</button>
+                                            {editingId && <button type="button" onClick={() => {setEditingId(null); setNewStation({ name: '', url: '', logo: '', country: 'TR', tag: '' })}} className="px-3 bg-slate-700 text-white rounded"><Ban className="w-4 h-4"/></button>}
+                                        </div>
+                                    </form>
                                 </div>
-                            ))}
-                        </div>
+                                <div className="max-h-40 overflow-y-auto custom-scrollbar">
+                                    {dbStations.map(s => (
+                                        <div key={s.id} className="flex justify-between items-center p-2 hover:bg-slate-800 rounded border-b border-slate-800/50 group">
+                                            <span className="text-xs text-white truncate w-2/3">{s.name} ({s.country})</span>
+                                            <div className="flex gap-1 opacity-60 group-hover:opacity-100">
+                                                <button onClick={() => handleStationEdit(s)} className="p-1 text-yellow-400 hover:bg-slate-700 rounded"><Settings className="w-3 h-3"/></button>
+                                                <button onClick={() => handleStationDelete(s.id)} className="p-1 text-red-400 hover:bg-slate-700 rounded"><Trash2 className="w-3 h-3"/></button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+
+                        {activeTab === 'countries' && (
+                            <>
+                                <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                                    <h3 className="text-sm font-bold text-white mb-3">Yeni Ülke</h3>
+                                    <form onSubmit={handleCountrySubmit} className="space-y-3">
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <input type="text" placeholder="Kod (FR)" className="bg-slate-900 p-2 rounded text-white text-sm border border-slate-700" value={newCountry.code} onChange={e=>setNewCountry({...newCountry, code: e.target.value.toUpperCase()})} required maxLength={2}/>
+                                            <input type="text" placeholder="Ad" className="bg-slate-900 p-2 rounded text-white text-sm border border-slate-700 col-span-2" value={newCountry.name} onChange={e=>setNewCountry({...newCountry, name: e.target.value})} required/>
+                                        </div>
+                                        <input type="text" placeholder="Bayrak (🇫🇷)" className="w-full bg-slate-900 p-2 rounded text-white text-sm border border-slate-700" value={newCountry.flag} onChange={e=>setNewCountry({...newCountry, flag: e.target.value})} required/>
+                                        <button type="submit" className="w-full bg-green-600 hover:bg-green-500 text-white p-2 rounded text-sm font-bold">Ekle</button>
+                                    </form>
+                                </div>
+                                <div className="max-h-40 overflow-y-auto custom-scrollbar">
+                                    {countries.map(c => (
+                                        <div key={c.id || c.code} className="flex justify-between items-center p-2 hover:bg-slate-800 rounded border-b border-slate-800/50">
+                                            <span className="text-xs text-white">{c.flag} {c.name} ({c.code})</span>
+                                            {c.id && <button onClick={() => handleCountryDelete(c.id)} className="text-red-400 hover:bg-slate-700 p-1 rounded"><Trash2 className="w-3 h-3"/></button>}
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                        
+                        {msg && <p className="text-green-400 text-xs text-center">{msg}</p>}
                         <button onClick={() => signOut(auth)} className="w-full p-2 text-slate-500 hover:text-white text-sm">Çıkış</button>
                     </div>
                 )}
@@ -194,6 +235,9 @@ const AdminModal = ({ isOpen, onClose, user }) => {
 
 // --- APP ---
 export default function App() {
+  // ÜLKELER STATE'İ (Firebase'den de çekecek)
+  const [countriesList, setCountriesList] = useState(DEFAULT_COUNTRIES);
+
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCountry, setSelectedCountry] = useState('TR');
@@ -216,6 +260,25 @@ export default function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => { if(auth) return onAuthStateChanged(auth, (u) => setUser(u)); }, []);
+
+  // --- ÜLKELERİ GETİR ---
+  useEffect(() => {
+    const fetchCountries = async () => {
+        if(db) {
+            try {
+                const q = query(collection(db, "countries"), orderBy("name"));
+                const snapshot = await getDocs(q);
+                if(!snapshot.empty) {
+                    const dynamicCountries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    // Varsayılanlarla birleştir, çakışmayı önle
+                    const combined = [...DEFAULT_COUNTRIES, ...dynamicCountries.filter(dc => !DEFAULT_COUNTRIES.some(def => def.code === dc.code))];
+                    setCountriesList(combined);
+                }
+            } catch(e) { console.error("Ülke çekme hatası", e); }
+        }
+    };
+    fetchCountries();
+  }, [showAdmin]); // Admin kapanınca listeyi güncelle
 
   const fetchWithFailover = async (countryCode) => {
     setLoading(true); setError(null);
@@ -267,7 +330,7 @@ export default function App() {
         const data = await res.json();
         if (data?.country_code) {
           const code = data.country_code;
-          if (COUNTRIES.find(c => c.code === code)) { setSelectedCountry(code); setAutoLocated(true); }
+          if (countriesList.find(c => c.code === code)) { setSelectedCountry(code); setAutoLocated(true); }
           if (TRANSLATIONS[code]) setAppLang(code);
         }
       } catch (e) {}
@@ -280,7 +343,7 @@ export default function App() {
     const onError = () => { setIsBuffering(false); setIsPlaying(false); setError(t.playingError); };
     audio.addEventListener('waiting', onWaiting); audio.addEventListener('playing', onPlaying); audio.addEventListener('pause', onPause); audio.addEventListener('error', onError);
     return () => { audio.removeEventListener('waiting', onWaiting); audio.removeEventListener('playing', onPlaying); audio.removeEventListener('pause', onPause); audio.removeEventListener('error', onError); };
-  }, []); 
+  }, [countriesList]); 
 
   useEffect(() => { fetchWithFailover(selectedCountry); }, [selectedCountry]);
 
@@ -316,12 +379,12 @@ export default function App() {
         <div className="hidden md:flex flex-1 max-w-md mx-6"><div className={`flex items-center w-full ${theme.bgCard} rounded-lg px-4 py-2 border ${theme.border} focus-within:border-indigo-500/50 transition-colors`}><Search className="text-slate-500 w-4 h-4 mr-2" /><input type="text" placeholder={t.searchPlaceholder} className="bg-transparent w-full border-none outline-none text-sm text-white placeholder-slate-500" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div></div>
         <div className="flex items-center gap-2">
             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-2 text-slate-400 hover:text-white"><Menu/></button>
-            <div className={`hidden md:flex items-center gap-2 ${theme.bgCard} px-3 py-1.5 rounded-lg border ${theme.border}`}><MapPin className={`w-4 h-4 ${autoLocated ? theme.textAccent : 'text-slate-500'}`} /><select value={selectedCountry} onChange={(e) => { setSelectedCountry(e.target.value); setAutoLocated(false); }} className="bg-transparent outline-none text-sm font-medium cursor-pointer text-slate-300 max-w-[100px]">{COUNTRIES.map(c => <option key={c.code} value={c.code} className="bg-slate-900">{c.flag} {c.name}</option>)}</select></div>
+            <div className={`hidden md:flex items-center gap-2 ${theme.bgCard} px-3 py-1.5 rounded-lg border ${theme.border}`}><MapPin className={`w-4 h-4 ${autoLocated ? theme.textAccent : 'text-slate-500'}`} /><select value={selectedCountry} onChange={(e) => { setSelectedCountry(e.target.value); setAutoLocated(false); }} className="bg-transparent outline-none text-sm font-medium cursor-pointer text-slate-300 max-w-[100px]">{countriesList.map(c => <option key={c.code} value={c.code} className="bg-slate-900">{c.flag} {c.name}</option>)}</select></div>
             <div className="hidden md:flex items-center justify-center w-8 h-8 bg-slate-800 rounded text-xs font-bold text-slate-400 border border-slate-700 uppercase" title="Language">{appLang}</div>
         </div>
       </header>
       
-      {mobileMenuOpen && (<div className="absolute top-16 left-0 w-full bg-slate-900 border-b border-slate-800 z-20 p-4 md:hidden animate-in slide-in-from-top-2"><div className="mb-4"><select value={selectedCountry} onChange={(e) => { setSelectedCountry(e.target.value); setMobileMenuOpen(false); }} className="w-full bg-slate-800 p-3 rounded-lg text-white border border-slate-700">{COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name}</option>)}</select></div></div>)}
+      {mobileMenuOpen && (<div className="absolute top-16 left-0 w-full bg-slate-900 border-b border-slate-800 z-20 p-4 md:hidden animate-in slide-in-from-top-2"><div className="mb-4"><select value={selectedCountry} onChange={(e) => { setSelectedCountry(e.target.value); setMobileMenuOpen(false); }} className="w-full bg-slate-800 p-3 rounded-lg text-white border border-slate-700">{countriesList.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name}</option>)}</select></div></div>)}
 
       <div className="flex flex-1 overflow-hidden relative">
         <aside className={`w-64 ${theme.bgPanel} border-r ${theme.border} hidden md:flex flex-col backdrop-blur-xl`}>
@@ -331,7 +394,7 @@ export default function App() {
         <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-40">
            <div className="max-w-6xl mx-auto">
               <AdSenseUnit slotId="header-ad" />
-              <div className="mb-6 mt-6 border-b border-white/5 pb-4"><div className="flex flex-col md:flex-row md:items-center justify-between gap-4"><div><h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3"><span className="text-3xl">{COUNTRIES.find(c => c.code === selectedCountry)?.flag}</span>{COUNTRIES.find(c => c.code === selectedCountry)?.name}</h1><p className="text-sm text-slate-400 mt-2 flex items-center gap-2">{autoLocated && <span className="bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded text-xs border border-indigo-500/20 flex items-center gap-1"><Zap className="w-3 h-3"/> {t.locationDetected}</span>}<span className="bg-slate-800 px-2 py-0.5 rounded text-xs border border-slate-700">{filteredStations.length} {t.stations}</span></p></div><button onClick={() => fetchWithFailover(selectedCountry)} className="p-2 bg-slate-800 rounded-full text-slate-400 hover:text-white hover:bg-slate-700 transition self-end md:self-auto"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button></div></div>
+              <div className="mb-6 mt-6 border-b border-white/5 pb-4"><div className="flex flex-col md:flex-row md:items-center justify-between gap-4"><div><h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3"><span className="text-3xl">{countriesList.find(c => c.code === selectedCountry)?.flag}</span>{countriesList.find(c => c.code === selectedCountry)?.name}</h1><p className="text-sm text-slate-400 mt-2 flex items-center gap-2">{autoLocated && <span className="bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded text-xs border border-indigo-500/20 flex items-center gap-1"><Zap className="w-3 h-3"/> {t.locationDetected}</span>}<span className="bg-slate-800 px-2 py-0.5 rounded text-xs border border-slate-700">{filteredStations.length} {t.stations}</span></p></div><button onClick={() => fetchWithFailover(selectedCountry)} className="p-2 bg-slate-800 rounded-full text-slate-400 hover:text-white hover:bg-slate-700 transition self-end md:self-auto"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button></div></div>
               <div className="md:hidden mb-6"><div className={`flex items-center w-full ${theme.bgCard} rounded-lg px-4 py-3 border ${theme.border}`}><Search className="text-slate-500 w-4 h-4 mr-2" /><input type="text" placeholder={t.searchPlaceholder} className="bg-transparent w-full border-none outline-none text-sm text-white placeholder-slate-500" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div></div>
               {error && (<div className="mb-6 p-6 bg-red-500/10 border border-red-500/20 rounded-xl flex flex-col items-center justify-center text-center gap-3 animate-in fade-in"><AlertCircle className="w-8 h-8 text-red-400" /><p className="text-red-200 text-sm">{error}</p><button onClick={() => fetchWithFailover(selectedCountry)} className="mt-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-200 rounded-lg text-sm transition flex items-center gap-2"><RefreshCw className="w-4 h-4"/> {t.retry}</button></div>)}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -352,15 +415,15 @@ export default function App() {
               </div>
               <FeaturesSection lang={appLang} />
               <BlogSection lang={appLang} />
-              <SeoContent country={selectedCountry} lang={appLang} />
+              <SeoContent country={selectedCountry} lang={appLang} countriesList={countriesList} />
               <FAQSection lang={appLang} />
-              <Footer onOpenAdmin={() => setShowAdmin(true)} lang={appLang} />
+              <Footer onOpenAdmin={() => setShowAdmin(true)} />
               <div className="mt-12 mb-24"><AdSenseUnit slotId="footer-ad" /></div>
            </div>
         </main>
         
-        {/* --- ADMİN MODALI --- */}
-        <AdminModal isOpen={showAdmin} onClose={() => setShowAdmin(false)} user={user} />
+        {/* --- ADMİN MODALI (ÜLKELERİ DE YÖNETİR) --- */}
+        <AdminModal isOpen={showAdmin} onClose={() => setShowAdmin(false)} user={user} countries={countriesList} setCountries={setCountriesList} />
       </div>
       <div className={`h-24 ${theme.bgPanel} border-t ${theme.border} fixed bottom-0 w-full flex items-center px-4 md:px-8 z-40 shadow-[0_-5px_30px_rgba(0,0,0,0.5)]`}>
          <div className="w-1/3 flex items-center gap-4">

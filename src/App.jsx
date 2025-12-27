@@ -11,7 +11,7 @@ const GOOGLE_AD_CLIENT_ID = "ca-pub-3676498147737928";
 const IS_ADSENSE_LIVE = true; 
 const apiKey = ""; 
 
-// --- FIREBASE AYARLARI (SENİN BİLGİLERİNLE GÜNCELLENDİ) ---
+// --- FIREBASE AYARLARI ---
 const firebaseConfig = {
   apiKey: "AIzaSyC2D7XXawsp9QapGKZx86QO2sdbvqhwVow",
   authDomain: "radiocu-5be49.firebaseapp.com",
@@ -32,6 +32,52 @@ try {
     console.warn("Firebase başlatılamadı:", e);
 }
 
+// --- YENİ: PAKETSİZ 3D DÜNYA HARİTASI (Saf CSS) ---
+const WorldMapModal = ({ isOpen, onClose, onSelectCountry, countries }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm animate-in fade-in duration-300 flex flex-col items-center justify-center p-4">
+      <button onClick={onClose} className="absolute top-6 right-6 z-50 p-3 bg-slate-800 rounded-full text-white hover:bg-red-600 transition border border-white/10 shadow-xl">
+        <X className="w-6 h-6"/>
+      </button>
+      
+      <div className="flex flex-col md:flex-row items-center gap-12 w-full max-w-5xl">
+         {/* Sol: CSS Animasyonlu Dünya */}
+         <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="relative group cursor-pointer">
+                <div className="absolute inset-0 rounded-full bg-blue-500/20 blur-3xl group-hover:bg-indigo-500/30 transition duration-1000"></div>
+                <div className="w-64 h-64 md:w-80 md:h-80 rounded-full bg-[#000510] border-2 border-indigo-500/30 shadow-[inset_20px_0_50px_rgba(0,0,0,0.9),0_0_20px_rgba(79,70,229,0.4)] relative overflow-hidden flex items-center justify-center group-hover:scale-105 transition duration-700">
+                    <div className="absolute inset-0 opacity-60 bg-[url('https://upload.wikimedia.org/wikipedia/commons/8/83/Equirectangular_projection_SW.jpg')] bg-cover animate-[spinEarth_20s_linear_infinite] group-hover:animate-none" style={{backgroundSize: '200% 100%'}}></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-black/80 pointer-events-none"></div>
+                    <Compass className="w-16 h-16 text-white/20 animate-pulse relative z-10" />
+                </div>
+            </div>
+            <h3 className="mt-8 text-2xl font-bold text-white flex items-center gap-2"><GlobeIcon className="w-6 h-6 text-indigo-500"/> Dünya Turu</h3>
+            <p className="text-slate-400 text-sm mt-2 text-center max-w-xs">Bir ülke seçin ve oranın ritmini keşfedin.</p>
+         </div>
+
+         {/* Sağ: Ülke Listesi */}
+         <div className="flex-1 w-full max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+               {countries.map((c) => (
+                  <button 
+                    key={c.code}
+                    onClick={() => { onSelectCountry(c.code); onClose(); }}
+                    className="p-4 bg-slate-900 border border-slate-700 rounded-xl hover:bg-indigo-900/40 hover:border-indigo-500 transition text-left flex flex-col gap-2 group"
+                  >
+                     <span className="text-3xl filter grayscale group-hover:grayscale-0 transition">{c.flag}</span>
+                     <span className="text-slate-300 font-medium text-sm group-hover:text-white">{c.name}</span>
+                  </button>
+               ))}
+            </div>
+         </div>
+      </div>
+      <style>{`@keyframes spinEarth { from { background-position: 0 0; } to { background-position: -200% 0; } }`}</style>
+    </div>
+  );
+};
+
 // --- SABİT VIP LİSTE (Yedek) ---
 const VIP_STATIONS_DEFAULT = {
   TR: [
@@ -40,12 +86,12 @@ const VIP_STATIONS_DEFAULT = {
   ]
 };
 
-const API_MIRRORS = ["https://at1.api.radio-browser.info", "https://de1.api.radio-browser.info"];
+const API_MIRRORS = ["https://at1.api.radio-browser.info", "https://de1.api.radio-browser.info", "https://nl1.api.radio-browser.info"];
 const TRANSLATIONS = {
-  TR: { code: "tr", admin: "Yönetici", addStation: "Radyo Ekle", logout: "Çıkış", login: "Giriş", email: "E-posta", pass: "Şifre", searchPlaceholder: "Radyo ara...", categories: "Kategoriler", allRadios: "Tüm Radyolar", btnLoad: "Yükleniyor...", live: "CANLI", paused: "DURAKLATILDI", stations: "İstasyon", locationDetected: "Konum Algılandı", footerRights: "Tüm Hakları Saklıdır.", errorMsg: "Liste alınamadı.", retry: "Tekrar Dene", playingError: "Yayın açılmadı.", seoTitle: "Canlı Radyo Dinle", seoDesc: "Kesintisiz radyo keyfi." },
-  EN: { code: "en", admin: "Admin", addStation: "Add Station", logout: "Logout", login: "Login", email: "Email", pass: "Password", searchPlaceholder: "Search...", categories: "Genres", allRadios: "All Radios", btnLoad: "Loading...", live: "LIVE", paused: "PAUSED", stations: "Stations", locationDetected: "Location", footerRights: "All Rights Reserved.", errorMsg: "Failed load.", retry: "Retry", playingError: "Stream failed.", seoTitle: "Listen Live Radio", seoDesc: "Listen online radio." }
+  TR: { code: "tr", mapBtn: "Dünya Turu", admin: "Yönetici", addStation: "Radyo Ekle", logout: "Çıkış", login: "Giriş", email: "E-posta", pass: "Şifre", searchPlaceholder: "Radyo ara...", categories: "Kategoriler", allRadios: "Tüm Radyolar", btnLoad: "Yükleniyor...", live: "CANLI", paused: "DURAKLATILDI", stations: "İstasyon", locationDetected: "Konum Algılandı", footerRights: "Tüm Hakları Saklıdır.", errorMsg: "Liste alınamadı.", retry: "Tekrar Dene", playingError: "Yayın açılmadı.", seoTitle: "Canlı Radyo Dinle", seoDesc: "Kesintisiz radyo keyfi." },
+  EN: { code: "en", mapBtn: "World Map", admin: "Admin", addStation: "Add Station", logout: "Logout", login: "Login", email: "Email", pass: "Password", searchPlaceholder: "Search...", categories: "Genres", allRadios: "All Radios", btnLoad: "Loading...", live: "LIVE", paused: "PAUSED", stations: "Stations", locationDetected: "Location", footerRights: "All Rights Reserved.", errorMsg: "Failed load.", retry: "Retry", playingError: "Stream failed.", seoTitle: "Listen Live Radio", seoDesc: "Listen online radio." }
 };
-const COUNTRIES = [{ code: 'TR', name: 'Türkiye', flag: '🇹🇷' }, { code: 'DE', name: 'Deutschland', flag: '🇩🇪' }, { code: 'US', name: 'USA', flag: '🇺🇸' }, { code: 'GB', name: 'UK', flag: '🇬🇧' }];
+const COUNTRIES = [{ code: 'TR', name: 'Türkiye', flag: '🇹🇷' }, { code: 'DE', name: 'Deutschland', flag: '🇩🇪' }, { code: 'US', name: 'USA', flag: '🇺🇸' }, { code: 'GB', name: 'UK', flag: '🇬🇧' }, { code: 'FR', name: 'France', flag: '🇫🇷' }, { code: 'IT', name: 'Italia', flag: '🇮🇹' }, { code: 'ES', name: 'España', flag: '🇪🇸' }, { code: 'NL', name: 'Netherlands', flag: '🇳🇱' }, { code: 'BR', name: 'Brasil', flag: '🇧🇷' }, { code: 'AZ', name: 'Azerbaycan', flag: '🇦🇿' }];
 const GENRES = ['all', 'pop', 'rock', 'jazz', 'news', 'classical', 'dance', 'folk', 'rap', 'arabesque'];
 
 // --- BİLEŞENLER ---
@@ -56,8 +102,52 @@ const StationLogo = ({ url, alt, homepage, className }) => {
   return <img src={imgSrc} alt={alt} className={`object-contain bg-white/5 p-1 ${className}`} onError={() => { if (homepage && !imgSrc.includes('google.com')) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } }} loading="lazy" referrerPolicy="no-referrer" />;
 };
 const AdSenseUnit = ({ slotId }) => { useEffect(() => { if (IS_ADSENSE_LIVE && window.adsbygoogle) try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {} }, []); if (!IS_ADSENSE_LIVE) return <div className="w-full h-24 bg-slate-800/30 border border-dashed border-slate-700/50 flex items-center justify-center text-slate-500 text-xs">Reklam</div>; return <div className="ad-container my-4 flex justify-center"><ins className="adsbygoogle" style={{display:'block'}} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>; };
+
+const FeaturesSection = ({ lang }) => (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 mb-12">{[{ icon: <Wifi className="w-6 h-6"/>, title: "Kesintisiz", desc: "Donmayan altyapı." }, { icon: <Headphones className="w-6 h-6"/>, title: "HD Kalite", desc: "Yüksek ses kalitesi." }, { icon: <GlobeIcon className="w-6 h-6"/>, title: "Global", desc: "Binlerce dünya radyosu." }, { icon: <Smartphone className="w-6 h-6"/>, title: "Mobil", desc: "%100 mobil uyumlu." }].map((f, i) => (<div key={i} className="p-5 bg-slate-800/30 border border-slate-700/50 rounded-xl flex flex-col items-center text-center hover:bg-slate-800/50 transition"><div className="mb-3 p-3 bg-indigo-500/10 rounded-full text-indigo-400">{f.icon}</div><h4 className="text-white font-bold mb-1">{f.title}</h4><p className="text-xs text-slate-400">{f.desc}</p></div>))}</div>);
+const BlogSection = ({ lang }) => (<div className="mt-12 mb-12"><h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><BookOpen className="w-5 h-5 text-indigo-500"/> Blog</h3><div className="grid grid-cols-1 md:grid-cols-3 gap-6">{[{ t: "Dijital Radyo", d: "24.11", c: "Radyolar artık dijital dünyada sınır tanımıyor." }, { t: "Neden Online?", d: "20.11", c: "Cızırtı yok, internetin olduğu her yerde müzik." }, { t: "Müzik Ruhun Gıdası", d: "15.11", c: "Müziğin psikolojiye etkileri bilimseldir." }].map((a, i) => (<div key={i} className="p-6 bg-slate-900/60 rounded-2xl border border-slate-800/60 hover:border-indigo-500/30 transition group"><div className="text-xs text-indigo-400 mb-2 font-mono">{a.d}</div><h3 className="text-lg font-bold text-slate-200 mb-2">{a.t}</h3><p className="text-sm text-slate-500">{a.c}</p></div>))}</div></div>);
+const FAQSection = ({ lang }) => (<div className="mt-8 mb-12"><h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><HelpCircle className="w-5 h-5 text-indigo-500"/> Sıkça Sorulan Sorular</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{[{ q: "Ücretli mi?", a: "Hayır, tamamen ücretsizdir." }, { q: "Mobil uygulama?", a: "Mobil uyumludur." }].map((item, i) => (<div key={i} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 hover:bg-slate-800/50 transition"><h4 className="text-sm font-bold text-slate-200 mb-2">{item.q}</h4><p className="text-xs text-slate-400 leading-relaxed">{item.a}</p></div>))}</div></div>);
+
 const SeoContent = ({ country, lang }) => { const cName = COUNTRIES.find(c => c.code === country)?.name || country; const t = TRANSLATIONS[lang] || TRANSLATIONS['EN']; return (<div className="mt-12 mb-8 p-6 bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-sm"><h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><GlobeIcon className="w-5 h-5 text-indigo-500"/> {t.seoTitle} {cName}</h2><p>{t.seoDesc} {cName}.</p></div>); };
-const Footer = ({ onOpenAdmin }) => (<footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50"><div className="max-w-6xl mx-auto px-4 text-center"><p className="text-slate-500 text-xs mb-4">&copy; 2024 Radiocu.com</p><button onClick={onOpenAdmin} className="text-[10px] text-slate-700 hover:text-indigo-500 transition flex items-center justify-center gap-1 mx-auto"><Lock className="w-3 h-3"/> Yönetici Girişi</button></div></footer>);
+
+// --- GÜNCELLENMİŞ ZENGİN FOOTER ---
+const Footer = ({ onOpenAdmin }) => (
+    <footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50">
+        <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
+            <div>
+                <h3 className="font-bold text-white mb-4 flex items-center gap-2"><BrandLogo className="w-5 h-5"/> Radiocu</h3>
+                <p className="text-slate-500 text-xs leading-relaxed">Dünyanın sesini cebinize getiren global radyo platformu.</p>
+            </div>
+            <div>
+                <h4 className="font-bold text-slate-300 mb-4">Kurumsal</h4>
+                <ul className="space-y-2 text-slate-500 text-xs">
+                    <li><a href="/hakkimizda.html" className="hover:text-indigo-400 transition">Hakkımızda</a></li>
+                    <li><a href="mailto:info@radiocu.com" className="hover:text-indigo-400 transition">İletişim</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 className="font-bold text-slate-300 mb-4">Yasal</h4>
+                <ul className="space-y-2 text-slate-500 text-xs">
+                    <li><a href="/gizlilik-politikasi.html" className="hover:text-indigo-400 transition">Gizlilik Politikası</a></li>
+                    <li><a href="/kullanim-sartlari.html" className="hover:text-indigo-400 transition">Kullanım Şartları</a></li>
+                </ul>
+            </div>
+            <div>
+                <p className="text-slate-500 text-xs mb-2">info@radiocu.com</p>
+                <div className="flex gap-3 mt-4">
+                    <div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><GlobeIcon className="w-4 h-4 text-white"/></div>
+                    <div className="w-8 h-8 bg-slate-800 rounded flex items-center justify-center hover:bg-indigo-600 transition cursor-pointer"><Mail className="w-4 h-4 text-white"/></div>
+                </div>
+            </div>
+        </div>
+        <div className="border-t border-slate-800 mt-12 pt-8 text-center">
+            <p className="text-slate-600 text-xs">&copy; 2024 Radiocu.com - All rights reserved.</p>
+            {/* GİZLİ YÖNETİCİ GİRİŞİ */}
+            <button onClick={onOpenAdmin} className="mt-4 text-[10px] text-slate-800 hover:text-indigo-500 transition flex items-center justify-center gap-1 mx-auto">
+                <Lock className="w-3 h-3"/> Yönetici Girişi
+            </button>
+        </div>
+    </footer>
+);
 
 // --- ADMİN PANELİ ---
 const AdminModal = ({ isOpen, onClose, user }) => {
@@ -82,7 +172,7 @@ const AdminModal = ({ isOpen, onClose, user }) => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        try { await signInWithEmailAndPassword(auth, email, password); setMsg(""); } catch (error) { setMsg("Giriş başarısız. Kullanıcı yok veya şifre yanlış."); }
+        try { await signInWithEmailAndPassword(auth, email, password); setMsg(""); } catch (error) { setMsg("Giriş başarısız."); }
     };
 
     const handleAdd = async (e) => {
@@ -90,7 +180,7 @@ const AdminModal = ({ isOpen, onClose, user }) => {
         if (!newStation.name || !newStation.url) return;
         try {
             await addDoc(collection(db, "stations"), newStation);
-            setMsg("Radyo eklendi! Sayfayı yenileyince listede görünecek.");
+            setMsg("Radyo eklendi!");
             setNewStation({ name: '', url: '', logo: '', country: 'TR', tag: '' });
         } catch (e) { setMsg("Hata: " + e.message); }
     };
@@ -116,7 +206,6 @@ const AdminModal = ({ isOpen, onClose, user }) => {
                         <input type="password" placeholder="Şifre" className="w-full bg-slate-800 p-3 rounded text-white border border-slate-700" value={password} onChange={e=>setPassword(e.target.value)} />
                         <button type="submit" className="w-full bg-indigo-600 text-white p-3 rounded font-bold">Giriş Yap</button>
                         {msg && <p className="text-red-400 text-sm text-center">{msg}</p>}
-                        <p className="text-xs text-slate-500 text-center mt-4">Not: Firebase panelinden 'Authentication' kısmına gidip kendi mail/şifreni eklemelisin.</p>
                     </form>
                 ) : (
                     <div className="space-y-6">
@@ -135,7 +224,6 @@ const AdminModal = ({ isOpen, onClose, user }) => {
                             </form>
                             {msg && <p className="text-green-400 text-xs mt-2 text-center">{msg}</p>}
                         </div>
-
                         <div className="max-h-60 overflow-y-auto custom-scrollbar">
                             <h3 className="text-xs font-bold text-slate-500 uppercase mb-2">Ekli Radyolar ({dbStations.length})</h3>
                             {dbStations.map(s => (
@@ -172,8 +260,9 @@ export default function App() {
   const [error, setError] = useState(null);
   const audioRef = useRef(new Audio());
   
-  // ADMIN STATE
+  // ADMIN & MAP STATE
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -184,7 +273,7 @@ export default function App() {
     setLoading(true); setError(null);
     let data = [];
     
-    // 1. Firebase'den Çek
+    // 1. Firebase
     let manualStations = [];
     if (db) {
         try {
@@ -193,7 +282,7 @@ export default function App() {
             manualStations = snapshot.docs
                 .map(doc => ({ ...doc.data(), stationuuid: doc.id, is_manual: true }))
                 .filter(s => s.country === countryCode);
-        } catch (e) { console.error("Firebase fetch error", e); }
+        } catch (e) { console.error(e); }
     }
     
     if (manualStations.length === 0) {
@@ -209,7 +298,7 @@ export default function App() {
         }));
     }
 
-    // 2. API'den Çek
+    // 2. API
     for (const server of API_MIRRORS) {
       try {
         const controller = new AbortController();
@@ -287,12 +376,13 @@ export default function App() {
         <div className="hidden md:flex flex-1 max-w-md mx-6"><div className={`flex items-center w-full ${theme.bgCard} rounded-lg px-4 py-2 border ${theme.border} focus-within:border-indigo-500/50 transition-colors`}><Search className="text-slate-500 w-4 h-4 mr-2" /><input type="text" placeholder={t.searchPlaceholder} className="bg-transparent w-full border-none outline-none text-sm text-white placeholder-slate-500" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div></div>
         <div className="flex items-center gap-2">
             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-2 text-slate-400 hover:text-white"><Menu/></button>
+            <button onClick={() => setShowMap(true)} className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-500 shadow-lg shadow-indigo-500/30`}><Compass className="w-4 h-4" /> {t.mapBtn}</button>
             <div className={`hidden md:flex items-center gap-2 ${theme.bgCard} px-3 py-1.5 rounded-lg border ${theme.border}`}><MapPin className={`w-4 h-4 ${autoLocated ? theme.textAccent : 'text-slate-500'}`} /><select value={selectedCountry} onChange={(e) => { setSelectedCountry(e.target.value); setAutoLocated(false); }} className="bg-transparent outline-none text-sm font-medium cursor-pointer text-slate-300 max-w-[100px]">{COUNTRIES.map(c => <option key={c.code} value={c.code} className="bg-slate-900">{c.flag} {c.name}</option>)}</select></div>
             <div className="hidden md:flex items-center justify-center w-8 h-8 bg-slate-800 rounded text-xs font-bold text-slate-400 border border-slate-700 uppercase" title="Language">{appLang}</div>
         </div>
       </header>
       
-      {mobileMenuOpen && (<div className="absolute top-16 left-0 w-full bg-slate-900 border-b border-slate-800 z-20 p-4 md:hidden animate-in slide-in-from-top-2"><div className="mb-4"><select value={selectedCountry} onChange={(e) => { setSelectedCountry(e.target.value); setMobileMenuOpen(false); }} className="w-full bg-slate-800 p-3 rounded-lg text-white border border-slate-700">{COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name}</option>)}</select></div></div>)}
+      {mobileMenuOpen && (<div className="absolute top-16 left-0 w-full bg-slate-900 border-b border-slate-800 z-20 p-4 md:hidden animate-in slide-in-from-top-2"><div className="mb-4"><select value={selectedCountry} onChange={(e) => { setSelectedCountry(e.target.value); setMobileMenuOpen(false); }} className="w-full bg-slate-800 p-3 rounded-lg text-white border border-slate-700">{COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name}</option>)}</select></div><button onClick={() => { setShowMap(true); setMobileMenuOpen(false); }} className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg font-bold flex items-center justify-center gap-2"><Compass className="w-4 h-4"/> {t.mapBtn}</button></div>)}
 
       <div className="flex flex-1 overflow-hidden relative">
         <aside className={`w-64 ${theme.bgPanel} border-r ${theme.border} hidden md:flex flex-col backdrop-blur-xl`}>
@@ -321,10 +411,20 @@ export default function App() {
                   ))
                  }
               </div>
+              <FeaturesSection lang={appLang} />
+              <BlogSection lang={appLang} />
               <SeoContent country={selectedCountry} lang={appLang} />
+              <FAQSection lang={appLang} />
+              <Footer onOpenAdmin={() => setShowAdmin(true)} />
               <div className="mt-12 mb-24"><AdSenseUnit slotId="footer-ad" /></div>
            </div>
         </main>
+        
+        {/* --- HARİTA MODALI --- */}
+        <WorldMapModal isOpen={showMap} onClose={() => setShowMap(false)} onSelectCountry={(code) => { setSelectedCountry(code); setAutoLocated(false); }} countries={COUNTRIES} />
+
+        {/* --- ADMİN MODALI --- */}
+        <AdminModal isOpen={showAdmin} onClose={() => setShowAdmin(false)} user={user} />
       </div>
       <div className={`h-24 ${theme.bgPanel} border-t ${theme.border} fixed bottom-0 w-full flex items-center px-4 md:px-8 z-40 shadow-[0_-5px_30px_rgba(0,0,0,0.5)]`}>
          <div className="w-1/3 flex items-center gap-4">
@@ -342,12 +442,6 @@ export default function App() {
          </div>
          <div className="w-1/3 flex justify-end items-center gap-3"><button onClick={() => setVolume(v => v === 0 ? 0.8 : 0)} className="text-slate-400 hover:text-white transition hidden sm:block">{volume === 0 ? <VolumeX className="w-5 h-5"/> : <Volume2 className="w-5 h-5"/>}</button><input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} className="w-20 sm:w-28 h-1 bg-slate-700 rounded-full cursor-pointer accent-indigo-500" /></div>
       </div>
-      
-      {/* Footer (Admin Giriş Butonu ile) */}
-      <Footer onOpenAdmin={() => setShowAdmin(true)} />
-
-      {/* Admin Modalı */}
-      <AdminModal isOpen={showAdmin} onClose={() => setShowAdmin(false)} user={user} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe as GlobeIcon, Radio, MapPin, Music, Wifi, AlertCircle, Sparkles, X, Bot, MessageSquare, Loader2, Activity, Zap, Waves, Menu, RefreshCw, Star, Info, Shield, FileText, Mail, HelpCircle, ChevronRight, BookOpen, Headphones, Signal, Smartphone, Lock, LogIn, Plus, Trash2, Settings, Ban, Flag } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe as GlobeIcon, Radio, MapPin, Music, Wifi, AlertCircle, Sparkles, X, Bot, MessageSquare, Loader2, Activity, Zap, Waves, Menu, RefreshCw, Star, Info, Shield, FileText, Mail, HelpCircle, ChevronRight, BookOpen, Headphones, Signal, Smartphone, Lock, LogIn, Plus, Trash2, Ban, CheckCircle } from 'lucide-react';
 
-// FIREBASE İMPORTLARI (Tüm fonksiyonlar dahil)
+// FIREBASE İMPORTLARI
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, updateDoc } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
@@ -32,7 +32,7 @@ try {
     console.warn("Firebase hatası:", e);
 }
 
-// --- SABİT LİSTELER (Yedek) ---
+// --- SABİT LİSTELER ---
 const VIP_STATIONS_DEFAULT = {
   TR: [
     { name: "Power Türk", url: "https://listen.powerapp.com.tr/powerturk/mpeg/icecast.audio", logo: "https://upload.wikimedia.org/wikipedia/commons/2/2b/Power_T%C3%BCrk_logo.svg", site: "https://powerapp.com.tr", tag: "pop,türkçe" },
@@ -41,49 +41,223 @@ const VIP_STATIONS_DEFAULT = {
   ]
 };
 
-const DEFAULT_COUNTRIES = [
+const COUNTRIES = [
   { code: 'TR', name: 'Türkiye', flag: '🇹🇷' }, 
   { code: 'DE', name: 'Deutschland', flag: '🇩🇪' }, 
-  { code: 'US', name: 'USA', flag: '🇺🇸' },
-  { code: 'GB', name: 'UK', flag: '🇬🇧' }
+  { code: 'US', name: 'USA', flag: '🇺🇸' }, 
+  { code: 'GB', name: 'UK', flag: '🇬🇧' },
+  { code: 'FR', name: 'France', flag: '🇫🇷' },
+  { code: 'IT', name: 'Italia', flag: '🇮🇹' },
+  { code: 'ES', name: 'España', flag: '🇪🇸' },
+  { code: 'NL', name: 'Netherlands', flag: '🇳🇱' },
+  { code: 'AZ', name: 'Azerbaycan', flag: '🇦🇿' },
+  { code: 'RU', name: 'Russia', flag: '🇷🇺' },
+  { code: 'BR', name: 'Brasil', flag: '🇧🇷' }
 ];
 
 const API_MIRRORS = ["https://at1.api.radio-browser.info", "https://de1.api.radio-browser.info"];
 const TRANSLATIONS = {
-  TR: { code: "tr", admin: "Yönetici", addStation: "Radyo Ekle", logout: "Çıkış", login: "Giriş", email: "E-posta", pass: "Şifre", searchPlaceholder: "Radyo ara...", categories: "Kategoriler", allRadios: "Tüm Radyolar", btnLoad: "Yükleniyor...", live: "CANLI", paused: "DURAKLATILDI", stations: "İstasyon", locationDetected: "Konum Algılandı", footerRights: "Tüm Hakları Saklıdır.", errorMsg: "Liste alınamadı.", retry: "Tekrar Dene", playingError: "Yayın açılmadı.", seoTitle: "Canlı Radyo Dinle", seoDesc: "Kesintisiz radyo keyfi." },
-  EN: { code: "en", admin: "Admin", addStation: "Add Station", logout: "Logout", login: "Login", email: "Email", pass: "Password", searchPlaceholder: "Search...", categories: "Genres", allRadios: "All Radios", btnLoad: "Loading...", live: "LIVE", paused: "PAUSED", stations: "Stations", locationDetected: "Location", footerRights: "All Rights Reserved.", errorMsg: "Failed load.", retry: "Retry", playingError: "Stream failed.", seoTitle: "Listen Live Radio", seoDesc: "Listen online radio." }
+  TR: { 
+    code: "tr", 
+    searchPlaceholder: "Radyo ara...", categories: "Kategoriler", allRadios: "Tüm Radyolar", 
+    admin: "Yönetici", addStation: "Radyo Ekle", logout: "Çıkış", 
+    login: "Giriş", btnLoad: "Yükleniyor...", live: "CANLI", paused: "DURAKLATILDI", 
+    locationDetected: "Konum Algılandı", footerRights: "Tüm Hakları Saklıdır.", errorMsg: "Liste alınamadı.", 
+    seoTitle: "Canlı Radyo Dinle", seoDesc: "Kesintisiz, ücretsiz ve yüksek kaliteli online radyo platformu.",
+    h1Prefix: "Canlı", h1Suffix: "Radyoları Dinle"
+  },
+  EN: { 
+    code: "en", 
+    searchPlaceholder: "Search stations...", categories: "Genres", allRadios: "All Radios", 
+    admin: "Admin", addStation: "Add Station", logout: "Logout", 
+    login: "Login", btnLoad: "Loading...", live: "LIVE", paused: "PAUSED", 
+    locationDetected: "Location Detected", footerRights: "All Rights Reserved.", errorMsg: "Failed load.", 
+    seoTitle: "Listen Live Radio", seoDesc: "Free, uninterrupted high quality online radio platform.",
+    h1Prefix: "Listen Live", h1Suffix: "Radio Stations"
+  },
+  DE: { 
+    code: "de", 
+    searchPlaceholder: "Sender suchen...", categories: "Genres", allRadios: "Alle Radios", 
+    admin: "Admin", addStation: "Sender Hinzufügen", logout: "Abmelden", 
+    login: "Anmelden", btnLoad: "Laden...", live: "LIVE", paused: "PAUSIERT", 
+    locationDetected: "Standort Erkannt", footerRights: "Rechte vorbehalten.", errorMsg: "Fehler.", 
+    seoTitle: "Radio Online Hören", seoDesc: "Kostenlose, ununterbrochene Online-Radio-Plattform.",
+    h1Prefix: "Live", h1Suffix: "Radio Hören"
+  }
 };
 const GENRES = ['all', 'pop', 'rock', 'jazz', 'news', 'classical', 'dance', 'folk', 'rap', 'arabesque'];
 
 // --- BİLEŞENLER ---
-const BrandLogo = ({ className }) => (<div className={className}><svg viewBox="0 0 24 24" fill="none" className="w-full h-full"><rect width="24" height="24" rx="6" fill="url(#brand_grad)" /><path d="M7 7H11C13.2 7 15 8.8 15 11V11C15 13.2 13.2 15 11 15H7V7Z" stroke="white" strokeWidth="2"/><path d="M7 15L11.5 20" stroke="white" strokeWidth="2"/><defs><linearGradient id="brand_grad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stopColor="#4f46e5" /><stop offset="1" stopColor="#9333ea" /></linearGradient></defs></svg></div>);
+
+const BrandLogo = ({ className }) => (
+  <div className={className}>
+    <svg viewBox="0 0 24 24" fill="none" className="w-full h-full">
+      <rect width="24" height="24" rx="6" fill="url(#brand_grad)" />
+      <path d="M7 7H11C13.2 7 15 8.8 15 11V11C15 13.2 13.2 15 11 15H7V7Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M7 15L11.5 20" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M16.5 10C17.2 10.8 17.5 11.8 17.5 13" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
+      <defs>
+        <linearGradient id="brand_grad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#4f46e5" />
+          <stop offset="1" stopColor="#9333ea" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+);
+
 const StationLogo = ({ url, alt, homepage, className }) => {
   const [imgSrc, setImgSrc] = useState(url);
-  useEffect(() => { if (!url || url.startsWith('http://')) { if (homepage) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } } else { setImgSrc(url); } }, [url, homepage]);
+  useEffect(() => { 
+    if (!url || url.startsWith('http://')) { 
+      if (homepage) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } 
+    } else { setImgSrc(url); } 
+  }, [url, homepage]);
   return <img src={imgSrc} alt={alt} className={`object-contain bg-white/5 p-1 ${className}`} onError={() => { if (homepage && !imgSrc.includes('google.com')) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } }} loading="lazy" referrerPolicy="no-referrer" />;
 };
-const AdSenseUnit = ({ slotId }) => { useEffect(() => { if (IS_ADSENSE_LIVE && window.adsbygoogle) try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {} }, []); if (!IS_ADSENSE_LIVE) return <div className="w-full h-24 bg-slate-800/30 border border-dashed border-slate-700/50 flex items-center justify-center text-slate-500 text-xs">Reklam</div>; return <div className="ad-container my-4 flex justify-center"><ins className="adsbygoogle" style={{display:'block'}} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>; };
-const SeoContent = ({ country, lang, countriesList }) => { const cObj = countriesList.find(c => c.code === country); const cName = cObj ? cObj.name : country; const t = TRANSLATIONS[lang] || TRANSLATIONS['EN']; return (<div className="mt-12 mb-8 p-6 bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-sm"><h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><GlobeIcon className="w-5 h-5 text-indigo-500"/> {t.seoTitle} {cName}</h2><p>{t.seoDesc} {cName}.</p></div>); };
-const Footer = ({ onOpenAdmin }) => (<footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50"><div className="max-w-6xl mx-auto px-4 text-center"><p className="text-slate-500 text-xs mb-4">&copy; 2024 Radiocu.com</p><div className="flex justify-center gap-4 text-xs text-slate-500 mb-4"><a href="/hakkimizda.html" className="hover:text-white">Hakkımızda</a><a href="/gizlilik-politikasi.html" className="hover:text-white">Gizlilik</a><a href="mailto:info@radiocu.com" className="hover:text-white">İletişim</a></div><button onClick={onOpenAdmin} className="text-[10px] text-slate-700 hover:text-indigo-500 transition flex items-center justify-center gap-1 mx-auto"><Lock className="w-3 h-3"/> Yönetici Girişi</button></div></footer>);
 
-// --- İÇERİK BÖLÜMÜ ---
-const FeaturesSection = () => (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 mb-12">{[{ icon: <Wifi className="w-6 h-6"/>, title: "Kesintisiz", desc: "Donmayan altyapı." }, { icon: <Headphones className="w-6 h-6"/>, title: "HD Kalite", desc: "Yüksek ses kalitesi." }, { icon: <GlobeIcon className="w-6 h-6"/>, title: "Global", desc: "Binlerce dünya radyosu." }, { icon: <Smartphone className="w-6 h-6"/>, title: "Mobil", desc: "%100 mobil uyumlu." }].map((f, i) => (<div key={i} className="p-5 bg-slate-800/30 border border-slate-700/50 rounded-xl flex flex-col items-center text-center hover:bg-slate-800/50 transition"><div className="mb-3 p-3 bg-indigo-500/10 rounded-full text-indigo-400">{f.icon}</div><h4 className="text-white font-bold mb-1">{f.title}</h4><p className="text-xs text-slate-400">{f.desc}</p></div>))}</div>);
-const BlogSection = () => (<div className="mt-12 mb-12"><h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><BookOpen className="w-5 h-5 text-indigo-500"/> Radyo Blog</h3><div className="grid grid-cols-1 md:grid-cols-3 gap-6">{[{ t: "Dijital Radyo", d: "24.11", c: "Radyolar artık dijital dünyada." }, { t: "Neden Online?", d: "20.11", c: "Cızırtı yok, internetin olduğu her yerde." }, { t: "Müzik ve Psikoloji", d: "15.11", c: "Müziğin insan üzerindeki etkisi." }].map((a, i) => (<div key={i} className="p-6 bg-slate-900/60 rounded-2xl border border-slate-800/60 hover:border-indigo-500/30 transition"><div className="text-xs text-indigo-400 mb-2 font-mono">{a.d}</div><h3 className="text-lg font-bold text-slate-200 mb-2">{a.t}</h3><p className="text-sm text-slate-500">{a.c}</p></div>))}</div></div>);
-const FAQSection = () => (<div className="mt-8 mb-12"><h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><HelpCircle className="w-5 h-5 text-indigo-500"/> Sıkça Sorulan Sorular</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{[{ q: "Ücretli mi?", a: "Hayır, tamamen ücretsizdir." }, { q: "Mobil uygulama?", a: "Mobil uyumludur." }].map((item, i) => (<div key={i} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 hover:bg-slate-800/50 transition"><h4 className="text-sm font-bold text-slate-200 mb-2">{item.q}</h4><p className="text-xs text-slate-400 leading-relaxed">{item.a}</p></div>))}</div></div>);
+const AdSenseUnit = ({ slotId }) => { 
+  useEffect(() => { if (IS_ADSENSE_LIVE && window.adsbygoogle) try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {} }, []); 
+  if (!IS_ADSENSE_LIVE) return <div className="w-full h-24 bg-slate-800/30 border border-dashed border-slate-700/50 flex items-center justify-center text-slate-500 text-xs">Reklam</div>; 
+  return <div className="ad-container my-4 flex justify-center"><ins className="adsbygoogle" style={{display:'block'}} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>; 
+};
 
-// --- ADMİN PANELİ MODALI ---
+// --- İÇERİK BÖLÜMLERİ (Hata Önleyici Düzeltme) ---
+const FeaturesSection = ({ lang }) => {
+    const t = TRANSLATIONS[lang] || TRANSLATIONS['EN'];
+    // Dil destekli içerik
+    const content = {
+        TR: [ { icon: <Wifi className="w-6 h-6"/>, title: "Kesintisiz", desc: "Donmayan altyapı." }, { icon: <Headphones className="w-6 h-6"/>, title: "HD Kalite", desc: "Yüksek ses kalitesi." }, { icon: <GlobeIcon className="w-6 h-6"/>, title: "Global", desc: "Binlerce radyo." }, { icon: <Smartphone className="w-6 h-6"/>, title: "Mobil", desc: "%100 mobil uyumlu." } ],
+        EN: [ { icon: <Wifi className="w-6 h-6"/>, title: "Uninterrupted", desc: "Stable streaming." }, { icon: <Headphones className="w-6 h-6"/>, title: "High Quality", desc: "HD audio." }, { icon: <GlobeIcon className="w-6 h-6"/>, title: "Global", desc: "Thousands of stations." }, { icon: <Smartphone className="w-6 h-6"/>, title: "Mobile", desc: "Fully responsive." } ],
+        DE: [ { icon: <Wifi className="w-6 h-6"/>, title: "Unterbrechungsfrei", desc: "Stabiles Streaming." }, { icon: <Headphones className="w-6 h-6"/>, title: "Hohe Qualität", desc: "HD Audio." }, { icon: <GlobeIcon className="w-6 h-6"/>, title: "Global", desc: "Tausende Sender." }, { icon: <Smartphone className="w-6 h-6"/>, title: "Mobil", desc: "Voll responsiv." } ]
+    };
+    const features = content[lang] || content['EN'];
+    return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 mb-12">
+            {features.map((f, i) => (
+                <div key={i} className="p-5 bg-slate-800/30 border border-slate-700/50 rounded-xl flex flex-col items-center text-center hover:bg-slate-800/50 transition">
+                    <div className="mb-3 p-3 bg-indigo-500/10 rounded-full text-indigo-400">{f.icon}</div>
+                    <h4 className="text-white font-bold mb-1">{f.title}</h4>
+                    <p className="text-xs text-slate-400">{f.desc}</p>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+const BlogSection = ({ lang }) => {
+  const articles = {
+    TR: [ 
+        { title: "Dijital Radyonun Yükselişi", date: "24.11", c: "Radyolar artık dijital dünyada sınır tanımıyor." }, 
+        { title: "Neden Online Radyo?", date: "20.11", c: "Cızırtı yok, internetin olduğu her yerde müzik." }, 
+        { title: "Müzik ve Psikoloji", date: "15.11", c: "Müziğin insan üzerindeki etkisi bilimseldir." }
+    ],
+    EN: [ 
+        { title: "Rise of Digital Radio", date: "Nov 24", c: "Digital streams replace FM frequencies." }, 
+        { title: "Why Online Radio?", date: "Nov 20", c: "CD-quality sound everywhere without static." }, 
+        { title: "Music & Psychology", date: "Nov 15", c: "Music has a direct impact on human psychology." }
+    ],
+    DE: [ 
+        { title: "Digitales Radio", date: "24. Nov", c: "Digitale Streams ersetzen FM-Frequenzen." }, 
+        { title: "Warum Online-Radio?", date: "20. Nov", c: "CD-Qualität überall ohne Rauschen." }, 
+        { title: "Musik & Psychologie", date: "15. Nov", c: "Musik hat direkten Einfluss auf die Psyche." }
+    ]
+  };
+  
+  const list = articles[lang] || articles['EN'];
+  
+  return (
+    <div className="mt-12 mb-12">
+        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><BookOpen className="w-5 h-5 text-indigo-500"/> Blog</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {list.map((a, i) => (
+                <div key={i} className="p-6 bg-slate-900/60 rounded-2xl border border-slate-800/60 hover:border-indigo-500/30 transition">
+                    <div className="text-xs text-indigo-400 mb-2 font-mono">{a.date}</div>
+                    <h3 className="text-lg font-bold text-slate-200 mb-2">{a.title}</h3>
+                    <p className="text-sm text-slate-500">{a.c}</p>
+                </div>
+            ))}
+        </div>
+    </div>
+  );
+};
+
+const FAQSection = ({ lang }) => {
+  const faqs = {
+    TR: [ { q: "Ücretli mi?", a: "Hayır, tamamen ücretsizdir." }, { q: "Mobil uygulama?", a: "Mobil uyumludur." } ],
+    EN: [ { q: "Is it free?", a: "Yes, completely free." }, { q: "Mobile app?", a: "Mobile ready." } ],
+    DE: [ { q: "Ist es kostenlos?", a: "Ja, komplett kostenlos." }, { q: "Mobile App?", a: "Mobil optimiert." } ]
+  };
+  const list = faqs[lang] || faqs['EN'];
+  return (
+    <div className="mt-8 mb-12">
+        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><HelpCircle className="w-5 h-5 text-indigo-500"/> Sıkça Sorulan Sorular</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {list.map((item, i) => (
+                <div key={i} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 hover:bg-slate-800/50 transition">
+                    <h4 className="text-sm font-bold text-slate-200 mb-2">{item.q}</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">{item.a}</p>
+                </div>
+            ))}
+        </div>
+    </div>
+  );
+};
+
+const SeoContent = ({ country, lang, countriesList }) => {
+    const cObj = countriesList.find(c => c.code === country);
+    const cName = cObj ? cObj.name : country;
+    const t = TRANSLATIONS[lang] || TRANSLATIONS['EN'];
+
+    // Dinamik Başlık ve Meta Güncelleme
+    useEffect(() => {
+        document.title = `${cName} - ${t.seoTitle} | Radiocu`;
+        document.documentElement.lang = t.code;
+        
+        // Meta Description Güncelle
+        let metaDesc = document.querySelector("meta[name='description']");
+        if (!metaDesc) {
+            metaDesc = document.createElement('meta');
+            metaDesc.name = "description";
+            document.head.appendChild(metaDesc);
+        }
+        metaDesc.setAttribute("content", `${cName} ${t.seoDesc}`);
+    }, [country, lang, cName, t]);
+
+    return (
+        <div className="mt-12 mb-8 p-6 bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-sm">
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <GlobeIcon className="w-5 h-5 text-indigo-500"/> {t.h1Prefix} {cName} {t.h1Suffix}
+            </h2>
+            <p>{cName} {t.seoDesc}</p>
+        </div>
+    );
+};
+
+const Footer = ({ onOpenAdmin }) => (
+    <footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+            <p className="text-slate-500 text-xs mb-4">&copy; 2024 Radiocu.com</p>
+            <div className="flex justify-center gap-4 text-xs text-slate-500 mb-4">
+                <a href="/hakkimizda.html" className="hover:text-white">Hakkımızda</a>
+                <a href="/gizlilik-politikasi.html" className="hover:text-white">Gizlilik</a>
+                <a href="mailto:info@radiocu.com" className="hover:text-white">İletişim</a>
+            </div>
+            <button onClick={onOpenAdmin} className="text-[10px] text-slate-700 hover:text-indigo-500 transition flex items-center justify-center gap-1 mx-auto">
+                <Lock className="w-3 h-3"/> Yönetici Girişi
+            </button>
+        </div>
+    </footer>
+);
+
+// --- ADMİN MODALI ---
 const AdminModal = ({ isOpen, onClose, user, countries, setCountries }) => {
     const [activeTab, setActiveTab] = useState('stations');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    
-    // Radyo State
     const [newStation, setNewStation] = useState({ name: '', url: '', logo: '', country: 'TR', tag: '' });
-    const [dbStations, setDbStations] = useState([]);
-    
-    // Ülke State
     const [newCountry, setNewCountry] = useState({ code: '', name: '', flag: '' });
-    
+    const [dbStations, setDbStations] = useState([]);
     const [msg, setMsg] = useState('');
     const [editingId, setEditingId] = useState(null);
 
@@ -108,13 +282,8 @@ const AdminModal = ({ isOpen, onClose, user, countries, setCountries }) => {
     const handleStationSubmit = async (e) => {
         e.preventDefault();
         try {
-            if (editingId) {
-                await updateDoc(doc(db, "stations", editingId), newStation);
-                setMsg("Güncellendi.");
-            } else {
-                await addDoc(collection(db, "stations"), newStation);
-                setMsg("Eklendi.");
-            }
+            if (editingId) { await updateDoc(doc(db, "stations", editingId), newStation); setMsg("Güncellendi."); } 
+            else { await addDoc(collection(db, "stations"), newStation); setMsg("Eklendi."); }
             setNewStation({ name: '', url: '', logo: '', country: 'TR', tag: '' });
             setEditingId(null);
         } catch (e) { setMsg("Hata: " + e.message); }
@@ -124,10 +293,7 @@ const AdminModal = ({ isOpen, onClose, user, countries, setCountries }) => {
         if(window.confirm("Silinsin mi?")) { await deleteDoc(doc(db, "stations", id)); setMsg("Silindi."); }
     };
 
-    const handleStationEdit = (s) => {
-        setNewStation(s);
-        setEditingId(s.id);
-    };
+    const handleStationEdit = (s) => { setNewStation(s); setEditingId(s.id); };
 
     const handleCountrySubmit = async (e) => {
         e.preventDefault();
@@ -139,10 +305,7 @@ const AdminModal = ({ isOpen, onClose, user, countries, setCountries }) => {
     };
 
     const handleCountryDelete = async (id) => {
-        if(window.confirm("Emin misiniz?")) {
-            await deleteDoc(doc(db, "countries", id));
-            setMsg("Ülke silindi.");
-        }
+        if(window.confirm("Emin misiniz?")) { await deleteDoc(doc(db, "countries", id)); setMsg("Ülke silindi."); }
     };
 
     if (!isOpen) return null;
@@ -151,8 +314,7 @@ const AdminModal = ({ isOpen, onClose, user, countries, setCountries }) => {
         <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 overflow-y-auto">
             <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-lg relative max-h-[90vh] overflow-y-auto custom-scrollbar">
                 <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X/></button>
-                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Shield className="text-indigo-500"/> Yönetici Paneli</h2>
-                
+                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Shield className="text-indigo-500"/> Yönetici</h2>
                 {!user ? (
                     <form onSubmit={handleLogin} className="space-y-4">
                         <input type="email" placeholder="E-posta" className="w-full bg-slate-800 p-3 rounded text-white border border-slate-700" value={email} onChange={e=>setEmail(e.target.value)} />
@@ -235,9 +397,7 @@ const AdminModal = ({ isOpen, onClose, user, countries, setCountries }) => {
 
 // --- APP ---
 export default function App() {
-  // ÜLKELER STATE'İ (Firebase'den de çekecek)
-  const [countriesList, setCountriesList] = useState(DEFAULT_COUNTRIES);
-
+  const [countriesList, setCountriesList] = useState(COUNTRIES);
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCountry, setSelectedCountry] = useState('TR');
@@ -255,13 +415,12 @@ export default function App() {
   const [error, setError] = useState(null);
   const audioRef = useRef(new Audio());
   
-  // ADMIN STATE
   const [showAdmin, setShowAdmin] = useState(false);
   const [user, setUser] = useState(null);
 
   useEffect(() => { if(auth) return onAuthStateChanged(auth, (u) => setUser(u)); }, []);
 
-  // --- ÜLKELERİ GETİR ---
+  // Ülkeleri Çek
   useEffect(() => {
     const fetchCountries = async () => {
         if(db) {
@@ -270,15 +429,14 @@ export default function App() {
                 const snapshot = await getDocs(q);
                 if(!snapshot.empty) {
                     const dynamicCountries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    // Varsayılanlarla birleştir, çakışmayı önle
-                    const combined = [...DEFAULT_COUNTRIES, ...dynamicCountries.filter(dc => !DEFAULT_COUNTRIES.some(def => def.code === dc.code))];
+                    const combined = [...COUNTRIES, ...dynamicCountries.filter(dc => !COUNTRIES.some(def => def.code === dc.code))];
                     setCountriesList(combined);
                 }
             } catch(e) { console.error("Ülke çekme hatası", e); }
         }
     };
     fetchCountries();
-  }, [showAdmin]); // Admin kapanınca listeyi güncelle
+  }, [showAdmin]);
 
   const fetchWithFailover = async (countryCode) => {
     setLoading(true); setError(null);
@@ -330,10 +488,17 @@ export default function App() {
         const data = await res.json();
         if (data?.country_code) {
           const code = data.country_code;
-          if (countriesList.find(c => c.code === code)) { setSelectedCountry(code); setAutoLocated(true); }
+          // Ülke listemizde var mı?
+          if (countriesList.find(c => c.code === code)) { 
+              setSelectedCountry(code); 
+              setAutoLocated(true); 
+          } else {
+              // Yoksa listeden TR'yi varsayılan yap, ama dili kullanıcının diline çevir
+              setSelectedCountry('TR');
+          }
           if (TRANSLATIONS[code]) setAppLang(code);
         }
-      } catch (e) {}
+      } catch (e) { console.log("IP detection failed"); }
     };
     initApp();
     const audio = audioRef.current;

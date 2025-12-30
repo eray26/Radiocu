@@ -28,26 +28,28 @@ try {
     db = getFirestore(app);
     auth = getAuth(app);
 } catch (e) {
-    console.warn("Firebase hatası:", e);
+    console.warn("Firebase bağlantı hatası:", e);
+    // Hata durumunda değişkenleri null bırakıyoruz ki site çökmesin
+    db = null;
+    auth = null;
 }
 
-// --- ÜLKE -> DİL EŞLEŞTİRME TABLOSU (AKILLI SEÇİM) ---
-// Hangi ülkeden girilirse hangi dilin açılacağını belirler.
+// --- ÜLKE -> DİL EŞLEŞTİRME TABLOSU ---
 const COUNTRY_LANG_MAP = {
-    'TR': 'TR', 'AZ': 'AZ', // Türkçe / Azerice
-    'US': 'EN', 'GB': 'EN', 'CA': 'EN', 'AU': 'EN', // İngilizce
-    'DE': 'DE', 'AT': 'DE', 'CH': 'DE', // Almanca
-    'FR': 'FR', 'BE': 'FR', // Fransızca
-    'ES': 'ES', 'MX': 'ES', 'AR': 'ES', // İspanyolca
-    'IT': 'IT', // İtalyanca
-    'NL': 'NL', // Hollandaca
-    'BR': 'PT', 'PT': 'PT', // Portekizce
-    'RU': 'RU', 'UA': 'RU', 'KZ': 'RU', // Rusça
-    'CN': 'ZH', 'SG': 'ZH', 'TW': 'ZH', // Çince (Burada ZH kodunu kullanacağız)
-    'IN': 'HI', // Hintçe
-    'JP': 'JA', // Japonca
-    'KR': 'KO', // Korece
-    'SA': 'AR', 'AE': 'AR', 'EG': 'AR' // Arapça
+    'TR': 'TR', 'AZ': 'AZ',
+    'US': 'EN', 'GB': 'EN', 'CA': 'EN', 'AU': 'EN',
+    'DE': 'DE', 'AT': 'DE', 'CH': 'DE',
+    'FR': 'FR', 'BE': 'FR',
+    'ES': 'ES', 'MX': 'ES', 'AR': 'ES',
+    'IT': 'IT',
+    'NL': 'NL',
+    'BR': 'PT', 'PT': 'PT',
+    'RU': 'RU', 'UA': 'RU', 'KZ': 'RU',
+    'CN': 'ZH', 'SG': 'ZH', 'TW': 'ZH',
+    'IN': 'HI',
+    'JP': 'JA',
+    'KR': 'KO',
+    'SA': 'AR', 'AE': 'AR', 'EG': 'AR'
 };
 
 // --- SABİT LİSTELER ---
@@ -59,7 +61,7 @@ const VIP_STATIONS_DEFAULT = {
   ]
 };
 
-// --- GENİŞLETİLMİŞ ÜLKE LİSTESİ (Çin Eklendi) ---
+// --- GENİŞLETİLMİŞ ÜLKE LİSTESİ ---
 const DEFAULT_COUNTRIES = [
   { code: 'TR', name: 'Türkiye', flag: '🇹🇷' }, 
   { code: 'DE', name: 'Deutschland', flag: '🇩🇪' }, 
@@ -72,8 +74,8 @@ const DEFAULT_COUNTRIES = [
   { code: 'AZ', name: 'Azerbaycan', flag: '🇦🇿' },
   { code: 'RU', name: 'Russia', flag: '🇷🇺' },
   { code: 'BR', name: 'Brasil', flag: '🇧🇷' },
-  { code: 'CN', name: 'China', flag: '🇨🇳' }, // Çin
-  { code: 'IN', name: 'India', flag: '🇮🇳' }, // Hindistan
+  { code: 'CN', name: 'China', flag: '🇨🇳' },
+  { code: 'IN', name: 'India', flag: '🇮🇳' },
   { code: 'JP', name: 'Japan', flag: '🇯🇵' },
   { code: 'KR', name: 'Korea', flag: '🇰🇷' },
   { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦' }
@@ -81,7 +83,7 @@ const DEFAULT_COUNTRIES = [
 
 const API_MIRRORS = ["https://at1.api.radio-browser.info", "https://de1.api.radio-browser.info"];
 
-// --- TAM KAPSAMLI DİL SÖZLÜĞÜ (Çince Dahil) ---
+// --- TAM KAPSAMLI DİL SÖZLÜĞÜ ---
 const TRANSLATIONS = {
   TR: { 
     code: "tr", mapBtn: "Harita", admin: "Yönetici", addStation: "Radyo Ekle", logout: "Çıkış", login: "Giriş", email: "E-posta", pass: "Şifre", 
@@ -113,31 +115,31 @@ const TRANSLATIONS = {
     locationDetected: "Ubicación", footerRights: "Derechos reservados.", errorMsg: "Error.", retry: "Reintentar", playingError: "Error.", 
     seoTitle: "Radio en Vivo", seoDesc: "Radio online gratis.", h1Prefix: "Escuchar", h1Suffix: "Radio"
   },
-  ZH: { // ÇİNCE EKLENDİ
+  ZH: { 
     code: "zh", mapBtn: "地图", admin: "管理员", addStation: "添加电台", logout: "登出", login: "登录", email: "电子邮件", pass: "密码",
     searchPlaceholder: "搜索电台...", categories: "分类", allRadios: "所有电台", btnLoad: "加载中...", live: "直播", paused: "暂停", 
     locationDetected: "位置已检测", footerRights: "保留所有权利。", errorMsg: "加载失败。", retry: "重试", playingError: "无法播放。", 
     seoTitle: "收听在线广播", seoDesc: "免费收听全球广播。", h1Prefix: "收听", h1Suffix: "现场广播"
   },
-  HI: { // HİNTÇE EKLENDİ
+  HI: { 
     code: "hi", mapBtn: "नक्शा", admin: "एडमिन", addStation: "रेडियो जोड़ें", logout: "लॉग आउट", login: "लॉग इन", email: "ईमेल", pass: "पासवर्ड",
     searchPlaceholder: "रेडियो खोजें...", categories: "श्रेणियाँ", allRadios: "सभी रेडियो", btnLoad: "लोड हो रहा है...", live: "लाइव", paused: "रूका हुआ", 
     locationDetected: "स्थान मिला", footerRights: "सर्वाधिकार सुरक्षित।", errorMsg: "विफल।", retry: "पुनः प्रयास करें", playingError: "त्रुटि।", 
     seoTitle: "लाइव रेडियो सुनें", seoDesc: "मुफ्त ऑनलाइन रेडियो।", h1Prefix: "लाइव सुनें", h1Suffix: "रेडियो"
   },
-  JA: { // JAPONCA EKLENDİ
+  JA: { 
     code: "ja", mapBtn: "地図", admin: "管理", addStation: "追加", logout: "ログアウト", login: "ログイン", email: "メール", pass: "パスワード",
     searchPlaceholder: "検索...", categories: "ジャンル", allRadios: "すべて", btnLoad: "読み込み中...", live: "ライブ", paused: "一時停止", 
     locationDetected: "位置検出", footerRights: "全著作権所有。", errorMsg: "エラー。", retry: "再試行", playingError: "再生不可。", 
     seoTitle: "ラジオを聴く", seoDesc: "オンラインラジオ。", h1Prefix: "聴く", h1Suffix: "ラジオ"
   },
-  KO: { // KORECE EKLENDİ
+  KO: { 
     code: "ko", mapBtn: "지도", admin: "관리자", addStation: "추가", logout: "로그아웃", login: "로그인", email: "이메일", pass: "비밀번호",
     searchPlaceholder: "검색...", categories: "장르", allRadios: "전체", btnLoad: "로딩 중...", live: "라이브", paused: "일시 중지", 
     locationDetected: "위치 감지됨", footerRights: "판권 소유.", errorMsg: "오류.", retry: "재시도", playingError: "오류.", 
     seoTitle: "라디오 듣기", seoDesc: "온라인 라디오.", h1Prefix: "듣기", h1Suffix: "라디오"
   },
-  AR: { // ARAPÇA EKLENDİ
+  AR: { 
     code: "ar", mapBtn: "خريطة", admin: "مدير", addStation: "إضافة", logout: "خروج", login: "دخول", email: "البريد", pass: "كلمة السر",
     searchPlaceholder: "بحث...", categories: "فئات", allRadios: "الكل", btnLoad: "جار التحميل...", live: "مباشر", paused: "متوقف", 
     locationDetected: "تم تحديد الموقع", footerRights: "جميع الحقوق محفوظة.", errorMsg: "خطأ.", retry: "أعد المحاولة", playingError: "خطأ.", 
@@ -160,7 +162,7 @@ const StationLogo = ({ url, alt, homepage, className }) => {
   return <img src={imgSrc} alt={alt} className={`object-contain bg-white/5 p-1 ${className}`} onError={() => { if (homepage && !imgSrc.includes('google.com')) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } }} loading="lazy" referrerPolicy="no-referrer" />;
 };
 const AdSenseUnit = ({ slotId }) => { useEffect(() => { if (IS_ADSENSE_LIVE && window.adsbygoogle) try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {} }, []); if (!IS_ADSENSE_LIVE) return <div className="w-full h-24 bg-slate-800/30 border border-dashed border-slate-700/50 flex items-center justify-center text-slate-500 text-xs">Reklam</div>; return <div className="ad-container my-4 flex justify-center"><ins className="adsbygoogle" style={{display:'block'}} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>; };
-const SeoContent = ({ country, lang, countriesList }) => { const cObj = countriesList.find(c => c.code === country); const cName = cObj ? cObj.name : country; const t = TRANSLATIONS[lang] || TRANSLATIONS['EN']; return (<div className="mt-12 mb-8 p-6 bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-sm"><h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><GlobeIcon className="w-5 h-5 text-indigo-500"/> {t.h1Prefix} {cName} {t.h1Suffix}</h2><p>{t.seoDesc} {cName}.</p></div>); };
+const SeoContent = ({ country, lang, countriesList }) => { const cObj = countriesList.find(c => c.code === country); const cName = cObj ? cObj.name : country; const t = TRANSLATIONS[lang] || TRANSLATIONS['EN']; return (<div className="mt-12 mb-8 p-6 bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-sm"><h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><GlobeIcon className="w-5 h-5 text-indigo-500"/> {t.seoTitle} {cName}</h2><p>{t.seoDesc} {cName}.</p></div>); };
 const Footer = ({ onOpenAdmin, lang }) => {
     const t = TRANSLATIONS[lang] || TRANSLATIONS['EN'];
     return (<footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50"><div className="max-w-6xl mx-auto px-4 text-center"><p className="text-slate-500 text-xs mb-4">&copy; 2024 Radiocu.com</p><div className="flex justify-center gap-4 text-xs text-slate-500 mb-4"><a href="/hakkimizda.html" className="hover:text-white">About</a><a href="/gizlilik-politikasi.html" className="hover:text-white">Privacy</a><a href="mailto:info@radiocu.com" className="hover:text-white">Contact</a></div><button onClick={onOpenAdmin} className="text-[10px] text-slate-700 hover:text-indigo-500 transition flex items-center justify-center gap-1 mx-auto"><Lock className="w-3 h-3"/> {t.admin}</button></div></footer>);
@@ -180,21 +182,26 @@ const AdminModal = ({ isOpen, onClose, user, countries, setCountries }) => {
     const [msg, setMsg] = useState('');
     const [editingId, setEditingId] = useState(null);
 
+    // KORUMALI VERİ ÇEKME (CRASH FIX)
     useEffect(() => {
+        let isMounted = true;
         if (user && isOpen && db) {
             const fetchDb = async () => {
                 try {
                     const q = query(collection(db, "stations"));
                     const snap = await getDocs(q);
-                    setDbStations(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                    if(isMounted) setDbStations(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
                 } catch(e) { console.error(e); }
             };
             fetchDb();
         }
-    }, [user, isOpen, msg]);
+        return () => { isMounted = false; };
+    }, [user, isOpen]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        // GÜVENLİK KONTROLÜ: Auth yoksa çökmesin
+        if (!auth) { setMsg("Veritabanı bağlantısı yok."); return; }
         try { await signInWithEmailAndPassword(auth, email, password); setMsg(""); } catch (error) { setMsg("Giriş başarısız."); }
     };
     const handleStationSubmit = async (e) => {
@@ -227,6 +234,7 @@ const AdminModal = ({ isOpen, onClose, user, countries, setCountries }) => {
                         <input type="password" placeholder="Şifre" className="w-full bg-slate-800 p-3 rounded text-white border border-slate-700" value={password} onChange={e=>setPassword(e.target.value)} />
                         <button type="submit" className="w-full bg-indigo-600 text-white p-3 rounded font-bold">Giriş Yap</button>
                         {msg && <p className="text-red-400 text-sm text-center">{msg}</p>}
+                        {!auth && <p className="text-xs text-orange-400 text-center">Firebase yapılandırılmamış.</p>}
                     </form>
                 ) : (
                     <div className="space-y-6">
@@ -420,6 +428,8 @@ export default function App() {
       audioRef.current.src = streamUrl; audioRef.current.load();
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) { playPromise.catch(err => { if(err.name !== 'AbortError') { setIsBuffering(false); setIsPlaying(false); } }); }
+      // SEO
+      document.title = `${currentStation.name} - Radiocu`;
     }
   }, [currentStation]);
 

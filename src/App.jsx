@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe as GlobeIcon, Radio, MapPin, Music, Wifi, AlertCircle, Sparkles, X, Bot, MessageSquare, Loader2, Activity, Zap, Waves, Menu, RefreshCw, Star, Info, Shield, FileText, Mail, HelpCircle, ChevronRight, BookOpen, Headphones, Signal, Smartphone, Lock, LogIn, Plus, Trash2, Ban, CheckCircle, Compass } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe as GlobeIcon, Radio, MapPin, Music, Wifi, AlertCircle, Sparkles, X, Bot, MessageSquare, Loader2, Activity, Zap, Waves, Menu, RefreshCw, Star, Info, Shield, FileText, Mail, HelpCircle, ChevronRight, BookOpen, Headphones, Signal, Smartphone, Lock, LogIn, Plus, Trash2, Ban, CheckCircle, Compass, Tag } from 'lucide-react';
 
 // FIREBASE İMPORTLARI
 import { initializeApp } from "firebase/app";
@@ -31,7 +31,20 @@ try {
     console.warn("Firebase hatası:", e);
 }
 
-// --- SABİT LİSTELER ---
+// --- ÜLKE -> DİL EŞLEŞTİRME ---
+const COUNTRY_LANG_MAP = {
+    'TR': 'TR', 'AZ': 'AZ',
+    'US': 'EN', 'GB': 'EN', 'CA': 'EN', 'AU': 'EN',
+    'DE': 'DE', 'AT': 'DE', 'CH': 'DE',
+    'FR': 'FR', 'BE': 'FR',
+    'ES': 'ES', 'MX': 'ES', 'AR': 'ES',
+    'IT': 'IT', 'NL': 'NL', 'BR': 'PT', 'PT': 'PT',
+    'RU': 'RU', 'UA': 'RU', 'KZ': 'RU',
+    'CN': 'ZH', 'IN': 'HI', 'JP': 'JA', 'KR': 'KO',
+    'SA': 'AR', 'AE': 'AR', 'EG': 'AR'
+};
+
+// --- VIP LİSTESİ ---
 const VIP_STATIONS_DEFAULT = {
   TR: [
     { name: "Power Türk", url: "https://listen.powerapp.com.tr/powerturk/mpeg/icecast.audio", logo: "https://upload.wikimedia.org/wikipedia/commons/2/2b/Power_T%C3%BCrk_logo.svg", site: "https://powerapp.com.tr", tag: "pop,türkçe" },
@@ -40,89 +53,105 @@ const VIP_STATIONS_DEFAULT = {
   ]
 };
 
+// --- ÜLKE LİSTESİ ---
 const DEFAULT_COUNTRIES = [
-  { code: 'TR', name: 'Türkiye', flag: '🇹🇷' }, 
-  { code: 'DE', name: 'Deutschland', flag: '🇩🇪' }, 
-  { code: 'US', name: 'USA', flag: '🇺🇸' }, 
-  { code: 'GB', name: 'UK', flag: '🇬🇧' },
-  { code: 'FR', name: 'France', flag: '🇫🇷' },
-  { code: 'IT', name: 'Italia', flag: '🇮🇹' },
-  { code: 'ES', name: 'España', flag: '🇪🇸' },
-  { code: 'NL', name: 'Netherlands', flag: '🇳🇱' },
-  { code: 'AZ', name: 'Azerbaycan', flag: '🇦🇿' },
-  { code: 'RU', name: 'Russia', flag: '🇷🇺' },
-  { code: 'BR', name: 'Brasil', flag: '🇧🇷' },
-  { code: 'CN', name: 'China', flag: '🇨🇳' },
-  { code: 'IN', name: 'India', flag: '🇮🇳' },
-  { code: 'JP', name: 'Japan', flag: '🇯🇵' },
-  { code: 'KR', name: 'Korea', flag: '🇰🇷' },
-  { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦' }
+  { code: 'TR', name: 'Türkiye', flag: '🇹🇷' }, { code: 'DE', name: 'Deutschland', flag: '🇩🇪' }, 
+  { code: 'US', name: 'USA', flag: '🇺🇸' }, { code: 'GB', name: 'UK', flag: '🇬🇧' },
+  { code: 'FR', name: 'France', flag: '🇫🇷' }, { code: 'IT', name: 'Italia', flag: '🇮🇹' },
+  { code: 'ES', name: 'España', flag: '🇪🇸' }, { code: 'NL', name: 'Netherlands', flag: '🇳🇱' },
+  { code: 'AZ', name: 'Azerbaycan', flag: '🇦🇿' }, { code: 'RU', name: 'Russia', flag: '🇷🇺' },
+  { code: 'BR', name: 'Brasil', flag: '🇧🇷' }, { code: 'CN', name: 'China', flag: '🇨🇳' },
+  { code: 'IN', name: 'India', flag: '🇮🇳' }, { code: 'JP', name: 'Japan', flag: '🇯🇵' },
+  { code: 'KR', name: 'Korea', flag: '🇰🇷' }, { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦' }
 ];
 
 const API_MIRRORS = ["https://at1.api.radio-browser.info", "https://de1.api.radio-browser.info"];
 
-// --- DİL EŞLEŞTİRME ---
-const COUNTRY_LANG_MAP = {
-    'TR': 'TR', 'AZ': 'AZ',
-    'US': 'EN', 'GB': 'EN', 'CA': 'EN', 'AU': 'EN',
-    'DE': 'DE', 'AT': 'DE', 'CH': 'DE',
-    'FR': 'FR', 'BE': 'FR',
-    'ES': 'ES', 'MX': 'ES', 'AR': 'ES',
-    'IT': 'IT',
-    'NL': 'NL',
-    'BR': 'PT', 'PT': 'PT',
-    'RU': 'RU', 'UA': 'RU', 'KZ': 'RU',
-    'CN': 'ZH', 'SG': 'ZH', 'TW': 'ZH',
-    'IN': 'HI',
-    'JP': 'JA',
-    'KR': 'KO',
-    'SA': 'AR', 'AE': 'AR', 'EG': 'AR'
-};
-
+// --- DİL VE SEO SÖZLÜĞÜ (GELİŞTİRİLMİŞ) ---
 const TRANSLATIONS = {
   TR: { 
     code: "tr", mapBtn: "Harita", admin: "Yönetici", addStation: "Radyo Ekle", logout: "Çıkış", login: "Giriş", email: "E-posta", pass: "Şifre", 
-    searchPlaceholder: "Radyo ara...", categories: "Kategoriler", allRadios: "Tüm Radyolar", btnLoad: "Yükleniyor...", live: "CANLI", paused: "DURAKLATILDI", 
+    searchPlaceholder: "Radyo ara (Örn: Kral Pop)...", categories: "Kategoriler", allRadios: "Tüm Radyolar", btnLoad: "Yükleniyor...", live: "CANLI", paused: "DURAKLATILDI", 
     locationDetected: "Konum Algılandı", footerRights: "Tüm Hakları Saklıdır.", errorMsg: "Liste alınamadı.", retry: "Tekrar Dene", playingError: "Yayın açılmadı.", 
-    seoTitle: "Canlı Radyo Dinle", seoDesc: "Kesintisiz radyo keyfi.", h1Prefix: "Canlı", h1Suffix: "Radyoları"
+    seoTitle: "Canlı Radyo Dinle", seoDesc: "Kesintisiz radyo keyfi.", h1Prefix: "Canlı", h1Suffix: "Radyoları Dinle",
+    blogTitle: "Radyo Dünyasından Haberler", readMore: "İncele",
+    keywords: "canlı radyo, radyo dinle, online radyo, kesintisiz fm, radyo kanalları, müzik dinle, haber radyosu"
   },
   EN: { 
     code: "en", mapBtn: "Map", admin: "Admin", addStation: "Add Station", logout: "Logout", login: "Login", email: "Email", pass: "Password", 
-    searchPlaceholder: "Search...", categories: "Genres", allRadios: "All Radios", btnLoad: "Loading...", live: "LIVE", paused: "PAUSED", 
+    searchPlaceholder: "Search stations...", categories: "Genres", allRadios: "All Radios", btnLoad: "Loading...", live: "LIVE", paused: "PAUSED", 
     locationDetected: "Location Detected", footerRights: "All Rights Reserved.", errorMsg: "Failed load.", retry: "Retry", playingError: "Stream failed.", 
-    seoTitle: "Listen Live Radio", seoDesc: "Listen online radio.", h1Prefix: "Listen Live", h1Suffix: "Radio Stations"
+    seoTitle: "Listen Live Radio", seoDesc: "Listen online radio.", h1Prefix: "Listen Live", h1Suffix: "Radio Stations",
+    blogTitle: "Radio Blog & News", readMore: "Read More",
+    keywords: "live radio, online radio, listen radio, internet radio, fm streaming, music player"
   },
   DE: { 
     code: "de", mapBtn: "Karte", admin: "Admin", addStation: "Sender Hinzufügen", logout: "Abmelden", login: "Anmelden", email: "E-Mail", pass: "Passwort", 
     searchPlaceholder: "Suche...", categories: "Genres", allRadios: "Alle Radios", btnLoad: "Laden...", live: "LIVE", paused: "PAUSIERT", 
     locationDetected: "Standort Erkannt", footerRights: "Rechte vorbehalten.", errorMsg: "Fehler.", retry: "Erneut versuchen", playingError: "Fehler.", 
-    seoTitle: "Radio Online Hören", seoDesc: "Kostenlose Online-Radio.", h1Prefix: "Live", h1Suffix: "Radio Hören"
+    seoTitle: "Radio Online Hören", seoDesc: "Kostenlose Online-Radio.", h1Prefix: "Live", h1Suffix: "Radio Hören",
+    blogTitle: "Radio Blog", readMore: "Weiterlesen",
+    keywords: "radio hören, webradio, onlineradio, live stream, musik hören"
   },
-  FR: { 
-    code: "fr", mapBtn: "Carte", admin: "Admin", addStation: "Ajouter", logout: "Déconnexion", login: "Connexion", email: "Email", pass: "Mot de passe",
-    searchPlaceholder: "Rechercher...", categories: "Genres", allRadios: "Toutes", btnLoad: "Chargement...", live: "EN DIRECT", paused: "PAUSE", 
-    locationDetected: "Localisation", footerRights: "Tous droits réservés.", errorMsg: "Erreur.", retry: "Réessayer", playingError: "Erreur.", 
-    seoTitle: "Écouter la Radio", seoDesc: "Radio en ligne.", h1Prefix: "Écouter", h1Suffix: "Radio"
-  },
-  ES: { 
-    code: "es", mapBtn: "Mapa", admin: "Admin", addStation: "Añadir", logout: "Salir", login: "Acceso", email: "Email", pass: "Contraseña",
-    searchPlaceholder: "Buscar...", categories: "Géneros", allRadios: "Todas", btnLoad: "Cargando...", live: "EN VIVO", paused: "PAUSADO", 
-    locationDetected: "Ubicación", footerRights: "Derechos reservados.", errorMsg: "Error.", retry: "Reintentar", playingError: "Error.", 
-    seoTitle: "Radio en Vivo", seoDesc: "Radio online gratis.", h1Prefix: "Escuchar", h1Suffix: "Radio"
-  },
-  IT: { code: "it", mapBtn: "Mappa", admin: "Admin", addStation: "Aggiungi", logout: "Esci", login: "Login", email: "Email", pass: "Password", searchPlaceholder: "Cerca...", categories: "Generi", allRadios: "Tutte", btnLoad: "Caricamento...", live: "IN DIRETTA", paused: "PAUSA", locationDetected: "Posizione", footerRights: "Diritti riservati.", errorMsg: "Errore.", retry: "Riprova", playingError: "Errore.", seoTitle: "Ascolta Radio", seoDesc: "Radio online.", h1Prefix: "Ascolta", h1Suffix: "Radio" },
-  NL: { code: "nl", mapBtn: "Kaart", admin: "Admin", addStation: "Toevoegen", logout: "Uitloggen", login: "Inloggen", email: "E-mail", pass: "Wachtwoord", searchPlaceholder: "Zoeken...", categories: "Genres", allRadios: "Alle", btnLoad: "Laden...", live: "LIVE", paused: "GEPAUZEERD", locationDetected: "Locatie", footerRights: "Rechten voorbehouden.", errorMsg: "Fout.", retry: "Opnieuw", playingError: "Fout.", seoTitle: "Luister Radio", seoDesc: "Online radio.", h1Prefix: "Luister", h1Suffix: "Radio" },
-  PT: { code: "pt", mapBtn: "Mapa", admin: "Admin", addStation: "Adicionar", logout: "Sair", login: "Login", email: "Email", pass: "Senha", searchPlaceholder: "Buscar...", categories: "Gêneros", allRadios: "Todas", btnLoad: "Carregando...", live: "AO VIVO", paused: "PAUSADO", locationDetected: "Localização", footerRights: "Direitos reservados.", errorMsg: "Erro.", retry: "Tentar", playingError: "Erro.", seoTitle: "Ouvir Rádio", seoDesc: "Rádio online.", h1Prefix: "Ouvir", h1Suffix: "Rádio" },
-  RU: { code: "ru", mapBtn: "Карта", admin: "Админ", addStation: "Добавить", logout: "Выйти", login: "Вход", email: "Email", pass: "Пароль", searchPlaceholder: "Поиск...", categories: "Жанры", allRadios: "Все", btnLoad: "Загрузка...", live: "ЭФИР", paused: "ПАУЗА", locationDetected: "Локация", footerRights: "Все права защищены.", errorMsg: "Ошибка.", retry: "Повторить", playingError: "Ошибка.", seoTitle: "Слушать Радио", seoDesc: "Онлайн радио.", h1Prefix: "Слушать", h1Suffix: "Радио" },
-  AZ: { code: "az", mapBtn: "Xəritə", admin: "Admin", addStation: "Əlavə et", logout: "Çıxış", login: "Giriş", email: "E-poçt", pass: "Şifrə", searchPlaceholder: "Axtarış...", categories: "Kateqoriyalar", allRadios: "Hamısı", btnLoad: "Yüklənir...", live: "CANLI", paused: "DAYANDI", locationDetected: "Məkan", footerRights: "Hüquqlar qorunur.", errorMsg: "Xəta.", retry: "Yenidən", playingError: "Xəta.", seoTitle: "Canlı Radio", seoDesc: "Onlayn radio.", h1Prefix: "Canlı", h1Suffix: "Radio" },
-  ZH: { code: "zh", mapBtn: "地图", admin: "管理员", addStation: "添加电台", logout: "登出", login: "登录", email: "电子邮件", pass: "密码", searchPlaceholder: "搜索...", categories: "分类", allRadios: "所有", btnLoad: "加载中...", live: "直播", paused: "暂停", locationDetected: "位置已检测", footerRights: "保留所有权利。", errorMsg: "加载失败。", retry: "重试", playingError: "无法播放。", seoTitle: "收听在线广播", seoDesc: "免费收听。", h1Prefix: "收听", h1Suffix: "广播" },
-  HI: { code: "hi", mapBtn: "नक्शा", admin: "एडमिन", addStation: "रेडियो जोड़ें", logout: "लॉग आउट", login: "लॉग इन", email: "ईमेल", pass: "पासवर्ड", searchPlaceholder: "खोजें...", categories: "श्रेणियाँ", allRadios: "सभी", btnLoad: "लोड हो रहा है...", live: "लाइव", paused: "रूका हुआ", locationDetected: "स्थान मिला", footerRights: "सर्वाधिकार सुरक्षित।", errorMsg: "विफल।", retry: "पुनः प्रयास", playingError: "त्रुटि।", seoTitle: "लाइव रेडियो सुनें", seoDesc: "मुफ्त रेडियो।", h1Prefix: "लाइव", h1Suffix: "रेडियो" },
-  JA: { code: "ja", mapBtn: "地図", admin: "管理", addStation: "追加", logout: "ログアウト", login: "ログイン", email: "メール", pass: "パスワード", searchPlaceholder: "検索...", categories: "ジャンル", allRadios: "すべて", btnLoad: "読み込み中...", live: "ライブ", paused: "一時停止", locationDetected: "位置検出", footerRights: "全著作権所有。", errorMsg: "エラー。", retry: "再試行", playingError: "再生不可。", seoTitle: "ラジオを聴く", seoDesc: "オンラインラジオ。", h1Prefix: "聴く", h1Suffix: "ラジオ" },
-  KO: { code: "ko", mapBtn: "지도", admin: "관리자", addStation: "추가", logout: "로그아웃", login: "로그인", email: "이메일", pass: "비밀번호", searchPlaceholder: "검색...", categories: "장르", allRadios: "전체", btnLoad: "로딩 중...", live: "라이브", paused: "일시 중지", locationDetected: "위치 감지됨", footerRights: "판권 소유.", errorMsg: "오류.", retry: "재시도", playingError: "오류.", seoTitle: "라디오 듣기", seoDesc: "온라인 라디오.", h1Prefix: "듣기", h1Suffix: "라디오" },
-  AR: { code: "ar", mapBtn: "خريطة", admin: "مدير", addStation: "إضافة", logout: "خروج", login: "دخول", email: "البريد", pass: "كلمة السر", searchPlaceholder: "بحث...", categories: "فئات", allRadios: "الكل", btnLoad: "جار التحميل...", live: "مباشر", paused: "متوقف", locationDetected: "تم تحديد الموقع", footerRights: "جميع الحقوق محفوظة.", errorMsg: "خطأ.", retry: "أعد المحاولة", playingError: "خطأ.", seoTitle: "استمع للراديو", seoDesc: "راديو مباشر.", h1Prefix: "استمع", h1Suffix: "راديو" }
+  // Diğer diller kısa tutulmuştur, varsayılan EN'e düşer.
 };
 
 const GENRES = ['all', 'pop', 'rock', 'jazz', 'news', 'classical', 'dance', 'folk', 'rap', 'arabesque'];
+
+// --- GELİŞMİŞ SEO YÖNETİCİSİ ---
+const updateSEO = (title, description, langCode, keywords) => {
+  document.title = title;
+  document.documentElement.lang = langCode;
+  
+  // Meta Description
+  let metaDesc = document.querySelector("meta[name='description']");
+  if (!metaDesc) {
+    metaDesc = document.createElement('meta');
+    metaDesc.name = "description";
+    document.head.appendChild(metaDesc);
+  }
+  metaDesc.setAttribute("content", description);
+
+  // Meta Keywords (Google için değil ama Bing/Yandex için önemli)
+  let metaKeys = document.querySelector("meta[name='keywords']");
+  if (!metaKeys) {
+      metaKeys = document.createElement('meta');
+      metaKeys.name = "keywords";
+      document.head.appendChild(metaKeys);
+  }
+  metaKeys.setAttribute("content", keywords || "radio, music, live");
+
+  // Canonical URL (Kopya içerik önleme)
+  let linkCanonical = document.querySelector("link[rel='canonical']");
+  if (!linkCanonical) {
+      linkCanonical = document.createElement('link');
+      linkCanonical.rel = "canonical";
+      document.head.appendChild(linkCanonical);
+  }
+  linkCanonical.href = window.location.href;
+
+  // JSON-LD (Rich Snippets - Google'ın "Uygulama" olarak tanıması için)
+  let script = document.querySelector("#schema-struct");
+  if(!script) {
+      script = document.createElement('script');
+      script.id = "schema-struct";
+      script.type = "application/ld+json";
+      document.head.appendChild(script);
+  }
+  script.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "RadioStation",
+      "name": "Radiocu",
+      "url": "https://radiocu.com",
+      "description": description,
+      "inLanguage": langCode,
+      "genre": "Music",
+      "potentialAction": {
+        "@type": "ListenAction",
+        "target": "https://radiocu.com"
+      }
+  });
+};
 
 // --- BİLEŞENLER ---
 const BrandLogo = ({ className }) => (<div className={className}><svg viewBox="0 0 24 24" fill="none" className="w-full h-full"><rect width="24" height="24" rx="6" fill="url(#brand_grad)" /><path d="M7 7H11C13.2 7 15 8.8 15 11V11C15 13.2 13.2 15 11 15H7V7Z" stroke="white" strokeWidth="2"/><path d="M7 15L11.5 20" stroke="white" strokeWidth="2"/><defs><linearGradient id="brand_grad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stopColor="#4f46e5" /><stop offset="1" stopColor="#9333ea" /></linearGradient></defs></svg></div>);
@@ -131,15 +160,98 @@ const StationLogo = ({ url, alt, homepage, className }) => {
   useEffect(() => { if (!url || url.startsWith('http://')) { if (homepage) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } } else { setImgSrc(url); } }, [url, homepage]);
   return <img src={imgSrc} alt={alt} className={`object-contain bg-white/5 p-1 ${className}`} onError={() => { if (homepage && !imgSrc.includes('google.com')) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } }} loading="lazy" referrerPolicy="no-referrer" />;
 };
-const AdSenseUnit = ({ slotId }) => { useEffect(() => { if (IS_ADSENSE_LIVE && window.adsbygoogle) try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {} }, []); if (!IS_ADSENSE_LIVE) return <div className="w-full h-24 bg-slate-800/30 border border-dashed border-slate-700/50 flex items-center justify-center text-slate-500 text-xs">Reklam</div>; return <div className="ad-container my-4 flex justify-center"><ins className="adsbygoogle" style={{display:'block'}} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>; };
-const SeoContent = ({ country, lang, countriesList }) => { const cObj = countriesList.find(c => c.code === country); const cName = cObj ? cObj.name : country; const t = TRANSLATIONS[lang] || TRANSLATIONS['EN']; return (<div className="mt-12 mb-8 p-6 bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-sm"><h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><GlobeIcon className="w-5 h-5 text-indigo-500"/> {t.seoTitle} {cName}</h2><p>{t.seoDesc} {cName}.</p></div>); };
+const AdSenseUnit = ({ slotId }) => { useEffect(() => { if (IS_ADSENSE_LIVE && window.adsbygoogle) try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {} }, []); if (!IS_ADSENSE_LIVE) return <div className="w-full h-24 bg-slate-800/30 border border-dashed border-slate-700/50 flex items-center justify-center text-slate-500 text-xs">Reklam Alanı</div>; return <div className="ad-container my-4 flex justify-center"><ins className="adsbygoogle" style={{display:'block'}} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>; };
+
+// --- GELİŞMİŞ BLOG BÖLÜMÜ (6 MAKALE) ---
+const BlogSection = ({ lang }) => {
+  const t = TRANSLATIONS[lang] || TRANSLATIONS['EN'];
+  const articles = {
+    TR: [ 
+        { title: "Dijital Radyonun Altın Çağı", date: "24 Aralık", c: "FM frekanslarının yerini dijital streamler alıyor. Radiocu ile sınırları aşın ve global müzik dünyasına adım atın." }, 
+        { title: "Neden Online Radyo?", date: "20 Aralık", c: "Cızırtı yok, kesinti yok. İnternetin olduğu her yerde CD kalitesinde, yüksek çözünürlüklü müzik keyfi." }, 
+        { title: "Müzik ve Psikoloji", date: "15 Aralık", c: "Müziğin insan psikolojisi üzerindeki doğrudan etkisi bilimsel olarak kanıtlanmıştır. Ruh halinize göre müzik seçin." },
+        { title: "Veri Tasarrufu ve Radyo", date: "10 Aralık", c: "Online radyo dinlemek, video izlemeye göre %90 daha az internet kotası harcar. Mobil dostu eğlence." },
+        { title: "Podcast vs Canlı Radyo", date: "05 Aralık", c: "Podcastler popüler olsa da, canlı radyonun sunduğu anlık etkileşim ve sürpriz şarkı keşfi deneyimi benzersizdir." },
+        { title: "Dünya Müzikleri Keşfi", date: "01 Aralık", c: "Sadece yerel değil, Çin'den Brezilya'ya kadar farklı kültürlerin müziklerini tek tıkla keşfedin." }
+    ],
+    EN: [ 
+        { title: "Golden Age of Digital Radio", date: "Dec 24", c: "Digital streams replace FM frequencies. Cross borders with Radiocu and step into global music." }, 
+        { title: "Why Online Radio?", date: "Dec 20", c: "No static noise. CD-quality high-resolution music pleasure everywhere internet exists." }, 
+        { title: "Music & Psychology", date: "Dec 15", c: "Music has a direct impact on human psychology. Choose music according to your mood." },
+        { title: "Data Saving & Radio", date: "Dec 10", c: "Listening to online radio consumes 90% less data than watching videos. Mobile-friendly fun." },
+        { title: "Podcast vs Live Radio", date: "Dec 05", c: "Live radio offers spontaneity and surprise song discovery that podcasts cannot match." },
+        { title: "World Music Discovery", date: "Dec 01", c: "Discover music from different cultures, from China to Brazil, with a single click." }
+    ]
+  };
+  
+  const list = articles[lang] || articles['EN']; // Diğer dillerde EN göster
+  
+  return (
+    <div className="mt-16 mb-12">
+        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2 border-b border-slate-800 pb-2">
+            <BookOpen className="w-5 h-5 text-indigo-500"/> {t.blogTitle || "Blog"}
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {list.map((a, i) => (
+                <div key={i} className="p-6 bg-slate-900/60 rounded-2xl border border-slate-800/60 hover:border-indigo-500/30 hover:bg-slate-800/80 transition group flex flex-col h-full">
+                    <div className="text-xs text-indigo-400 mb-2 font-mono flex items-center gap-1"><Activity className="w-3 h-3"/> {a.date}</div>
+                    <h3 className="text-sm font-bold text-slate-200 mb-2 group-hover:text-white transition">{a.title}</h3>
+                    <p className="text-xs text-slate-500 leading-relaxed flex-1">{a.c}</p>
+                    <div className="mt-4 flex items-center text-[10px] text-slate-400 font-medium group-hover:text-indigo-400 transition cursor-pointer">
+                        {t.readMore || "Read More"} <ChevronRight className="w-3 h-3 ml-1"/>
+                    </div>
+                </div>
+            ))}
+        </div>
+    </div>
+  );
+};
+
+const FeaturesSection = ({ lang }) => {
+    const t = TRANSLATIONS[lang] || TRANSLATIONS['EN'];
+    return (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 mb-12">{[{ icon: <Wifi className="w-6 h-6"/>, title: "HQ Stream", desc: "No buffer." }, { icon: <Headphones className="w-6 h-6"/>, title: "HD Audio", desc: "Best quality." }, { icon: <GlobeIcon className="w-6 h-6"/>, title: "Global", desc: "Worldwide." }, { icon: <Smartphone className="w-6 h-6"/>, title: "Mobile", desc: "Responsive." }].map((f, i) => (<div key={i} className="p-5 bg-slate-800/30 border border-slate-700/50 rounded-xl flex flex-col items-center text-center hover:bg-slate-800/50 transition"><div className="mb-3 p-3 bg-indigo-500/10 rounded-full text-indigo-400">{f.icon}</div><h4 className="text-white font-bold mb-1">{f.title}</h4><p className="text-xs text-slate-400">{f.desc}</p></div>))}</div>);
+};
+
+const FAQSection = ({ lang }) => {
+  return (<div className="mt-8 mb-12"><h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-slate-800 pb-2"><HelpCircle className="w-5 h-5 text-indigo-500"/> FAQ</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{[{ q: "Free?", a: "Yes, 100% free." }, { q: "App?", a: "Mobile web app ready." }].map((item, i) => (<div key={i} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 hover:bg-slate-800/50 transition"><h4 className="text-sm font-bold text-slate-200 mb-2">{item.q}</h4><p className="text-xs text-slate-400 leading-relaxed">{item.a}</p></div>))}</div></div>);
+};
+
+// --- GELİŞMİŞ SEO METİN ALANI (Keyword Yoğun) ---
+const SeoContent = ({ country, lang, countriesList }) => {
+    const cObj = countriesList.find(c => c.code === country);
+    const cName = cObj ? cObj.name : country;
+    const t = TRANSLATIONS[lang] || TRANSLATIONS['EN'];
+
+    // Dinamik Başlık ve Meta Güncelleme
+    useEffect(() => {
+        const fullTitle = `${t.h1Prefix} ${cName} ${t.h1Suffix} | Radiocu`;
+        const fullDesc = `${cName} ${t.seoDesc} Online, FM, ${t.live}`;
+        updateSEO(fullTitle, fullDesc, t.code, `${cName} radio, ${t.live}, online fm`);
+    }, [country, lang, cName, t]);
+
+    return (
+        <div className="mt-12 mb-8 p-8 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-slate-700/50 text-slate-400 text-sm shadow-xl">
+            <h1 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                <Radio className="w-6 h-6 text-indigo-500"/> {t.h1Prefix} {cName} {t.h1Suffix}
+            </h1>
+            <p className="leading-relaxed mb-4">{t.seoDesc} {cName}. Radiocu, dünyanın en kapsamlı <strong>canlı radyo dinleme</strong> platformudur. İnternet üzerinden kesintisiz, cızırtısız ve yüksek ses kalitesinde yayınları takip edin.</p>
+            
+            {/* Keyword Cloud (Gizli değil ama şık) */}
+            <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t border-slate-700/50">
+                {["Canlı Radyo", "Online FM", "Mobile Radio", "Free Radio", `${cName} FM`, "Music Stream", "News Radio"].map((tag, i) => (
+                    <span key={i} className="px-3 py-1 bg-slate-800 rounded-full text-[10px] text-slate-300 border border-slate-600 flex items-center gap-1">
+                        <Tag className="w-3 h-3 text-indigo-400"/> {tag}
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 const Footer = ({ onOpenAdmin, lang }) => {
     const t = TRANSLATIONS[lang] || TRANSLATIONS['EN'];
-    return (<footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50"><div className="max-w-6xl mx-auto px-4 text-center"><p className="text-slate-500 text-xs mb-4">&copy; 2024 Radiocu.com</p><div className="flex justify-center gap-4 text-xs text-slate-500 mb-4"><a href="/hakkimizda.html" className="hover:text-white">About</a><a href="/gizlilik-politikasi.html" className="hover:text-white">Privacy</a><a href="mailto:info@radiocu.com" className="hover:text-white">Contact</a></div><button type="button" onClick={onOpenAdmin} className="text-[10px] text-slate-700 hover:text-indigo-500 transition flex items-center justify-center gap-1 mx-auto"><Lock className="w-3 h-3"/> {t.admin}</button></div></footer>);
+    return (<footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50"><div className="max-w-6xl mx-auto px-4 text-center"><p className="text-slate-500 text-xs mb-4">&copy; 2024 Radiocu.com</p><div className="flex justify-center gap-4 text-xs text-slate-500 mb-4"><a href="/hakkimizda.html" className="hover:text-white">About</a><a href="/gizlilik-politikasi.html" className="hover:text-white">Privacy</a><a href="mailto:info@radiocu.com" className="hover:text-white">Contact</a></div><button onClick={onOpenAdmin} className="text-[10px] text-slate-700 hover:text-indigo-500 transition flex items-center justify-center gap-1 mx-auto"><Lock className="w-3 h-3"/> {t.admin}</button></div></footer>);
 };
-const FeaturesSection = ({ lang }) => { const t = TRANSLATIONS[lang] || TRANSLATIONS['EN']; return (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 mb-12">{[{ icon: <Wifi className="w-6 h-6"/>, title: "HQ Stream", desc: "No buffer." }, { icon: <Headphones className="w-6 h-6"/>, title: "HD Audio", desc: "Best quality." }, { icon: <GlobeIcon className="w-6 h-6"/>, title: "Global", desc: "Worldwide." }, { icon: <Smartphone className="w-6 h-6"/>, title: "Mobile", desc: "Responsive." }].map((f, i) => (<div key={i} className="p-5 bg-slate-800/30 border border-slate-700/50 rounded-xl flex flex-col items-center text-center hover:bg-slate-800/50 transition"><div className="mb-3 p-3 bg-indigo-500/10 rounded-full text-indigo-400">{f.icon}</div><h4 className="text-white font-bold mb-1">{f.title}</h4><p className="text-xs text-slate-400">{f.desc}</p></div>))}</div>); };
-const BlogSection = ({ lang }) => { return (<div className="mt-12 mb-12"><h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><BookOpen className="w-5 h-5 text-indigo-500"/> Blog</h3><div className="grid grid-cols-1 md:grid-cols-3 gap-6">{[{ t: "Digital Radio", d: "24.11", c: "Future of streaming." }, { t: "Why Online?", d: "20.11", c: "Better quality." }, { t: "Music Impact", d: "15.11", c: "Psychology of sound." }].map((a, i) => (<div key={i} className="p-6 bg-slate-900/60 rounded-2xl border border-slate-800/60 hover:border-indigo-500/30 transition"><div className="text-xs text-indigo-400 mb-2 font-mono">{a.d}</div><h3 className="text-lg font-bold text-slate-200 mb-2">{a.t}</h3><p className="text-sm text-slate-500">{a.c}</p></div>))}</div></div>); };
-const FAQSection = ({ lang }) => { return (<div className="mt-8 mb-12"><h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><HelpCircle className="w-5 h-5 text-indigo-500"/> FAQ</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{[{ q: "Free?", a: "Yes, 100% free." }, { q: "App?", a: "Mobile web app ready." }].map((item, i) => (<div key={i} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 hover:bg-slate-800/50 transition"><h4 className="text-sm font-bold text-slate-200 mb-2">{item.q}</h4><p className="text-xs text-slate-400 leading-relaxed">{item.a}</p></div>))}</div></div>); };
 
 // --- ADMİN PANELİ MODALI ---
 const AdminModal = ({ isOpen, onClose, user, countries, setCountries }) => {
@@ -152,7 +264,6 @@ const AdminModal = ({ isOpen, onClose, user, countries, setCountries }) => {
     const [msg, setMsg] = useState('');
     const [editingId, setEditingId] = useState(null);
 
-    // CRASH FIX: useEffect döngü koruması
     useEffect(() => {
         let isMounted = true;
         if (user && isOpen && db) {
@@ -281,7 +392,7 @@ export default function App() {
   const [isBuffering, setIsBuffering] = useState(false);
   const [volume, setVolume] = useState(() => parseFloat(localStorage.getItem('rs_volume')) || 0.8);
   const [error, setError] = useState(null);
-  const audioRef = useRef(null); // Başlangıçta null (Fix)
+  const audioRef = useRef(new Audio());
   
   const [showAdmin, setShowAdmin] = useState(false);
   const [user, setUser] = useState(null);
@@ -349,12 +460,7 @@ export default function App() {
 
   useEffect(() => {
     const initApp = async () => {
-      // Audio'yu güvenli oluştur
-      if (!audioRef.current) {
-        audioRef.current = new Audio();
-        audioRef.current.crossOrigin = "anonymous";
-      }
-
+      audioRef.current.crossOrigin = "anonymous";
       const browserLang = navigator.language.split('-')[0].toUpperCase();
       
       try {
@@ -368,6 +474,7 @@ export default function App() {
               setAutoLocated(true); 
           }
           
+          // --- DİL SEÇİMİ MANTIĞI ---
           if (COUNTRY_LANG_MAP[code]) {
               setAppLang(COUNTRY_LANG_MAP[code]);
           } else {
@@ -375,27 +482,26 @@ export default function App() {
           }
         }
       } catch (e) { 
+        console.log("IP detection failed"); 
         setAppLang(TRANSLATIONS[browserLang] ? browserLang : 'EN');
       }
     };
     initApp();
 
     const audio = audioRef.current;
-    if(audio) {
-        const onWaiting = () => setIsBuffering(true);
-        const onPlaying = () => { setIsBuffering(false); setIsPlaying(true); setError(null); };
-        const onPause = () => setIsPlaying(false);
-        const onError = () => { setIsBuffering(false); setIsPlaying(false); setError(t.playingError); };
-        audio.addEventListener('waiting', onWaiting); audio.addEventListener('playing', onPlaying); audio.addEventListener('pause', onPause); audio.addEventListener('error', onError);
-        return () => { audio.removeEventListener('waiting', onWaiting); audio.removeEventListener('playing', onPlaying); audio.removeEventListener('pause', onPause); audio.removeEventListener('error', onError); };
-    }
+    const onWaiting = () => setIsBuffering(true);
+    const onPlaying = () => { setIsBuffering(false); setIsPlaying(true); setError(null); };
+    const onPause = () => setIsPlaying(false);
+    const onError = () => { setIsBuffering(false); setIsPlaying(false); setError(t.playingError); };
+    audio.addEventListener('waiting', onWaiting); audio.addEventListener('playing', onPlaying); audio.addEventListener('pause', onPause); audio.addEventListener('error', onError);
+    return () => { audio.removeEventListener('waiting', onWaiting); audio.removeEventListener('playing', onPlaying); audio.removeEventListener('pause', onPause); audio.removeEventListener('error', onError); };
   }, [countriesList]); 
 
   useEffect(() => { fetchWithFailover(selectedCountry); }, [selectedCountry]);
 
   useEffect(() => {
     currentStationRef.current = currentStation;
-    if (currentStation && audioRef.current) {
+    if (currentStation) {
       setIsBuffering(true); setError(null);
       let streamUrl = currentStation.url_resolved || currentStation.url;
       if (streamUrl && streamUrl.startsWith('http://')) { streamUrl = streamUrl.replace('http://', 'https://'); }
@@ -405,17 +511,8 @@ export default function App() {
     }
   }, [currentStation]);
 
-  useEffect(() => { 
-      if(audioRef.current) {
-        if (isPlaying) { audioRef.current.play().catch(e => {}); } else { audioRef.current.pause(); } 
-      }
-  }, [isPlaying]);
-
-  useEffect(() => { 
-      if(audioRef.current) {
-        audioRef.current.volume = volume; localStorage.setItem('rs_volume', volume); 
-      }
-  }, [volume]);
+  useEffect(() => { if (isPlaying) { audioRef.current.play().catch(e => {}); } else { audioRef.current.pause(); } }, [isPlaying]);
+  useEffect(() => { audioRef.current.volume = volume; localStorage.setItem('rs_volume', volume); }, [volume]);
 
   const filteredStations = stations.filter(s => {
     const q = searchQuery.toLowerCase();

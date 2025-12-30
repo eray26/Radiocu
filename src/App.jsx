@@ -28,29 +28,8 @@ try {
     db = getFirestore(app);
     auth = getAuth(app);
 } catch (e) {
-    console.warn("Firebase bağlantı hatası:", e);
-    // Hata durumunda değişkenleri null bırakıyoruz ki site çökmesin
-    db = null;
-    auth = null;
+    console.warn("Firebase hatası:", e);
 }
-
-// --- ÜLKE -> DİL EŞLEŞTİRME TABLOSU ---
-const COUNTRY_LANG_MAP = {
-    'TR': 'TR', 'AZ': 'AZ',
-    'US': 'EN', 'GB': 'EN', 'CA': 'EN', 'AU': 'EN',
-    'DE': 'DE', 'AT': 'DE', 'CH': 'DE',
-    'FR': 'FR', 'BE': 'FR',
-    'ES': 'ES', 'MX': 'ES', 'AR': 'ES',
-    'IT': 'IT',
-    'NL': 'NL',
-    'BR': 'PT', 'PT': 'PT',
-    'RU': 'RU', 'UA': 'RU', 'KZ': 'RU',
-    'CN': 'ZH', 'SG': 'ZH', 'TW': 'ZH',
-    'IN': 'HI',
-    'JP': 'JA',
-    'KR': 'KO',
-    'SA': 'AR', 'AE': 'AR', 'EG': 'AR'
-};
 
 // --- SABİT LİSTELER ---
 const VIP_STATIONS_DEFAULT = {
@@ -61,7 +40,6 @@ const VIP_STATIONS_DEFAULT = {
   ]
 };
 
-// --- GENİŞLETİLMİŞ ÜLKE LİSTESİ ---
 const DEFAULT_COUNTRIES = [
   { code: 'TR', name: 'Türkiye', flag: '🇹🇷' }, 
   { code: 'DE', name: 'Deutschland', flag: '🇩🇪' }, 
@@ -83,7 +61,24 @@ const DEFAULT_COUNTRIES = [
 
 const API_MIRRORS = ["https://at1.api.radio-browser.info", "https://de1.api.radio-browser.info"];
 
-// --- TAM KAPSAMLI DİL SÖZLÜĞÜ ---
+// --- DİL EŞLEŞTİRME ---
+const COUNTRY_LANG_MAP = {
+    'TR': 'TR', 'AZ': 'AZ',
+    'US': 'EN', 'GB': 'EN', 'CA': 'EN', 'AU': 'EN',
+    'DE': 'DE', 'AT': 'DE', 'CH': 'DE',
+    'FR': 'FR', 'BE': 'FR',
+    'ES': 'ES', 'MX': 'ES', 'AR': 'ES',
+    'IT': 'IT',
+    'NL': 'NL',
+    'BR': 'PT', 'PT': 'PT',
+    'RU': 'RU', 'UA': 'RU', 'KZ': 'RU',
+    'CN': 'ZH', 'SG': 'ZH', 'TW': 'ZH',
+    'IN': 'HI',
+    'JP': 'JA',
+    'KR': 'KO',
+    'SA': 'AR', 'AE': 'AR', 'EG': 'AR'
+};
+
 const TRANSLATIONS = {
   TR: { 
     code: "tr", mapBtn: "Harita", admin: "Yönetici", addStation: "Radyo Ekle", logout: "Çıkış", login: "Giriş", email: "E-posta", pass: "Şifre", 
@@ -115,41 +110,16 @@ const TRANSLATIONS = {
     locationDetected: "Ubicación", footerRights: "Derechos reservados.", errorMsg: "Error.", retry: "Reintentar", playingError: "Error.", 
     seoTitle: "Radio en Vivo", seoDesc: "Radio online gratis.", h1Prefix: "Escuchar", h1Suffix: "Radio"
   },
-  ZH: { 
-    code: "zh", mapBtn: "地图", admin: "管理员", addStation: "添加电台", logout: "登出", login: "登录", email: "电子邮件", pass: "密码",
-    searchPlaceholder: "搜索电台...", categories: "分类", allRadios: "所有电台", btnLoad: "加载中...", live: "直播", paused: "暂停", 
-    locationDetected: "位置已检测", footerRights: "保留所有权利。", errorMsg: "加载失败。", retry: "重试", playingError: "无法播放。", 
-    seoTitle: "收听在线广播", seoDesc: "免费收听全球广播。", h1Prefix: "收听", h1Suffix: "现场广播"
-  },
-  HI: { 
-    code: "hi", mapBtn: "नक्शा", admin: "एडमिन", addStation: "रेडियो जोड़ें", logout: "लॉग आउट", login: "लॉग इन", email: "ईमेल", pass: "पासवर्ड",
-    searchPlaceholder: "रेडियो खोजें...", categories: "श्रेणियाँ", allRadios: "सभी रेडियो", btnLoad: "लोड हो रहा है...", live: "लाइव", paused: "रूका हुआ", 
-    locationDetected: "स्थान मिला", footerRights: "सर्वाधिकार सुरक्षित।", errorMsg: "विफल।", retry: "पुनः प्रयास करें", playingError: "त्रुटि।", 
-    seoTitle: "लाइव रेडियो सुनें", seoDesc: "मुफ्त ऑनलाइन रेडियो।", h1Prefix: "लाइव सुनें", h1Suffix: "रेडियो"
-  },
-  JA: { 
-    code: "ja", mapBtn: "地図", admin: "管理", addStation: "追加", logout: "ログアウト", login: "ログイン", email: "メール", pass: "パスワード",
-    searchPlaceholder: "検索...", categories: "ジャンル", allRadios: "すべて", btnLoad: "読み込み中...", live: "ライブ", paused: "一時停止", 
-    locationDetected: "位置検出", footerRights: "全著作権所有。", errorMsg: "エラー。", retry: "再試行", playingError: "再生不可。", 
-    seoTitle: "ラジオを聴く", seoDesc: "オンラインラジオ。", h1Prefix: "聴く", h1Suffix: "ラジオ"
-  },
-  KO: { 
-    code: "ko", mapBtn: "지도", admin: "관리자", addStation: "추가", logout: "로그아웃", login: "로그인", email: "이메일", pass: "비밀번호",
-    searchPlaceholder: "검색...", categories: "장르", allRadios: "전체", btnLoad: "로딩 중...", live: "라이브", paused: "일시 중지", 
-    locationDetected: "위치 감지됨", footerRights: "판권 소유.", errorMsg: "오류.", retry: "재시도", playingError: "오류.", 
-    seoTitle: "라디오 듣기", seoDesc: "온라인 라디오.", h1Prefix: "듣기", h1Suffix: "라디오"
-  },
-  AR: { 
-    code: "ar", mapBtn: "خريطة", admin: "مدير", addStation: "إضافة", logout: "خروج", login: "دخول", email: "البريد", pass: "كلمة السر",
-    searchPlaceholder: "بحث...", categories: "فئات", allRadios: "الكل", btnLoad: "جار التحميل...", live: "مباشر", paused: "متوقف", 
-    locationDetected: "تم تحديد الموقع", footerRights: "جميع الحقوق محفوظة.", errorMsg: "خطأ.", retry: "أعد المحاولة", playingError: "خطأ.", 
-    seoTitle: "استمع للراديو", seoDesc: "راديو مباشر.", h1Prefix: "استمع", h1Suffix: "راديو"
-  },
   IT: { code: "it", mapBtn: "Mappa", admin: "Admin", addStation: "Aggiungi", logout: "Esci", login: "Login", email: "Email", pass: "Password", searchPlaceholder: "Cerca...", categories: "Generi", allRadios: "Tutte", btnLoad: "Caricamento...", live: "IN DIRETTA", paused: "PAUSA", locationDetected: "Posizione", footerRights: "Diritti riservati.", errorMsg: "Errore.", retry: "Riprova", playingError: "Errore.", seoTitle: "Ascolta Radio", seoDesc: "Radio online.", h1Prefix: "Ascolta", h1Suffix: "Radio" },
   NL: { code: "nl", mapBtn: "Kaart", admin: "Admin", addStation: "Toevoegen", logout: "Uitloggen", login: "Inloggen", email: "E-mail", pass: "Wachtwoord", searchPlaceholder: "Zoeken...", categories: "Genres", allRadios: "Alle", btnLoad: "Laden...", live: "LIVE", paused: "GEPAUZEERD", locationDetected: "Locatie", footerRights: "Rechten voorbehouden.", errorMsg: "Fout.", retry: "Opnieuw", playingError: "Fout.", seoTitle: "Luister Radio", seoDesc: "Online radio.", h1Prefix: "Luister", h1Suffix: "Radio" },
   PT: { code: "pt", mapBtn: "Mapa", admin: "Admin", addStation: "Adicionar", logout: "Sair", login: "Login", email: "Email", pass: "Senha", searchPlaceholder: "Buscar...", categories: "Gêneros", allRadios: "Todas", btnLoad: "Carregando...", live: "AO VIVO", paused: "PAUSADO", locationDetected: "Localização", footerRights: "Direitos reservados.", errorMsg: "Erro.", retry: "Tentar", playingError: "Erro.", seoTitle: "Ouvir Rádio", seoDesc: "Rádio online.", h1Prefix: "Ouvir", h1Suffix: "Rádio" },
   RU: { code: "ru", mapBtn: "Карта", admin: "Админ", addStation: "Добавить", logout: "Выйти", login: "Вход", email: "Email", pass: "Пароль", searchPlaceholder: "Поиск...", categories: "Жанры", allRadios: "Все", btnLoad: "Загрузка...", live: "ЭФИР", paused: "ПАУЗА", locationDetected: "Локация", footerRights: "Все права защищены.", errorMsg: "Ошибка.", retry: "Повторить", playingError: "Ошибка.", seoTitle: "Слушать Радио", seoDesc: "Онлайн радио.", h1Prefix: "Слушать", h1Suffix: "Радио" },
-  AZ: { code: "az", mapBtn: "Xəritə", admin: "Admin", addStation: "Əlavə et", logout: "Çıxış", login: "Giriş", email: "E-poçt", pass: "Şifrə", searchPlaceholder: "Axtarış...", categories: "Kateqoriyalar", allRadios: "Hamısı", btnLoad: "Yüklənir...", live: "CANLI", paused: "DAYANDI", locationDetected: "Məkan", footerRights: "Hüquqlar qorunur.", errorMsg: "Xəta.", retry: "Yenidən", playingError: "Xəta.", seoTitle: "Canlı Radio", seoDesc: "Onlayn radio.", h1Prefix: "Canlı", h1Suffix: "Radio" }
+  AZ: { code: "az", mapBtn: "Xəritə", admin: "Admin", addStation: "Əlavə et", logout: "Çıxış", login: "Giriş", email: "E-poçt", pass: "Şifrə", searchPlaceholder: "Axtarış...", categories: "Kateqoriyalar", allRadios: "Hamısı", btnLoad: "Yüklənir...", live: "CANLI", paused: "DAYANDI", locationDetected: "Məkan", footerRights: "Hüquqlar qorunur.", errorMsg: "Xəta.", retry: "Yenidən", playingError: "Xəta.", seoTitle: "Canlı Radio", seoDesc: "Onlayn radio.", h1Prefix: "Canlı", h1Suffix: "Radio" },
+  ZH: { code: "zh", mapBtn: "地图", admin: "管理员", addStation: "添加电台", logout: "登出", login: "登录", email: "电子邮件", pass: "密码", searchPlaceholder: "搜索...", categories: "分类", allRadios: "所有", btnLoad: "加载中...", live: "直播", paused: "暂停", locationDetected: "位置已检测", footerRights: "保留所有权利。", errorMsg: "加载失败。", retry: "重试", playingError: "无法播放。", seoTitle: "收听在线广播", seoDesc: "免费收听。", h1Prefix: "收听", h1Suffix: "广播" },
+  HI: { code: "hi", mapBtn: "नक्शा", admin: "एडमिन", addStation: "रेडियो जोड़ें", logout: "लॉग आउट", login: "लॉग इन", email: "ईमेल", pass: "पासवर्ड", searchPlaceholder: "खोजें...", categories: "श्रेणियाँ", allRadios: "सभी", btnLoad: "लोड हो रहा है...", live: "लाइव", paused: "रूका हुआ", locationDetected: "स्थान मिला", footerRights: "सर्वाधिकार सुरक्षित।", errorMsg: "विफल।", retry: "पुनः प्रयास", playingError: "त्रुटि।", seoTitle: "लाइव रेडियो सुनें", seoDesc: "मुफ्त रेडियो।", h1Prefix: "लाइव", h1Suffix: "रेडियो" },
+  JA: { code: "ja", mapBtn: "地図", admin: "管理", addStation: "追加", logout: "ログアウト", login: "ログイン", email: "メール", pass: "パスワード", searchPlaceholder: "検索...", categories: "ジャンル", allRadios: "すべて", btnLoad: "読み込み中...", live: "ライブ", paused: "一時停止", locationDetected: "位置検出", footerRights: "全著作権所有。", errorMsg: "エラー。", retry: "再試行", playingError: "再生不可。", seoTitle: "ラジオを聴く", seoDesc: "オンラインラジオ。", h1Prefix: "聴く", h1Suffix: "ラジオ" },
+  KO: { code: "ko", mapBtn: "지도", admin: "관리자", addStation: "추가", logout: "로그아웃", login: "로그인", email: "이메일", pass: "비밀번호", searchPlaceholder: "검색...", categories: "장르", allRadios: "전체", btnLoad: "로딩 중...", live: "라이브", paused: "일시 중지", locationDetected: "위치 감지됨", footerRights: "판권 소유.", errorMsg: "오류.", retry: "재시도", playingError: "오류.", seoTitle: "라디오 듣기", seoDesc: "온라인 라디오.", h1Prefix: "듣기", h1Suffix: "라디오" },
+  AR: { code: "ar", mapBtn: "خريطة", admin: "مدير", addStation: "إضافة", logout: "خروج", login: "دخول", email: "البريد", pass: "كلمة السر", searchPlaceholder: "بحث...", categories: "فئات", allRadios: "الكل", btnLoad: "جار التحميل...", live: "مباشر", paused: "متوقف", locationDetected: "تم تحديد الموقع", footerRights: "جميع الحقوق محفوظة.", errorMsg: "خطأ.", retry: "أعد المحاولة", playingError: "خطأ.", seoTitle: "استمع للراديو", seoDesc: "راديو مباشر.", h1Prefix: "استمع", h1Suffix: "راديو" }
 };
 
 const GENRES = ['all', 'pop', 'rock', 'jazz', 'news', 'classical', 'dance', 'folk', 'rap', 'arabesque'];
@@ -165,7 +135,7 @@ const AdSenseUnit = ({ slotId }) => { useEffect(() => { if (IS_ADSENSE_LIVE && w
 const SeoContent = ({ country, lang, countriesList }) => { const cObj = countriesList.find(c => c.code === country); const cName = cObj ? cObj.name : country; const t = TRANSLATIONS[lang] || TRANSLATIONS['EN']; return (<div className="mt-12 mb-8 p-6 bg-slate-900/50 rounded-2xl border border-slate-800 text-slate-400 text-sm"><h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><GlobeIcon className="w-5 h-5 text-indigo-500"/> {t.seoTitle} {cName}</h2><p>{t.seoDesc} {cName}.</p></div>); };
 const Footer = ({ onOpenAdmin, lang }) => {
     const t = TRANSLATIONS[lang] || TRANSLATIONS['EN'];
-    return (<footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50"><div className="max-w-6xl mx-auto px-4 text-center"><p className="text-slate-500 text-xs mb-4">&copy; 2024 Radiocu.com</p><div className="flex justify-center gap-4 text-xs text-slate-500 mb-4"><a href="/hakkimizda.html" className="hover:text-white">About</a><a href="/gizlilik-politikasi.html" className="hover:text-white">Privacy</a><a href="mailto:info@radiocu.com" className="hover:text-white">Contact</a></div><button onClick={onOpenAdmin} className="text-[10px] text-slate-700 hover:text-indigo-500 transition flex items-center justify-center gap-1 mx-auto"><Lock className="w-3 h-3"/> {t.admin}</button></div></footer>);
+    return (<footer className="mt-16 py-12 border-t border-slate-800 bg-slate-950/50"><div className="max-w-6xl mx-auto px-4 text-center"><p className="text-slate-500 text-xs mb-4">&copy; 2024 Radiocu.com</p><div className="flex justify-center gap-4 text-xs text-slate-500 mb-4"><a href="/hakkimizda.html" className="hover:text-white">About</a><a href="/gizlilik-politikasi.html" className="hover:text-white">Privacy</a><a href="mailto:info@radiocu.com" className="hover:text-white">Contact</a></div><button type="button" onClick={onOpenAdmin} className="text-[10px] text-slate-700 hover:text-indigo-500 transition flex items-center justify-center gap-1 mx-auto"><Lock className="w-3 h-3"/> {t.admin}</button></div></footer>);
 };
 const FeaturesSection = ({ lang }) => { const t = TRANSLATIONS[lang] || TRANSLATIONS['EN']; return (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 mb-12">{[{ icon: <Wifi className="w-6 h-6"/>, title: "HQ Stream", desc: "No buffer." }, { icon: <Headphones className="w-6 h-6"/>, title: "HD Audio", desc: "Best quality." }, { icon: <GlobeIcon className="w-6 h-6"/>, title: "Global", desc: "Worldwide." }, { icon: <Smartphone className="w-6 h-6"/>, title: "Mobile", desc: "Responsive." }].map((f, i) => (<div key={i} className="p-5 bg-slate-800/30 border border-slate-700/50 rounded-xl flex flex-col items-center text-center hover:bg-slate-800/50 transition"><div className="mb-3 p-3 bg-indigo-500/10 rounded-full text-indigo-400">{f.icon}</div><h4 className="text-white font-bold mb-1">{f.title}</h4><p className="text-xs text-slate-400">{f.desc}</p></div>))}</div>); };
 const BlogSection = ({ lang }) => { return (<div className="mt-12 mb-12"><h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><BookOpen className="w-5 h-5 text-indigo-500"/> Blog</h3><div className="grid grid-cols-1 md:grid-cols-3 gap-6">{[{ t: "Digital Radio", d: "24.11", c: "Future of streaming." }, { t: "Why Online?", d: "20.11", c: "Better quality." }, { t: "Music Impact", d: "15.11", c: "Psychology of sound." }].map((a, i) => (<div key={i} className="p-6 bg-slate-900/60 rounded-2xl border border-slate-800/60 hover:border-indigo-500/30 transition"><div className="text-xs text-indigo-400 mb-2 font-mono">{a.d}</div><h3 className="text-lg font-bold text-slate-200 mb-2">{a.t}</h3><p className="text-sm text-slate-500">{a.c}</p></div>))}</div></div>); };
@@ -182,7 +152,7 @@ const AdminModal = ({ isOpen, onClose, user, countries, setCountries }) => {
     const [msg, setMsg] = useState('');
     const [editingId, setEditingId] = useState(null);
 
-    // KORUMALI VERİ ÇEKME (CRASH FIX)
+    // CRASH FIX: useEffect döngü koruması
     useEffect(() => {
         let isMounted = true;
         if (user && isOpen && db) {
@@ -200,7 +170,6 @@ const AdminModal = ({ isOpen, onClose, user, countries, setCountries }) => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        // GÜVENLİK KONTROLÜ: Auth yoksa çökmesin
         if (!auth) { setMsg("Veritabanı bağlantısı yok."); return; }
         try { await signInWithEmailAndPassword(auth, email, password); setMsg(""); } catch (error) { setMsg("Giriş başarısız."); }
     };
@@ -234,7 +203,6 @@ const AdminModal = ({ isOpen, onClose, user, countries, setCountries }) => {
                         <input type="password" placeholder="Şifre" className="w-full bg-slate-800 p-3 rounded text-white border border-slate-700" value={password} onChange={e=>setPassword(e.target.value)} />
                         <button type="submit" className="w-full bg-indigo-600 text-white p-3 rounded font-bold">Giriş Yap</button>
                         {msg && <p className="text-red-400 text-sm text-center">{msg}</p>}
-                        {!auth && <p className="text-xs text-orange-400 text-center">Firebase yapılandırılmamış.</p>}
                     </form>
                 ) : (
                     <div className="space-y-6">
@@ -313,7 +281,7 @@ export default function App() {
   const [isBuffering, setIsBuffering] = useState(false);
   const [volume, setVolume] = useState(() => parseFloat(localStorage.getItem('rs_volume')) || 0.8);
   const [error, setError] = useState(null);
-  const audioRef = useRef(new Audio());
+  const audioRef = useRef(null); // Başlangıçta null (Fix)
   
   const [showAdmin, setShowAdmin] = useState(false);
   const [user, setUser] = useState(null);
@@ -329,6 +297,7 @@ export default function App() {
                 const snapshot = await getDocs(q);
                 if(!snapshot.empty) {
                     const dynamicCountries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    // Çakışmayı önle
                     const combined = [...DEFAULT_COUNTRIES, ...dynamicCountries.filter(dc => !DEFAULT_COUNTRIES.some(def => def.code === dc.code))];
                     setCountriesList(combined);
                 }
@@ -380,7 +349,12 @@ export default function App() {
 
   useEffect(() => {
     const initApp = async () => {
-      audioRef.current.crossOrigin = "anonymous";
+      // Audio'yu güvenli oluştur
+      if (!audioRef.current) {
+        audioRef.current = new Audio();
+        audioRef.current.crossOrigin = "anonymous";
+      }
+
       const browserLang = navigator.language.split('-')[0].toUpperCase();
       
       try {
@@ -394,7 +368,6 @@ export default function App() {
               setAutoLocated(true); 
           }
           
-          // --- DİL SEÇİMİ ---
           if (COUNTRY_LANG_MAP[code]) {
               setAppLang(COUNTRY_LANG_MAP[code]);
           } else {
@@ -402,39 +375,47 @@ export default function App() {
           }
         }
       } catch (e) { 
-        console.log("IP detection failed"); 
         setAppLang(TRANSLATIONS[browserLang] ? browserLang : 'EN');
       }
     };
     initApp();
 
     const audio = audioRef.current;
-    const onWaiting = () => setIsBuffering(true);
-    const onPlaying = () => { setIsBuffering(false); setIsPlaying(true); setError(null); };
-    const onPause = () => setIsPlaying(false);
-    const onError = () => { setIsBuffering(false); setIsPlaying(false); setError(t.playingError); };
-    audio.addEventListener('waiting', onWaiting); audio.addEventListener('playing', onPlaying); audio.addEventListener('pause', onPause); audio.addEventListener('error', onError);
-    return () => { audio.removeEventListener('waiting', onWaiting); audio.removeEventListener('playing', onPlaying); audio.removeEventListener('pause', onPause); audio.removeEventListener('error', onError); };
+    if(audio) {
+        const onWaiting = () => setIsBuffering(true);
+        const onPlaying = () => { setIsBuffering(false); setIsPlaying(true); setError(null); };
+        const onPause = () => setIsPlaying(false);
+        const onError = () => { setIsBuffering(false); setIsPlaying(false); setError(t.playingError); };
+        audio.addEventListener('waiting', onWaiting); audio.addEventListener('playing', onPlaying); audio.addEventListener('pause', onPause); audio.addEventListener('error', onError);
+        return () => { audio.removeEventListener('waiting', onWaiting); audio.removeEventListener('playing', onPlaying); audio.removeEventListener('pause', onPause); audio.removeEventListener('error', onError); };
+    }
   }, [countriesList]); 
 
   useEffect(() => { fetchWithFailover(selectedCountry); }, [selectedCountry]);
 
   useEffect(() => {
     currentStationRef.current = currentStation;
-    if (currentStation) {
+    if (currentStation && audioRef.current) {
       setIsBuffering(true); setError(null);
       let streamUrl = currentStation.url_resolved || currentStation.url;
       if (streamUrl && streamUrl.startsWith('http://')) { streamUrl = streamUrl.replace('http://', 'https://'); }
       audioRef.current.src = streamUrl; audioRef.current.load();
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) { playPromise.catch(err => { if(err.name !== 'AbortError') { setIsBuffering(false); setIsPlaying(false); } }); }
-      // SEO
-      document.title = `${currentStation.name} - Radiocu`;
     }
   }, [currentStation]);
 
-  useEffect(() => { if (isPlaying) { audioRef.current.play().catch(e => {}); } else { audioRef.current.pause(); } }, [isPlaying]);
-  useEffect(() => { audioRef.current.volume = volume; localStorage.setItem('rs_volume', volume); }, [volume]);
+  useEffect(() => { 
+      if(audioRef.current) {
+        if (isPlaying) { audioRef.current.play().catch(e => {}); } else { audioRef.current.pause(); } 
+      }
+  }, [isPlaying]);
+
+  useEffect(() => { 
+      if(audioRef.current) {
+        audioRef.current.volume = volume; localStorage.setItem('rs_volume', volume); 
+      }
+  }, [volume]);
 
   const filteredStations = stations.filter(s => {
     const q = searchQuery.toLowerCase();

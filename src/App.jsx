@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Globe as GlobeIcon, Radio, MapPin, Music, Wifi, AlertCircle, Sparkles, X, Bot, MessageSquare, Loader2, Activity, Zap, Waves, Menu, RefreshCw, Star, Info, Shield, FileText, Mail, HelpCircle, ChevronRight, BookOpen, Headphones, Signal, Smartphone, Lock, LogIn, Plus, Trash2, Ban, CheckCircle, Compass, Tag, Settings } from 'lucide-react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Search, Radio, MapPin, Wifi, AlertCircle, X, Loader2, Activity, Zap, Waves, Menu, RefreshCw, Info, Shield, HelpCircle, ChevronRight, BookOpen, Headphones, Smartphone, Lock, Trash2, Ban, Tag, Settings } from 'lucide-react';
 
 // FIREBASE İMPORTLARI
 import { initializeApp } from "firebase/app";
@@ -657,17 +657,23 @@ export default function App() {
                                 ))
                             }
                         </div>
-                        <FeaturesSection lang={appLang} />
-                        <BlogSection lang={appLang} />
+                        <Suspense fallback={<div className="h-48" />}>
+                            <FeaturesSection lang={appLang} />
+                            <BlogSection lang={appLang} />
+                        </Suspense>
                         <SeoContent country={selectedCountry} lang={appLang} countriesList={countriesList} />
-                        <FAQSection lang={appLang} />
+                        <Suspense fallback={<div className="h-24" />}>
+                            <FAQSection lang={appLang} />
+                        </Suspense>
                         <Footer onOpenAdmin={() => setShowAdmin(true)} lang={appLang} />
                         <div className="mt-12 mb-24"><AdSenseUnit slotId="footer-ad" loading={loading} /></div>
                     </div>
                 </main>
 
                 {/* --- ADMİN MODALI (ÜLKELERİ DE YÖNETİR) --- */}
-                <AdminModal isOpen={showAdmin} onClose={() => setShowAdmin(false)} user={user} countries={countriesList} setCountries={setCountriesList} />
+                {showAdmin && <Suspense fallback={<div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"><Loader2 className="w-8 h-8 text-indigo-500 animate-spin" /></div>}>
+                    <AdminModal isOpen={showAdmin} onClose={() => setShowAdmin(false)} user={user} countries={countriesList} setCountries={setCountriesList} />
+                </Suspense>}
                 <CookieConsent />
             </div>
             <div className={`h-24 ${theme.bgPanel} border-t ${theme.border} fixed bottom-0 w-full flex items-center px-4 md:px-8 z-40 shadow-[0_-5px_30px_rgba(0,0,0,0.5)]`}>

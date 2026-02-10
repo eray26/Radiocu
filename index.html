@@ -1,27 +1,63 @@
 <!doctype html>
-<html lang="en">
+<html lang="tr">
 
 <head>
-  <!-- New Relic script removed for performance -->
-
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="/logo.png" />
-  <link rel="icon" href="/favicon.ico" sizes="any" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Radiocu</title>
+
+  <!-- SEO Meta Tags -->
+  <title>Radiocu - Canlı Radyo Dinle | Online FM Radyo İstasyonları</title>
+  <meta name="description"
+    content="Radiocu ile Türkiye ve dünyadan binlerce radyo istasyonunu ücretsiz, kesintisiz ve yüksek kalitede dinleyin. Pop, rock, jazz, haber ve daha fazlası." />
+  <meta name="keywords"
+    content="canlı radyo, online radyo, radyo dinle, FM radyo, internet radyosu, Türkçe radyo, müzik dinle, haber radyosu" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="Radiocu" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Radiocu - Canlı Radyo Dinle" />
+  <meta property="og:description" content="Türkiye ve dünyadan binlerce radyo istasyonunu ücretsiz dinleyin." />
+  <meta property="og:url" content="https://radiocu.com/" />
+  <meta property="og:image" content="https://radiocu.com/logo.png" />
+  <meta property="og:site_name" content="Radiocu" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Radiocu - Canlı Radyo Dinle" />
+  <meta name="twitter:description" content="Binlerce radyo istasyonunu ücretsiz dinleyin." />
+  <meta name="twitter:image" content="https://radiocu.com/logo.png" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="apple-touch-icon" href="/logo.png" />
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://radiocu.com/" />
+
+  <!-- Preconnect (sadece kritik olanlar) -->
+  <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />
+  <link rel="dns-prefetch" href="https://at1.api.radio-browser.info" />
+  <link rel="dns-prefetch" href="https://de1.api.radio-browser.info" />
+  <link rel="dns-prefetch" href="https://ipapi.co" />
+
+  <!-- AdSense (SEO-safe async loading) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3676498147737928"
     crossorigin="anonymous"></script>
-  <link rel="preconnect" href="https://ipapi.co" />
-  <link rel="preconnect" href="https://at1.api.radio-browser.info" />
-  <link rel="preconnect" href="https://de1.api.radio-browser.info" />
-  <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
-  <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
-  <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
-  <link rel="canonical" href="https://radiocu.com/" />
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- SSR/Prerender placeholder for LCP & CLS -->
+    <div
+      style="display:flex;align-items:center;justify-content:center;height:100vh;background:#020617;color:#6366f1;font-family:system-ui">
+      <div style="text-align:center">
+        <div style="font-size:2rem;font-weight:bold">Radiocu</div>
+        <div style="font-size:0.75rem;color:#94a3b8;margin-top:0.5rem">Yükleniyor...</div>
+      </div>
+    </div>
+  </div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 

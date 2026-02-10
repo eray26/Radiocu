@@ -1,36 +1,161 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gizlilik Politikası - Radiocu</title>
+    <meta name="robots" content="noindex">
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; background: #f8fafc; }
-        .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { color: #dc2626; }
-        h2 { margin-top: 25px; font-size: 1.2rem; color: #1f2937; }
-        .back-btn { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #333; color: white; border-radius: 5px; text-decoration: none; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.8;
+            color: #1e293b;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f1f5f9;
+        }
+
+        .container {
+            background: white;
+            padding: 60px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            color: #0f172a;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            border-bottom: 3px solid #6366f1;
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #334155;
+            margin-top: 40px;
+            font-size: 1.5rem;
+            border-left: 4px solid #6366f1;
+            padding-left: 15px;
+        }
+
+        p,
+        li {
+            color: #475569;
+            font-size: 1.05rem;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 12px 24px;
+            background: #0f172a;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
+            background: #1e293b;
+        }
+
+        .date {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 40px;
+            display: block;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <a href="/" class="back-btn">← Ana Sayfaya Dön</a>
+
         <h1>Gizlilik Politikası</h1>
-        <p>Son Güncelleme: 24.12.2024</p>
-        
-        <p>Radiocu.com olarak kişisel verilerinizin güvenliğine önem veriyoruz. Bu Gizlilik Politikası, sitemizi kullandığınızda hangi verilerin toplandığını açıklar.</p>
+        <span class="date">Son Güncelleme: 10 Şubat 2026</span>
 
-        <h2>1. Toplanan Veriler</h2>
-        <p>Sitemizi ziyaret ettiğinizde, IP adresiniz, tarayıcı türünüz ve ziyaret ettiğiniz sayfalar gibi standart log kayıtları tutulabilir. Bu veriler sadece site güvenliği ve analitik amaçlarla kullanılır.</p>
+        <p>Radiocu ("biz", "bizim" veya "site") olarak, ziyaretçilerimizin ("siz") gizliliğine büyük önem veriyoruz. Bu
+            Gizlilik Politikası, radiocu.com web sitesini kullandığınızda kişisel verilerinizin nasıl toplandığını,
+            kullanıldığını ve korunduğunu açıklar.</p>
 
-        <h2>2. Çerezler (Cookies)</h2>
-        <p>Sitemizde kullanıcı deneyimini artırmak ve reklam göstermek amacıyla çerezler kullanılmaktadır. Google AdSense gibi üçüncü taraf satıcılar, sitemizde reklam yayınlamak için çerezleri kullanır.</p>
+        <h2>1. Toplanan Bilgiler</h2>
+        <p>Sitemizi ziyaret ettiğinizde aşağıdaki teknik veriler otomatik olarak toplanabilir:</p>
+        <ul>
+            <li><strong>Log Kayıtları:</strong> IP adresi, tarayıcı türü, işletim sistemi, referans sayfası, ziyaret
+                tarihi ve saati.</li>
+            <li><strong>Cihaz Bilgileri:</strong> Kullandığınız cihazın (mobil, masaüstü, tablet) ekran çözünürlüğü ve
+                modeli.</li>
+        </ul>
+        <p><em>Not: Radiocu.com üzerinden üyelik oluşturmadığınız sürece adınız, e-posta adresiniz veya telefon
+                numaranız gibi doğrudan kimlik tanımlayıcı bilgileri toplamıyoruz.</em></p>
 
-        <h2>3. Dış Bağlantılar</h2>
-        <p>Sitemizde yer alan radyo yayın linkleri, ilgili radyoların sunucularından sağlanmaktadır. Bu dış bağlantıların içeriğinden Radiocu sorumlu değildir.</p>
+        <h2>2. Çerezler (Cookies) ve Üçüncü Taraf Teknolojileri</h2>
+        <p>Hizmet kalitemizi artırmak ve size uygun içerikler sunmak için çerezler kullanıyoruz. Sitemizde kullanılan
+            başlıca çerez türleri ve sağlayıcılar şunlardır:</p>
 
-        <h2>4. İletişim</h2>
-        <p>Gizlilik politikamızla ilgili sorularınız için: info@radiocu.com</p>
+        <h3>2.1. Google AdSense (Reklamlar)</h3>
+        <p>Sitemiz, reklam gösterimi için Google AdSense hizmetini kullanmaktadır. Google ve iş ortakları, size ilgi
+            alanlarınıza dayalı reklamlar sunmak için "DoubleClick" çerezini kullanabilir.</p>
+        <ul>
+            <li>Üçüncü taraf satıcı olarak Google, sitemizde reklam yayınlamak için çerezlerden yararlanır.</li>
+            <li>Google'ın reklam çerezlerini kullanımı, Google'ın ve diğer sitelerin internetteki ziyaret geçmişine
+                dayalı reklamlar sunmasını sağlar.</li>
+            <li>Kişiselleştirilmiş reklamları <a href="https://www.google.com/settings/ads" target="_blank"
+                    rel="nofollow">Reklam Ayarları</a> sayfasından devre dışı bırakabilirsiniz.</li>
+        </ul>
+
+        <h3>2.2. Analitik ve Performans</h3>
+        <p>Ziyaretçi trafiğini analiz etmek ve site performansını ölçmek için anonimleştirilmiş veriler (örn. en çok
+            dinlenen radyolar, sayfa yüklenme süreleri) toplanabilir.</p>
+
+        <h2>3. Verilerin Kullanım Amacı</h2>
+        <p>Topladığımız veriler şu amaçlarla kullanılır:</p>
+        <ul>
+            <li>Web sitesinin düzgün çalışmasını sağlamak ve teknik sorunları gidermek.</li>
+            <li>Kötü niyetli girişimleri (bot saldırıları, spam) tespit etmek ve engellemek.</li>
+            <li>İçeriği ve tasarımı kullanıcı tercihlerine göre iyileştirmek.</li>
+            <li>Yasal yükümlülüklere uymak.</li>
+        </ul>
+
+        <h2>4. Dış Bağlantılar</h2>
+        <p>Radiocu.com, üçüncü taraf radyo istasyonlarına ait yayın akışlarına (stream linkleri) bağlantı verir. Bu
+            bağlantılara tıkladığınızda ilgili radyo sunucusuna bağlanırsınız. Radyo kanallarının kendi gizlilik
+            politikaları ve içerikleri üzerinde herhangi bir kontrolümüz yoktur ve sorumluluk kabul etmeyiz.</p>
+
+        <h2>5. Veri Güvenliği</h2>
+        <p>Verilerinizi yetkisiz erişime, değiştirmeye veya ifşaya karşı korumak için endüstri standardı güvenlik
+            önlemleri (SSL şifreleme, güvenlik duvarları) uyguluyoruz.</p>
+
+        <h2>6. Çocukların Gizliliği</h2>
+        <p>Sitemiz genel izleyici kitlesine hitap etmektedir ve 13 yaşından küçük çocuklardan bilerek kişisel bilgi
+            toplamamaktayız.</p>
+
+        <h2>7. Değişiklikler</h2>
+        <p>Bu politikayı zaman zaman güncelleyebiliriz. Önemli değişiklikler olduğunda bu sayfada yeni tarihi belirterek
+            sizi bilgilendireceğiz.</p>
+
+        <h2>8. İletişim</h2>
+        <p>Gizlilik uygulamalarımızla ilgili sorularınız için bizimle iletişime geçebilirsiniz:</p>
+        <p>
+            <strong>E-posta:</strong> info@radiocu.com<br>
+            <strong>Web:</strong> www.radiocu.com
+        </p>
     </div>
 </body>
+
 </html>

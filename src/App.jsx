@@ -104,6 +104,23 @@ const DEFAULT_COUNTRIES = [
 const API_MIRRORS = ["https://at1.api.radio-browser.info", "https://de1.api.radio-browser.info"];
 const GENRES = ['all', 'pop', 'rock', 'jazz', 'news', 'classical', 'dance', 'folk', 'rap', 'arabesque'];
 
+// --- ÇEREZ UYARISI BİLEŞENİ (Lightweight) ---
+const CookieConsent = () => {
+    const [accepted, setAccepted] = useState(() => localStorage.getItem('rs_cookie_consent'));
+    if (accepted) return null;
+    return (
+        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-slate-900/95 border border-slate-700 p-4 rounded-xl shadow-2xl z-50 animate-in slide-in-from-bottom-4 backdrop-blur-md">
+            <h4 className="text-white font-bold text-sm mb-2">Çerez Politikası</h4>
+            <p className="text-slate-400 text-xs mb-3 leading-relaxed">
+                Size daha iyi bir deneyim sunmak ve reklamları kişiselleştirmek için çerezleri (cookies) kullanıyoruz. Sitemizi kullanarak <a href="/gizlilik-politikasi.html" className="text-indigo-400 hover:underline">Gizlilik Politikamızı</a> kabul etmiş olursunuz.
+            </p>
+            <div className="flex gap-2">
+                <button onClick={() => { localStorage.setItem('rs_cookie_consent', 'true'); setAccepted('true'); }} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-1.5 rounded-lg text-xs font-bold transition">Kabul Et</button>
+            </div>
+        </div>
+    );
+};
+
 // --- SEO YÖNETİCİSİ ---
 const updateSEO = (title, description, langCode, keywords) => {
     document.title = title;
@@ -130,7 +147,8 @@ const updateSEO = (title, description, langCode, keywords) => {
         "url": "https://radiocu.com",
         "description": description,
         "inLanguage": langCode,
-        "potentialAction": { "@type": "SearchAction", "target": "https://radiocu.com/?q={search_term_string}", "query-input": "required name=search_term_string" }
+        "potentialAction": { "@type": "SearchAction", "target": "https://radiocu.com/?q={search_term_string}", "query-input": "required name=search_term_string" },
+        "publisher": { "@type": "Organization", "name": "Radiocu Inc.", "logo": { "@type": "ImageObject", "url": "https://radiocu.com/logo.png" } }
     });
 
     let linkCanonical = document.querySelector("link[rel='canonical']");
@@ -150,7 +168,22 @@ const StationLogo = ({ url, alt, homepage, className, width, height }) => {
     useEffect(() => { if (!url || url.startsWith('http://')) { if (homepage) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } } else { setImgSrc(url); } }, [url, homepage]);
     return <img src={imgSrc} alt={alt} width={width} height={height} className={`object-contain bg-white/5 p-1 ${className}`} onError={() => { if (homepage && !imgSrc.includes('google.com')) { setImgSrc(`https://www.google.com/s2/favicons?domain=${homepage}&sz=128`); } }} loading="lazy" referrerPolicy="no-referrer" />;
 };
-const AdSenseUnit = ({ slotId }) => { useEffect(() => { if (IS_ADSENSE_LIVE && window.adsbygoogle) try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch { /* ignore */ } }, []); if (!IS_ADSENSE_LIVE) return <div className="w-full h-24 bg-slate-800/30 border border-dashed border-slate-700/50 flex items-center justify-center text-slate-500 text-xs">Reklam</div>; return <div className="ad-container my-4 flex justify-center"><ins className="adsbygoogle" style={{ display: 'block' }} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>; };
+const AdSenseUnit = ({ slotId, loading = false }) => {
+    // Performans için: Eğer sayfa yükleniyorsa reklamı render etme, boşluk bırakma (CLS önlemek için min-height var).
+    // Ancak loading=true ise, ve reklam slotu boşsa, yükleme bitene kadar bekle.
+    const adRef = useRef(null);
+
+    useEffect(() => {
+        if (IS_ADSENSE_LIVE && !loading && window.adsbygoogle && adRef.current && adRef.current.innerHTML === "") { // Sadece boşsa doldur
+            try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch { /* ignore */ }
+        }
+    }, [loading]);
+
+    if (!IS_ADSENSE_LIVE) return <div className="w-full h-24 bg-slate-800/30 border border-dashed border-slate-700/50 flex items-center justify-center text-slate-500 text-xs">Reklam</div>;
+
+    // Min-height CLS'yi önler.
+    return <div className="ad-container my-4 flex justify-center min-h-[90px] w-full overflow-hidden"><ins ref={adRef} className="adsbygoogle" style={{ display: 'block', minWidth: '300px' }} data-ad-client={GOOGLE_AD_CLIENT_ID} data-ad-slot={slotId} data-full-width-responsive="true"></ins></div>;
+};
 
 const SeoContent = ({ country, lang, countriesList }) => {
     const cObj = countriesList.find(c => c.code === country);
@@ -169,7 +202,22 @@ const SeoContent = ({ country, lang, countriesList }) => {
             <h1 className="text-2xl font-bold text-white mb-4 flex items-center gap-3">
                 <Radio className="w-6 h-6 text-indigo-500" /> {t.h1Prefix} {cName} {t.h1Suffix}
             </h1>
-            <p className="leading-relaxed mb-4">{t.seoContentText ? t.seoContentText.replace('{country}', cName) : `${cName} ${t.seoDesc}`}</p>
+            <div className="space-y-4">
+                <p className="leading-relaxed">{t.seoContentText ? t.seoContentText.replace('{country}', cName) : `${cName} ${t.seoDesc}`}</p>
+                <p className="leading-relaxed hidden md:block">
+                    {lang === 'TR' ?
+                        `Radiocu platformu ile ${cName} genelindeki en popüler radyo istasyonlarını yüksek ses kalitesiyle dinleyebilirsiniz. Haberden spora, pop müzikten klasik müziğe kadar geniş bir yelpazede yayın yapan radyolar, kesintisiz bir şekilde bu sayfada listelenmektedir. Artık radyo frekanslarını aramakla vakit kaybetmeyin; dijital radyo teknolojisi sayesinde dünyanın sesine kulak verin.` :
+                        `With the Radiocu platform, you can listen to the most popular radio stations in ${cName} with high audio quality. Broadcasting a wide range of genres from news to sports, pop music to classical, these radios are listed here uninterruptedly. Don't waste time searching for radio frequencies anymore; listen to the sound of the world thanks to digital radio technology.`}
+                </p>
+                <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                    <h2 className="text-white font-bold text-sm mb-2 flex items-center gap-2"><Info className="w-4 h-4 text-indigo-400" /> {lang === 'TR' ? 'Bilmeniz Gerekenler' : 'Did You Know?'}</h2>
+                    <p className="text-xs">
+                        {lang === 'TR' ?
+                            `Online radyo dinlemek, geleneksel FM radyolara göre daha az parazit ve daha net ses sunar. Ayrıca ${cName} dışındayken bile memleketinizin radyolarını takip edebilirsiniz. Radiocu, veri tasarrufu sağlayan özel altyapısı ile kotanızı korur.` :
+                            `Listening to online radio offers less static and clearer sound compared to traditional FM radios. Also, you can follow your hometown radios even when you are outside of ${cName}. Radiocu protects your data quota with its special data-saving infrastructure.`}
+                    </p>
+                </div>
+            </div>
             <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t border-slate-700/50">
                 {(t.seoTags || ["Live Radio", "Online FM"]).map((tag, i) => (
                     <span key={i} className="px-3 py-1 bg-slate-800 rounded-full text-[10px] text-slate-300 border border-slate-600 flex items-center gap-1 cursor-default hover:bg-slate-700 transition">
@@ -584,12 +632,12 @@ export default function App() {
 
             <div className="flex flex-1 overflow-hidden relative">
                 <aside className={`w-64 ${theme.bgPanel} border-r ${theme.border} hidden md:flex flex-col backdrop-blur-xl`}>
-                    <div className="p-6 overflow-y-auto flex-1"><h3 className="text-xs font-bold text-slate-500 uppercase mb-4 flex items-center gap-2"><Waves className="w-3 h-3" /> {t.categories}</h3><div className="space-y-1">{GENRES.map(g => (<button key={g} onClick={() => { setSelectedGenre(g); setSearchQuery(''); }} className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-3 ${selectedGenre === g ? `bg-indigo-500/10 ${theme.textAccent} border border-indigo-500/20` : `text-slate-400 hover:text-white hover:bg-white/5`}`}><span className={`w-1.5 h-1.5 rounded-full ${selectedGenre === g ? 'bg-indigo-400' : 'bg-slate-700'}`}></span><span className="capitalize">{g === 'all' ? t.allRadios : g}</span></button>))}</div><div className="mt-8"><AdSenseUnit slotId="sidebar-ad" /></div></div>
+                    <div className="p-6 overflow-y-auto flex-1"><h3 className="text-xs font-bold text-slate-500 uppercase mb-4 flex items-center gap-2"><Waves className="w-3 h-3" /> {t.categories}</h3><div className="space-y-1">{GENRES.map(g => (<button key={g} onClick={() => { setSelectedGenre(g); setSearchQuery(''); }} className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-3 ${selectedGenre === g ? `bg-indigo-500/10 ${theme.textAccent} border border-indigo-500/20` : `text-slate-400 hover:text-white hover:bg-white/5`}`}><span className={`w-1.5 h-1.5 rounded-full ${selectedGenre === g ? 'bg-indigo-400' : 'bg-slate-700'}`}></span><span className="capitalize">{g === 'all' ? t.allRadios : g}</span></button>))}</div><div className="mt-8"><AdSenseUnit slotId="sidebar-ad" loading={loading} /></div></div>
                     <div className="p-6 border-t border-slate-800 text-center flex flex-col gap-1"><p className="text-xs text-slate-600 font-mono">© 2024 Radiocu</p></div>
                 </aside>
                 <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-40">
                     <div className="max-w-6xl mx-auto">
-                        <AdSenseUnit slotId="header-ad" />
+                        <AdSenseUnit slotId="header-ad" loading={loading} />
                         <div className="mb-6 mt-6 border-b border-white/5 pb-4"><div className="flex flex-col md:flex-row md:items-center justify-between gap-4"><div><h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3"><span className="text-3xl">{countriesList.find(c => c.code === selectedCountry)?.flag}</span>{countriesList.find(c => c.code === selectedCountry)?.name}</h1><p className="text-sm text-slate-400 mt-2 flex items-center gap-2">{autoLocated && <span className="bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded text-xs border border-indigo-500/20 flex items-center gap-1"><Zap className="w-3 h-3" /> {t.locationDetected}</span>}<span className="bg-slate-800 px-2 py-0.5 rounded text-xs border border-slate-700">{filteredStations.length} {t.stations}</span></p></div><button onClick={() => fetchWithFailover(selectedCountry)} aria-label="Listeyi Yenile" className="p-2 bg-slate-800 rounded-full text-slate-400 hover:text-white hover:bg-slate-700 transition self-end md:self-auto"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button></div></div>
                         <div className="md:hidden mb-6"><div className={`flex items-center w-full ${theme.bgCard} rounded-lg px-4 py-3 border ${theme.border}`}><Search className="text-slate-500 w-4 h-4 mr-2" /><input type="text" aria-label={t.searchPlaceholder} placeholder={t.searchPlaceholder} className="bg-transparent w-full border-none outline-none text-sm text-white placeholder-slate-500" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div></div>
                         {error && (<div className="mb-6 p-6 bg-red-500/10 border border-red-500/20 rounded-xl flex flex-col items-center justify-center text-center gap-3 animate-in fade-in"><AlertCircle className="w-8 h-8 text-red-400" /><p className="text-red-200 text-sm">{error}</p><button onClick={() => fetchWithFailover(selectedCountry)} className="mt-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-200 rounded-lg text-sm transition flex items-center gap-2"><RefreshCw className="w-4 h-4" /> {t.retry}</button></div>)}
@@ -597,7 +645,7 @@ export default function App() {
                             {loading ? [...Array(8)].map((_, i) => <div key={i} className={`h-24 ${theme.bgCard} rounded-xl animate-pulse border ${theme.border}`}></div>) :
                                 filteredStations.map((s, idx) => (
                                     <React.Fragment key={s.stationuuid}>
-                                        {idx > 0 && idx % 12 === 0 && <div className="col-span-full"><AdSenseUnit slotId="feed-ad" /></div>}
+                                        {idx > 0 && idx % 12 === 0 && <div className="col-span-full"><AdSenseUnit slotId="feed-ad" loading={loading} /></div>}
                                         <div onClick={() => playStation(s)} className={`group relative ${theme.bgCard} hover:bg-slate-800 rounded-xl p-3 transition-all cursor-pointer border ${currentStation?.stationuuid === s.stationuuid ? 'border-indigo-500 bg-indigo-500/10' : theme.border} hover:shadow-lg hover:-translate-y-0.5`}>
                                             {s.is_manual && <div className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full shadow-[0_0_5px_rgba(34,197,94,0.8)]" title="Manuel Eklendi"></div>}
                                             <div className="flex items-center gap-3">
@@ -614,12 +662,13 @@ export default function App() {
                         <SeoContent country={selectedCountry} lang={appLang} countriesList={countriesList} />
                         <FAQSection lang={appLang} />
                         <Footer onOpenAdmin={() => setShowAdmin(true)} lang={appLang} />
-                        <div className="mt-12 mb-24"><AdSenseUnit slotId="footer-ad" /></div>
+                        <div className="mt-12 mb-24"><AdSenseUnit slotId="footer-ad" loading={loading} /></div>
                     </div>
                 </main>
 
                 {/* --- ADMİN MODALI (ÜLKELERİ DE YÖNETİR) --- */}
                 <AdminModal isOpen={showAdmin} onClose={() => setShowAdmin(false)} user={user} countries={countriesList} setCountries={setCountriesList} />
+                <CookieConsent />
             </div>
             <div className={`h-24 ${theme.bgPanel} border-t ${theme.border} fixed bottom-0 w-full flex items-center px-4 md:px-8 z-40 shadow-[0_-5px_30px_rgba(0,0,0,0.5)]`}>
                 <div className="w-1/3 flex items-center gap-4">

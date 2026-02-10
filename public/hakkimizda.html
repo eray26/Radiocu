@@ -1,33 +1,161 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hakkımızda - Radiocu</title>
-    <meta name="description" content="Radiocu hakkında bilgiler, misyonumuz ve vizyonumuz.">
+    <meta name="description" content="Radiocu hakkında bilgiler, misyonumuz, vizyonumuz ve radyo teknolojilerimiz.">
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; background: #f8fafc; }
-        .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { color: #4f46e5; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        h2 { color: #1e293b; margin-top: 30px; }
-        a { color: #4f46e5; text-decoration: none; font-weight: bold; }
-        .back-btn { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #4f46e5; color: white; border-radius: 5px; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.8;
+            color: #334155;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f8fafc;
+        }
+
+        .container {
+            background: white;
+            padding: 60px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        h1 {
+            color: #1e293b;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        h2 {
+            color: #0f172a;
+            margin-top: 40px;
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            color: white;
+            margin-bottom: 10px;
+            border: none;
+        }
+
+        .hero p {
+            color: #e0e7ff;
+            margin-bottom: 0;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 30px;
+            padding: 10px 20px;
+            background: white;
+            color: #4f46e5;
+            border: 1px solid #e0e7ff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .back-btn:hover {
+            border-color: #4f46e5;
+            transform: translateY(-2px);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #4338ca;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <a href="/" class="back-btn">← Ana Sayfaya Dön</a>
-        <h1>Hakkımızda</h1>
-        <p>Radiocu.com, 2025 yılında kurulmuş, dünyanın dört bir yanındaki radyo istasyonlarını tek bir çatı altında toplayan global bir dijital radyo platformudur.</p>
+        <a href="/" class="back-btn">← Radyolara Dön</a>
 
-        <h2>Misyonumuz</h2>
-        <p>Amacımız, kullanıcılarımıza coğrafi sınır olmaksızın, kesintisiz ve yüksek kaliteli müzik deneyimi sunmaktır. Geleneksel radyo yayıncılığını modern web teknolojileri ile birleştirerek, radyo kültürünü dijital çağda yaşatmayı hedefliyoruz.</p>
+        <div class="hero">
+            <h1>Sınırları Aşan Frekanslar</h1>
+            <p>2025 yılından beri dünyanın sesini size getiriyoruz.</p>
+        </div>
 
-        <h2>Teknolojimiz</h2>
-        <p>Radiocu, en son web teknolojileri kullanılarak geliştirilmiştir. Hızlı, güvenli ve mobil uyumlu altyapımız sayesinde, kullanıcılarımız ister bilgisayardan ister cep telefonundan diledikleri radyoya saniyeler içinde ulaşabilirler.</p>
+        <p class="intro"><strong>Radiocu.com</strong>, geleneksel radyo deneyimini modern dijital çağın hızına ve
+            kalitesine taşıyan yeni nesil bir web radyosu platformudur. Karmaşık arayüzlerden, donan yayınlardan ve
+            bölgesel sınırlamalardan sıkılan müzikseverler için "tek tıkla dinle" felsefesiyle tasarlanmıştır.</p>
+
+        <div class="grid">
+            <div class="card">
+                <h3>Misyonumuz</h3>
+                <p>Müziğin ve bilginin evrenselliğine inanıyoruz. Amacımız, dünyanın en uzak köşesindeki yerel bir
+                    istasyondan, metropollerin en popüler kanallarına kadar tüm frekansları, dil ve coğrafya engeli
+                    olmadan kullanıcılarımıza sunmaktır.</p>
+            </div>
+            <div class="card">
+                <h3>Teknolojimiz</h3>
+                <p>Altyapımız, minimum veri kullanımıyla maksimum ses kalitesi sunmak üzere optimize edilmiştir. Akıllı
+                    önbellekleme (Smart Caching) teknolojimiz sayesinde, sayfalar arasında geçiş yaparken beklemezsiniz.
+                    Radiocu, %100 mobil uyumludur ve uygulama indirmeden tarayıcınızda App deneyimi yaşatır.</p>
+            </div>
+        </div>
+
+        <h2>Neden Biz?</h2>
+        <p>İnternet üzerinde binlerce radyo sitesi var, ancak çoğu eski teknolojilerle çalışıyor ve kullanıcı deneyimini
+            ikinci plana atıyor. Radiocu olarak farkımız:</p>
+        <ul>
+            <li><strong>Reklamsız Arayüz Deneyimi:</strong> Kullanıcıyı boğan pop-up reklamlar kullanmıyoruz.</li>
+            <li><strong>Hız:</strong> Saniyeler içinde açılan yayınlar.</li>
+            <li><strong>Global Kapsam:</strong> 190+ ülkeden 30.000'den fazla istasyon.</li>
+            <li><strong>Güvenlik:</strong> SSL sertifikalı güvenli bağlantı ve veri mahrekiyeti.</li>
+        </ul>
+
+        <h2>Telif Hakları ve Sorumluluk</h2>
+        <p>Radiocu.com, "yer sağlayıcı" konumundadır. Sitemizde yer alan radyo yayınları, ilgili radyo istasyonlarının
+            halka açık yayın sunucularından (stream URL) sağlanmaktadır. Kendi sunucularımızda herhangi bir ses dosyası
+            barındırmıyoruz veya yayın yapmıyoruz. Telif hakkı sahipleri, içerik kaldırma talepleri için bizimle
+            iletişime geçebilir.</p>
 
         <h2>İletişim</h2>
-        <p>Öneri, görüş ve reklam talepleriniz için bize ulaşabilirsiniz: <br><strong>E-posta:</strong> info@radiocu.com</p>
+        <p>Her türlü görüş, öneri, hata bildirimi veya reklam işbirlikleri için bize 7/24 ulaşabilirsiniz.</p>
+        <p><strong>E-posta:</strong> info@radiocu.com</p>
     </div>
 </body>
+
 </html>

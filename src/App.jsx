@@ -132,6 +132,14 @@ const updateSEO = (title, description, langCode, keywords) => {
         "inLanguage": langCode,
         "potentialAction": { "@type": "SearchAction", "target": "https://radiocu.com/?q={search_term_string}", "query-input": "required name=search_term_string" }
     });
+
+    let linkCanonical = document.querySelector("link[rel='canonical']");
+    if (!linkCanonical) {
+        linkCanonical = document.createElement('link');
+        linkCanonical.rel = 'canonical';
+        document.head.appendChild(linkCanonical);
+    }
+    linkCanonical.href = "https://radiocu.com/";
 };
 
 // --- BİLEŞENLER ---

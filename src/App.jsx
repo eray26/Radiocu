@@ -400,6 +400,25 @@ export default function App() {
     // Wrap in useCallback to fix dependency warning
     const fetchWithFailover = React.useCallback(async (countryCode) => {
         setLoading(true); setError(null);
+
+        // 0. CACHE FIRST (Stale-While-Revalidate)
+        const cacheKey = `rs_stations_${countryCode}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            try {
+                const parsed = JSON.parse(cached);
+                // 1 saatlik basit bir cache süresi kontrolü (isteğe bağlı)
+                if (Date.now() - parsed.timestamp < 3600000) {
+                    setStations(parsed.data);
+                    setLoading(false); // Cache varsa loading'i hemen kapat
+                    // Yine de arka planda güncellemek istersen alttaki kod devam edebilir, 
+                    // ama bant genişliği tasarrufu için cache geçerliyse return edebiliriz.
+                    // Şimdilik "arka planda güncelle" yaklaşımı yerine "cache geçerliyse kullan" yapalım performans için.
+                    return;
+                }
+            } catch (e) { localStorage.removeItem(cacheKey); }
+        }
+
         let data = [];
 
         // 1. Firebase (Manuel)
@@ -434,7 +453,11 @@ export default function App() {
         cleanApiData = cleanApiData.filter(s => !manualStations.some(m => m.name.toLowerCase() === s.name.toLowerCase()));
 
         const finalData = [...manualStations, ...cleanApiData];
-        if (finalData.length > 0) { setStations(finalData); } else { setError(t.errorMsg); }
+        if (finalData.length > 0) {
+            setStations(finalData);
+            // Cache'e kaydet
+            localStorage.setItem(cacheKey, JSON.stringify({ data: finalData, timestamp: Date.now() }));
+        } else { setError(t.errorMsg); }
         setLoading(false);
     }, [t.errorMsg]);
 
@@ -444,10 +467,28 @@ export default function App() {
             const browserLang = navigator.language.split('-')[0].toUpperCase();
 
             try {
-                const res = await fetch("https://ipapi.co/json/");
-                const data = await res.json();
-                if (data?.country_code) {
-                    const code = data.country_code;
+                // IP Cache Kontrolü
+                const ipCache = localStorage.getItem('rs_user_country');
+                let code = null;
+
+                if (ipCache) {
+                    const parsed = JSON.parse(ipCache);
+                    // 24 saat geçerli olsun
+                    if (Date.now() - parsed.timestamp < 86400000) {
+                        code = parsed.code;
+                    }
+                }
+
+                if (!code) {
+                    const res = await fetch("https://ipapi.co/json/");
+                    const data = await res.json();
+                    if (data?.country_code) {
+                        code = data.country_code;
+                        localStorage.setItem('rs_user_country', JSON.stringify({ code, timestamp: Date.now() }));
+                    }
+                }
+
+                if (code) {
 
                     if (countriesList.find(c => c.code === code)) {
                         setSelectedCountry(code);

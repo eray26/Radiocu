@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
-import { initializeApp, getApps } from 'firebase/app';
+import { getApp } from 'firebase/app';
 
-// Helper: get or reuse Firebase app
+// Helper: get Firestore from already-initialized Firebase app
 function getDb() {
     try {
-        const apps = getApps();
-        const app = apps.length > 0 ? apps[0] : null;
-        if (!app) return null;
-        return getFirestore(app);
+        return getFirestore(getApp());
     } catch { return null; }
 }
 
@@ -17,10 +14,15 @@ function getDb() {
 async function fetchStationBySlug(slug) {
     const db = getDb();
     if (!db) return null;
-    const q = query(collection(db, 'stations'), where('slug', '==', slug));
-    const snap = await getDocs(q);
-    if (snap.empty) return null;
-    return { id: snap.docs[0].id, ...snap.docs[0].data() };
+    try {
+        const q = query(collection(db, 'stations'), where('slug', '==', slug));
+        const snap = await getDocs(q);
+        if (snap.empty) return null;
+        return { id: snap.docs[0].id, ...snap.docs[0].data() };
+    } catch (e) {
+        console.error('Station fetch error:', e);
+        return null;
+    }
 }
 
 // Helper: radyo adından slug üret

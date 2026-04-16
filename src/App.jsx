@@ -594,7 +594,14 @@ function RadioApp({ page }) {
     const [countriesList, setCountriesList] = useState(DEFAULT_COUNTRIES);
     const [stations, setStations] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedCountry, setSelectedCountry] = useState('TR');
+    // Initialize selectedCountry from URL immediately so fetchWithFailover runs correctly on first render
+    const [selectedCountry, setSelectedCountry] = useState(() => {
+        if (urlCountryCode) {
+            const upper = urlCountryCode.toUpperCase();
+            if (DEFAULT_COUNTRIES.some(c => c.code === upper)) return upper;
+        }
+        return 'TR';
+    });
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedGenre, setSelectedGenre] = useState('all');
     const [appLang, setAppLang] = useState('EN');
@@ -734,8 +741,8 @@ function RadioApp({ page }) {
 
             if (urlCountryCode) {
                 const upperCode = urlCountryCode.toUpperCase();
-                if (countriesList.find(c => c.code === upperCode)) {
-                    setSelectedCountry(upperCode);
+                if (DEFAULT_COUNTRIES.some(c => c.code === upperCode)) {
+                    // Country already set via useState initializer — just set language
                     setAppLang(COUNTRY_LANG_MAP[upperCode] || (TRANSLATIONS[browserLang] ? browserLang : 'EN'));
                     return;
                 }

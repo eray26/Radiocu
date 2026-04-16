@@ -110,44 +110,79 @@ const CookieConsent = () => {
 };
 
 // --- API TAB (ayrı component: hooks kuralı) ---
-const ApiTabContent = ({ allStations, blockedIds, onBlockStation, onUnblockStation }) => {
+const ApiTabContent = ({ countries, blockedIds, onBlockStation, onUnblockStation }) => {
     const [apiSearch, setApiSearch] = useState('');
-    const apiStations = allStations.filter(s => !s.is_manual);
+    const [apiCountry, setApiCountry] = useState('TR');
+    const [apiStations, setApiStations] = useState([]);
+    const [apiLoading, setApiLoading] = useState(false);
+
+    const fetchApiStations = useCallback(async (countryCode) => {
+        setApiLoading(true);
+        setApiStations([]);
+        for (const mirror of API_MIRRORS) {
+            try {
+                const res = await fetch(`${mirror}/json/stations/bycountrycodeexact/${countryCode}?limit=100&order=votes&reverse=true&hidebroken=true`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setApiStations(data.filter(s => s.url_resolved));
+                    break;
+                }
+            } catch { continue; }
+        }
+        setApiLoading(false);
+    }, []);
+
+    useEffect(() => { fetchApiStations(apiCountry); }, [apiCountry, fetchApiStations]);
+
     const apiFiltered = apiSearch
         ? apiStations.filter(s => s.name.toLowerCase().includes(apiSearch.toLowerCase()))
         : apiStations;
+
     return (
         <div className="space-y-3">
             <div className="text-xs text-slate-400 bg-blue-950/30 border border-blue-900/30 rounded-xl p-3">
-                🌐 Sisteme otomatik gelen API radyoları. <strong className="text-blue-400">Gizle</strong> ile sitede gösterilmesini engelleyebilirsiniz.
+                🌐 API radyolarına ülke seçerek göz atın. <strong className="text-blue-400">Gizle</strong> ile sitede gösterilmesini engelleyebilirsiniz.
+            </div>
+            <div className="flex gap-2">
+                <select value={apiCountry} onChange={e => setApiCountry(e.target.value)}
+                    className="bg-gray-800 text-white text-sm rounded-lg px-3 py-2 border border-white/10 focus:border-teal-500 outline-none flex-1">
+                    {countries.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name}</option>)}
+                </select>
+                <button onClick={() => fetchApiStations(apiCountry)} className="px-3 py-2 bg-teal-900/30 text-teal-400 rounded-lg text-xs border border-teal-700/30 hover:bg-teal-900/50 transition">↻</button>
             </div>
             <input type="text" placeholder="Radyo ara..." value={apiSearch} onChange={e => setApiSearch(e.target.value)}
                 className="w-full bg-gray-800 p-2.5 rounded-lg text-white text-sm border border-white/10 focus:border-teal-500 outline-none" />
-            <p className="text-xs text-slate-500">{apiFiltered.length} radyo</p>
-            <div className="space-y-2">
-                {apiFiltered.slice(0, 50).map(s => {
-                    const isBlocked = blockedIds.includes(s.stationuuid);
-                    return (
-                        <div key={s.stationuuid} className={`flex items-center gap-3 p-3 rounded-xl border transition ${isBlocked ? 'bg-red-950/20 border-red-900/30 opacity-60' : 'bg-gray-800/50 border-white/5 hover:border-white/10'}`}>
-                            {s.favicon ? <img src={s.favicon} alt="" className="w-8 h-8 rounded-lg object-cover bg-gray-700 shrink-0" onError={e => e.target.style.display = 'none'} /> : <div className="w-8 h-8 rounded-lg bg-gray-700 shrink-0 flex items-center justify-center text-xs">📻</div>}
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5 mb-0.5">
-                                    {isBlocked
-                                        ? <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-red-900/60 text-red-400 border border-red-700/30">Gizlendi</span>
-                                        : <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-900/60 text-blue-400 border border-blue-700/30">API</span>}
+            {apiLoading ? (
+                <div className="text-center py-6 text-slate-500 text-sm">Yükleniyor...</div>
+            ) : (
+                <>
+                    <p className="text-xs text-slate-500">{apiFiltered.length} radyo</p>
+                    <div className="space-y-2">
+                        {apiFiltered.slice(0, 50).map(s => {
+                            const isBlocked = blockedIds.includes(s.stationuuid);
+                            return (
+                                <div key={s.stationuuid} className={`flex items-center gap-3 p-3 rounded-xl border transition ${isBlocked ? 'bg-red-950/20 border-red-900/30 opacity-60' : 'bg-gray-800/50 border-white/5 hover:border-white/10'}`}>
+                                    {s.favicon ? <img src={s.favicon} alt="" className="w-8 h-8 rounded-lg object-cover bg-gray-700 shrink-0" onError={e => e.target.style.display = 'none'} /> : <div className="w-8 h-8 rounded-lg bg-gray-700 shrink-0 flex items-center justify-center text-xs">📻</div>}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-1.5 mb-0.5">
+                                            {isBlocked
+                                                ? <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-red-900/60 text-red-400 border border-red-700/30">Gizlendi</span>
+                                                : <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-900/60 text-blue-400 border border-blue-700/30">API</span>}
+                                        </div>
+                                        <p className="text-white text-sm font-medium truncate">{s.name}</p>
+                                        <p className="text-slate-500 text-xs truncate">{s.countrycode}{s.tags ? ` • ${s.tags.split(',')[0]}` : ''}</p>
+                                    </div>
+                                    <button onClick={() => isBlocked ? onUnblockStation(s.stationuuid) : onBlockStation(s)}
+                                        className={`px-2 py-1 rounded-lg text-xs font-bold transition shrink-0 ${isBlocked ? 'text-green-400 hover:bg-green-400/10' : 'text-red-400 hover:bg-red-400/10'}`}>
+                                        {isBlocked ? '✓ Göster' : '🚫 Gizle'}
+                                    </button>
                                 </div>
-                                <p className="text-white text-sm font-medium truncate">{s.name}</p>
-                                <p className="text-slate-500 text-xs truncate">{s.countrycode}{s.tags ? ` • ${s.tags.split(',')[0]}` : ''}</p>
-                            </div>
-                            <button onClick={() => isBlocked ? onUnblockStation(s.stationuuid) : onBlockStation(s)}
-                                className={`px-2 py-1 rounded-lg text-xs font-bold transition shrink-0 ${isBlocked ? 'text-green-400 hover:bg-green-400/10' : 'text-red-400 hover:bg-red-400/10'}`}>
-                                {isBlocked ? '✓ Göster' : '🚫 Gizle'}
-                            </button>
-                        </div>
-                    );
-                })}
-                {apiFiltered.length > 50 && <p className="text-xs text-slate-500 text-center">Daha fazlası için arama yapın ({apiFiltered.length - 50} daha var)</p>}
-            </div>
+                            );
+                        })}
+                        {apiFiltered.length > 50 && <p className="text-xs text-slate-500 text-center">Daha fazlası için arama yapın ({apiFiltered.length - 50} daha var)</p>}
+                    </div>
+                </>
+            )}
         </div>
     );
 };
@@ -349,7 +384,7 @@ const AdminModal = ({ isOpen, onClose, user, countries, allStations = [], blocke
                             {/* API RADYOLAR SEKMESI */}
                             {activeTab === 'api' && (
                                 <ApiTabContent
-                                    allStations={allStations}
+                                    countries={countries}
                                     blockedIds={blockedIds}
                                     onBlockStation={onBlockStation}
                                     onUnblockStation={onUnblockStation}

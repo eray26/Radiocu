@@ -19,10 +19,10 @@ import PrivacyPage from './pages/PrivacyPage';
 
 // --- FIREBASE ---
 const firebaseConfig = {
-    apiKey: "AIzaSyDlXxF8mKj3ahMvXqPwmSWE0GlB7EC5w6I",
-    authDomain: "radiocu-com.firebaseapp.com",
-    projectId: "radiocu-com",
-    storageBucket: "radiocu-com.firebasestorage.app",
+    apiKey: "AIzaSyC2D7XXawsp9QapGKZx86QO2sdbvqhwVow",
+    authDomain: "radiocu-5be49.firebaseapp.com",
+    projectId: "radiocu-5be49",
+    storageBucket: "radiocu-5be49.firebasestorage.app",
     messagingSenderId: "838585565724",
     appId: "1:838585565724:web:c60a08c1d75fc04c6295d9",
     measurementId: "G-K7D85VHH4V"

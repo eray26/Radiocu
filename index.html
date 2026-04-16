@@ -36,25 +36,40 @@
   <!-- Canonical -->
   <link rel="canonical" href="https://radiocu.com/" />
 
+  <!-- Google Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
   <!-- Preconnect (sadece kritik olanlar) -->
   <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />
   <link rel="dns-prefetch" href="https://at1.api.radio-browser.info" />
   <link rel="dns-prefetch" href="https://de1.api.radio-browser.info" />
   <link rel="dns-prefetch" href="https://ipapi.co" />
 
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-K7D85VHH4V"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-K7D85VHH4V');
+  </script>
+
   <!-- AdSense (SEO-safe async loading) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3676498147737928"
     crossorigin="anonymous"></script>
 </head>
 
-<body>
+<body class="dark overflow-x-hidden text-on-surface bg-[#0a0e14]">
   <div id="root">
     <!-- SSR/Prerender placeholder for LCP & CLS -->
     <div
-      style="display:flex;align-items:center;justify-content:center;height:100vh;background:#020617;color:#6366f1;font-family:system-ui">
+      style="display:flex;align-items:center;justify-content:center;height:100vh;background:#030712;color:#6366f1;font-family:'Inter',system-ui,sans-serif">
       <div style="text-align:center">
-        <div style="font-size:2rem;font-weight:bold">Radiocu</div>
-        <div style="font-size:0.75rem;color:#94a3b8;margin-top:0.5rem">Yükleniyor...</div>
+        <div style="font-size:2rem;font-weight:800;letter-spacing:-1px">Radiocu</div>
+        <div style="font-size:0.75rem;color:#64748b;margin-top:0.5rem">Yükleniyor...</div>
       </div>
     </div>
   </div>

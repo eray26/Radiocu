@@ -391,12 +391,17 @@ function RadioApp({ page }) {
                     if (Date.now() - parsed.timestamp < 86400000) code = parsed.code;
                 }
                 if (!code) {
-                    const res = await fetch("https://ipapi.co/json/");
-                    const data = await res.json();
-                    if (data?.country_code) {
-                        code = data.country_code;
-                        localStorage.setItem('rs_user_country', JSON.stringify({ code, timestamp: Date.now() }));
-                    }
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3000);
+                    try {
+                        const res = await fetch("https://ipapi.co/json/", { signal: controller.signal });
+                        clearTimeout(timeoutId);
+                        const data = await res.json();
+                        if (data?.country_code) {
+                            code = data.country_code;
+                            localStorage.setItem('rs_user_country', JSON.stringify({ code, timestamp: Date.now() }));
+                        }
+                    } catch { clearTimeout(timeoutId); }
                 }
                 if (code) {
                     if (countriesList.find(c => c.code === code)) {

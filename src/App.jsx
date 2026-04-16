@@ -264,7 +264,7 @@ function RadioApp({ page }) {
     const [isBuffering, setIsBuffering] = useState(false);
     const [volume, setVolume] = useState(() => parseFloat(localStorage.getItem('rs_volume')) || 0.8);
     const [error, setError] = useState(null);
-    const audioRef = useRef(new Audio());
+    const audioRef = useRef((() => { const a = new Audio(); a.preload = 'none'; return a; })());
     const [showAdmin, setShowAdmin] = useState(false);
     const [user, setUser] = useState(null);
 

@@ -9,6 +9,7 @@ export default function StationCard({
     onPlay,
     onToggleFavorite,
     countryCode,
+    index = 0,
 }) {
     const cityImage = getCityImage(countryCode, station.name);
     // Use station favicon if available, fallback to cityImage
@@ -34,9 +35,13 @@ export default function StationCard({
             <div className="flex justify-between items-start mb-6 relative z-10">
                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-lg bg-surface-container-highest flex items-center justify-center border border-outline-variant/20 shadow-xl overflow-hidden relative">
                     <img 
-                        alt="Station Logo" 
+                        alt={`${station.name} logo`}
                         className="w-full h-full object-cover" 
                         src={stationLogo}
+                        loading={index < 4 ? 'eager' : 'lazy'}
+                        decoding="async"
+                        width="80"
+                        height="80"
                         onError={(e) => { e.target.src = cityImage; }} 
                     />
                     {/* Equalizer overlay when playing */}

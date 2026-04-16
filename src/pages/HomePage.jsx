@@ -92,7 +92,7 @@ export default function HomePage({
                                 onClick={() => setSelectedGenre(genre)}
                                 className={`flex items-center gap-3 md:gap-4 px-6 md:px-8 py-4 transition-all border-b-2 md:border-b-0 md:border-r-2 ${selectedGenre === genre
                                         ? 'text-[#00e3fd] font-bold border-[#00e3fd] bg-[#0f141a]'
-                                        : 'text-[#20262f] hover:text-[#00e3fd] hover:bg-[#20262f]/30 border-transparent'
+                                        : 'text-slate-400 hover:text-[#00e3fd] hover:bg-[#20262f]/30 border-transparent'
                                     }`}
                             >
                                 <span className="material-symbols-outlined text-xl" data-icon={GENRE_ICONS[genre] || 'radio'}>
@@ -154,10 +154,11 @@ export default function HomePage({
                                 ? [...Array(8)].map((_, i) => (
                                     <div key={i} className="h-40 sm:h-48 bg-surface-container-highest rounded-xl animate-pulse border border-outline-variant/10 glass-card" />
                                 ))
-                                : genreFiltered.map((s) => (
+                                : genreFiltered.map((s, idx) => (
                                     <StationCard
                                         key={s.stationuuid}
                                         station={s}
+                                        index={idx}
                                         isActive={currentStation?.stationuuid === s.stationuuid}
                                         isPlaying={isPlaying && currentStation?.stationuuid === s.stationuuid}
                                         isFavorite={favorites.some(f => f.stationuuid === s.stationuuid)}

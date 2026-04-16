@@ -450,7 +450,7 @@ const AdminModal = ({ isOpen, onClose, user, countries, allStations = [], blocke
                                             <div className="space-y-1">
                                                 <label className="text-xs text-slate-400">URL Slug <span className="text-slate-600">(sayfa adresi)</span></label>
                                                 <div className="flex items-center gap-1 bg-gray-800 rounded-lg border border-white/10 focus-within:border-teal-500 overflow-hidden">
-                                                    <span className="text-slate-600 text-xs pl-2.5 whitespace-nowrap">radiocu.com/tr/radyo/</span>
+                                                    <span className="text-slate-600 text-xs pl-2.5 whitespace-nowrap">radiocu.com/tr/</span>
                                                     <input type="text" placeholder="metro-fm" className="flex-1 bg-transparent p-2.5 text-white text-sm outline-none min-w-0"
                                                         value={newStation.slug} onChange={e => setNewStation({ ...newStation, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })} />
                                                 </div>
@@ -542,14 +542,16 @@ export default function App() {
     return (
         <Suspense fallback={<PageLoader />}>
             <Routes>
-                {/* SEO Station Pages - must be before /:countryCode */}
-                <Route path="/:countryCode/radyo/:slug" element={<StationPageWrapper />} />
-
+                {/* Named routes first — static segments take priority over dynamic :slug */}
                 <Route path="/:countryCode/search" element={<RadioApp page="search" />} />
                 <Route path="/:countryCode/favorites" element={<RadioApp page="favorites" />} />
                 <Route path="/:countryCode/about" element={<RadioApp page="about" />} />
                 <Route path="/:countryCode/contact" element={<RadioApp page="contact" />} />
                 <Route path="/:countryCode/privacy" element={<RadioApp page="privacy" />} />
+
+                {/* SEO Station Pages: radiocu.com/tr/metro-fm */}
+                <Route path="/:countryCode/:slug" element={<StationPageWrapper />} />
+
                 <Route path="/:countryCode" element={<RadioApp page="home" />} />
                 <Route path="/" element={<RadioApp page="home" />} />
             </Routes>

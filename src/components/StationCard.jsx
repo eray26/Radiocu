@@ -20,9 +20,9 @@ export default function StationCard({
         ? Math.max(station.votes, Math.floor(Math.random() * 500) + 50)
         : Math.floor(Math.random() * 800) + 100, [station.votes]);
 
-    // Manuel radyolar için SEO sayfası URL'si
+    // Manuel radyolar için SEO sayfası URL'si — radiocu.com/tr/metro-fm
     const seoUrl = station.is_manual && station.slug
-        ? `/${(countryCode || station.country || 'tr').toLowerCase()}/radyo/${station.slug}`
+        ? `/${(countryCode || station.country || 'tr').toLowerCase()}/${station.slug}`
         : null;
 
     return (

@@ -127,7 +127,10 @@ const AdminModal = ({ isOpen, onClose, user, countries }) => {
     const handleLogin = async (e) => {
         e.preventDefault();
         if (!auth) { setMsg("Veritabanı bağlantısı yok."); return; }
-        try { await signInWithEmailAndPassword(auth, email, password); setMsg(""); } catch { setMsg("Giriş başarısız."); }
+        try { await signInWithEmailAndPassword(auth, email, password); setMsg(""); } catch (err) { 
+            console.error("Firebase auth error:", err.code, err.message);
+            setMsg("Hata: " + err.code); 
+        }
     };
     const handleStationSubmit = async (e) => {
         e.preventDefault();

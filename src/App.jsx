@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
-import { X, Shield, Settings, Trash2, Ban, PencilLine } from 'lucide-react';
+import { X, Shield, Trash2, Ban, PencilLine } from 'lucide-react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
@@ -105,6 +105,49 @@ const CookieConsent = () => {
             <button onClick={() => { localStorage.setItem('cookie_consent', 'true'); setShow(false); }} className="w-full bg-teal-600 hover:bg-teal-500 text-white py-2 rounded-xl text-xs font-bold transition">
                 Kabul Et
             </button>
+        </div>
+    );
+};
+
+// --- API TAB (ayrı component: hooks kuralı) ---
+const ApiTabContent = ({ allStations, blockedIds, onBlockStation, onUnblockStation }) => {
+    const [apiSearch, setApiSearch] = useState('');
+    const apiStations = allStations.filter(s => !s.is_manual);
+    const apiFiltered = apiSearch
+        ? apiStations.filter(s => s.name.toLowerCase().includes(apiSearch.toLowerCase()))
+        : apiStations;
+    return (
+        <div className="space-y-3">
+            <div className="text-xs text-slate-400 bg-blue-950/30 border border-blue-900/30 rounded-xl p-3">
+                🌐 Sisteme otomatik gelen API radyoları. <strong className="text-blue-400">Gizle</strong> ile sitede gösterilmesini engelleyebilirsiniz.
+            </div>
+            <input type="text" placeholder="Radyo ara..." value={apiSearch} onChange={e => setApiSearch(e.target.value)}
+                className="w-full bg-gray-800 p-2.5 rounded-lg text-white text-sm border border-white/10 focus:border-teal-500 outline-none" />
+            <p className="text-xs text-slate-500">{apiFiltered.length} radyo</p>
+            <div className="space-y-2">
+                {apiFiltered.slice(0, 50).map(s => {
+                    const isBlocked = blockedIds.includes(s.stationuuid);
+                    return (
+                        <div key={s.stationuuid} className={`flex items-center gap-3 p-3 rounded-xl border transition ${isBlocked ? 'bg-red-950/20 border-red-900/30 opacity-60' : 'bg-gray-800/50 border-white/5 hover:border-white/10'}`}>
+                            {s.favicon ? <img src={s.favicon} alt="" className="w-8 h-8 rounded-lg object-cover bg-gray-700 shrink-0" onError={e => e.target.style.display = 'none'} /> : <div className="w-8 h-8 rounded-lg bg-gray-700 shrink-0 flex items-center justify-center text-xs">📻</div>}
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5 mb-0.5">
+                                    {isBlocked
+                                        ? <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-red-900/60 text-red-400 border border-red-700/30">Gizlendi</span>
+                                        : <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-900/60 text-blue-400 border border-blue-700/30">API</span>}
+                                </div>
+                                <p className="text-white text-sm font-medium truncate">{s.name}</p>
+                                <p className="text-slate-500 text-xs truncate">{s.countrycode}{s.tags ? ` • ${s.tags.split(',')[0]}` : ''}</p>
+                            </div>
+                            <button onClick={() => isBlocked ? onUnblockStation(s.stationuuid) : onBlockStation(s)}
+                                className={`px-2 py-1 rounded-lg text-xs font-bold transition shrink-0 ${isBlocked ? 'text-green-400 hover:bg-green-400/10' : 'text-red-400 hover:bg-red-400/10'}`}>
+                                {isBlocked ? '✓ Göster' : '🚫 Gizle'}
+                            </button>
+                        </div>
+                    );
+                })}
+                {apiFiltered.length > 50 && <p className="text-xs text-slate-500 text-center">Daha fazlası için arama yapın ({apiFiltered.length - 50} daha var)</p>}
+            </div>
         </div>
     );
 };
@@ -304,55 +347,14 @@ const AdminModal = ({ isOpen, onClose, user, countries, allStations = [], blocke
                             )}
 
                             {/* API RADYOLAR SEKMESI */}
-                            {activeTab === 'api' && (() => {
-                                const [apiSearch, setApiSearch] = React.useState('');
-                                const apiStations = allStations.filter(s => !s.is_manual);
-                                const apiFiltered = apiSearch
-                                    ? apiStations.filter(s => s.name.toLowerCase().includes(apiSearch.toLowerCase()))
-                                    : apiStations;
-                                return (
-                                    <div className="space-y-3">
-                                        <div className="text-xs text-slate-400 bg-blue-950/30 border border-blue-900/30 rounded-xl p-3">
-                                            🌐 Bu listede sisteme otomatik gelen API radyoları görünür. <strong className="text-blue-400">Gizle</strong> diyerek sitede gösterilmesini engelleyebilirsiniz.
-                                        </div>
-                                        <input
-                                            type="text"
-                                            placeholder="Radyo ara..."
-                                            value={apiSearch}
-                                            onChange={e => setApiSearch(e.target.value)}
-                                            className="w-full bg-gray-800 p-2.5 rounded-lg text-white text-sm border border-white/10 focus:border-teal-500 outline-none"
-                                        />
-                                        <p className="text-xs text-slate-500">{apiFiltered.length} radyo listeleniyor</p>
-                                        <div className="space-y-2">
-                                            {apiFiltered.slice(0, 50).map(s => {
-                                                const isBlocked = blockedIds.includes(s.stationuuid);
-                                                return (
-                                                    <div key={s.stationuuid} className={`flex items-center gap-3 p-3 rounded-xl border transition ${isBlocked ? 'bg-red-950/20 border-red-900/30 opacity-60' : 'bg-gray-800/50 border-white/5 hover:border-white/10'}`}>
-                                                        {s.favicon ? <img src={s.favicon} alt="" className="w-8 h-8 rounded-lg object-cover bg-gray-700 shrink-0" onError={e => e.target.style.display='none'} /> : <div className="w-8 h-8 rounded-lg bg-gray-700 shrink-0 flex items-center justify-center text-xs">📻</div>}
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center gap-1.5 mb-0.5">
-                                                                {isBlocked
-                                                                    ? <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-red-900/60 text-red-400 border border-red-700/30">Gizlendi</span>
-                                                                    : <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-900/60 text-blue-400 border border-blue-700/30">API</span>
-                                                                }
-                                                            </div>
-                                                            <p className="text-white text-sm font-medium truncate">{s.name}</p>
-                                                            <p className="text-slate-500 text-xs truncate">{s.countrycode} {s.tags ? `• ${s.tags.split(',')[0]}` : ''}</p>
-                                                        </div>
-                                                        <button
-                                                            onClick={() => isBlocked ? onUnblockStation(s.stationuuid) : onBlockStation(s)}
-                                                            className={`px-2 py-1 rounded-lg text-xs font-bold transition shrink-0 ${isBlocked ? 'text-green-400 hover:bg-green-400/10' : 'text-red-400 hover:bg-red-400/10'}`}
-                                                        >
-                                                            {isBlocked ? '✓ Göster' : '🚫 Gizle'}
-                                                        </button>
-                                                    </div>
-                                                );
-                                            })}
-                                            {apiFiltered.length > 50 && <p className="text-xs text-slate-500 text-center">Daha fazla görmek için arama yapın ({apiFiltered.length - 50} daha var)</p>}
-                                        </div>
-                                    </div>
-                                );
-                            })()}
+                            {activeTab === 'api' && (
+                                <ApiTabContent
+                                    allStations={allStations}
+                                    blockedIds={blockedIds}
+                                    onBlockStation={onBlockStation}
+                                    onUnblockStation={onUnblockStation}
+                                />
+                            )}
 
                             {/* ADD / EDIT TAB */}
                             {activeTab === 'add' && (
@@ -745,9 +747,6 @@ function RadioApp({ page }) {
                         isPlaying={isPlaying}
                         favorites={favorites}
                         appLang={appLang}
-                        autoLocated={autoLocated}
-                        searchQuery={searchQuery}
-                        setSearchQuery={setSearchQuery}
                         onPlayStation={playStation}
                         onToggleFavorite={toggleFavorite}
                         onRefresh={() => fetchWithFailover(selectedCountry)}

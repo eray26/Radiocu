@@ -110,7 +110,7 @@ const CookieConsent = () => {
 };
 
 // --- ADMİN PANELİ MODALI ---
-const AdminModal = ({ isOpen, onClose, user, countries }) => {
+const AdminModal = ({ isOpen, onClose, user, countries, allStations = [], blockedIds = [], onBlockStation, onUnblockStation }) => {
     const [activeTab, setActiveTab] = useState('list');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -213,9 +213,9 @@ const AdminModal = ({ isOpen, onClose, user, countries }) => {
                     <div className="flex flex-col flex-1 overflow-hidden">
                         {/* Tabs */}
                         <div className="flex border-b border-white/10 shrink-0 px-2">
-                            {[['list', '📋 Radyolar'], ['add', editingId ? '✏️ Düzenle' : '➕ Yeni Ekle'], ['countries', '🌍 Ülkeler']].map(([key, label]) => (
+                            {[['list', '📋 Manuel'], ['api', '🌐 API'], ['add', editingId ? '✏️ Düzenle' : '➕ Ekle'], ['countries', '🌍 Ülkeler']].map(([key, label]) => (
                                 <button key={key} onClick={() => { setActiveTab(key); if (key !== 'add') { setEditingId(null); setNewStation({ name: '', url: '', logo: '', country: 'TR', tag: '' }); } }}
-                                    className={`flex-1 py-3 text-xs font-bold transition-colors ${activeTab === key ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-500 hover:text-slate-300'}`}>
+                                    className={`flex-1 py-3 text-[11px] font-bold transition-colors ${activeTab === key ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-500 hover:text-slate-300'}`}>
                                     {label}
                                 </button>
                             ))}
@@ -225,9 +225,10 @@ const AdminModal = ({ isOpen, onClose, user, countries }) => {
                             {/* STATIONS LIST TAB */}
                             {activeTab === 'list' && (
                                 <>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-3 flex-wrap">
                                         <div className="flex-1 text-sm text-slate-400">
-                                            Toplam: <span className="text-white font-bold">{dbStations.length}</span> radyo
+                                            <span className="text-white font-bold">{dbStations.length}</span> manuel •
+                                            <span className="text-red-400 font-bold ml-1">{blockedIds.length}</span> gizlenmiş
                                         </div>
                                         <select value={filterCountry} onChange={e => setFilterCountry(e.target.value)}
                                             className="bg-gray-800 text-white text-xs rounded-lg px-3 py-1.5 border border-white/10 focus:border-teal-500 outline-none">
@@ -242,19 +243,25 @@ const AdminModal = ({ isOpen, onClose, user, countries }) => {
                                         </button>
                                     </div>
 
+                                    {/* Manuel Stations */}
                                     {loading ? (
                                         <div className="text-center py-8 text-slate-500 text-sm">Yükleniyor...</div>
-                                    ) : filteredStations.length === 0 ? (
-                                        <div className="text-center py-8 text-slate-500 text-sm">Kayıt bulunamadı.</div>
                                     ) : (
                                         <div className="space-y-2">
+                                            {filteredStations.length === 0 && blockedIds.length === 0 && (
+                                                <div className="text-center py-4 text-slate-500 text-sm">Kayıt bulunamadı.</div>
+                                            )}
+
+                                            {/* Manuel radyolar (Firebase) */}
                                             {filteredStations.map(s => {
                                                 const country = countries.find(c => c.code === s.country);
                                                 return (
                                                     <div key={s.id} className="flex items-center gap-3 p-3 bg-gray-800/50 rounded-xl border border-white/5 hover:border-white/10 transition group">
-                                                        {s.logo && <img src={s.logo} alt="" className="w-8 h-8 rounded-lg object-cover bg-gray-700 shrink-0" onError={e => e.target.style.display='none'} />}
-                                                        {!s.logo && <div className="w-8 h-8 rounded-lg bg-gray-700 shrink-0 flex items-center justify-center text-xs">📻</div>}
+                                                        {s.logo ? <img src={s.logo} alt="" className="w-8 h-8 rounded-lg object-cover bg-gray-700 shrink-0" onError={e => e.target.style.display='none'} /> : <div className="w-8 h-8 rounded-lg bg-gray-700 shrink-0 flex items-center justify-center text-xs">📻</div>}
                                                         <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                                <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-900/60 text-emerald-400 border border-emerald-700/30">Manuel</span>
+                                                            </div>
                                                             <p className="text-white text-sm font-medium truncate">{s.name}</p>
                                                             <p className="text-slate-500 text-xs truncate">{country?.flag} {country?.name || s.country} {s.tag ? `• ${s.tag}` : ''}</p>
                                                         </div>
@@ -269,10 +276,83 @@ const AdminModal = ({ isOpen, onClose, user, countries }) => {
                                                     </div>
                                                 );
                                             })}
+
+                                            {/* Gizlenmiş API radyoları */}
+                                            {blockedIds.length > 0 && (
+                                                <>
+                                                    <p className="text-xs text-slate-500 pt-2 font-bold uppercase tracking-wider">🚫 Gizlenmiş API Radyoları</p>
+                                                    {allStations.filter(s => !s.is_manual && blockedIds.includes(s.stationuuid)).map(s => (
+                                                        <div key={s.stationuuid} className="flex items-center gap-3 p-3 bg-red-950/20 rounded-xl border border-red-900/30 transition">
+                                                            {s.favicon ? <img src={s.favicon} alt="" className="w-8 h-8 rounded-lg object-cover bg-gray-700 shrink-0" onError={e => e.target.style.display='none'} /> : <div className="w-8 h-8 rounded-lg bg-gray-700 shrink-0 flex items-center justify-center text-xs opacity-40">📻</div>}
+                                                            <div className="flex-1 min-w-0 opacity-50">
+                                                                <div className="flex items-center gap-1.5 mb-0.5">
+                                                                    <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-red-900/60 text-red-400 border border-red-700/30">Gizlendi</span>
+                                                                </div>
+                                                                <p className="text-white text-sm font-medium truncate">{s.name}</p>
+                                                                <p className="text-slate-500 text-xs truncate">{s.countrycode} {s.tags ? `• ${s.tags.split(',')[0]}` : ''}</p>
+                                                            </div>
+                                                            <button onClick={() => onUnblockStation(s.stationuuid)} className="p-1.5 text-green-400 hover:bg-green-400/10 rounded-lg transition shrink-0" title="Engeli Kaldır">
+                                                                <span className="text-xs font-bold">✓ Göster</span>
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </>
+                                            )}
                                         </div>
                                     )}
                                 </>
                             )}
+
+                            {/* API RADYOLAR SEKMESI */}
+                            {activeTab === 'api' && (() => {
+                                const [apiSearch, setApiSearch] = React.useState('');
+                                const apiStations = allStations.filter(s => !s.is_manual);
+                                const apiFiltered = apiSearch
+                                    ? apiStations.filter(s => s.name.toLowerCase().includes(apiSearch.toLowerCase()))
+                                    : apiStations;
+                                return (
+                                    <div className="space-y-3">
+                                        <div className="text-xs text-slate-400 bg-blue-950/30 border border-blue-900/30 rounded-xl p-3">
+                                            🌐 Bu listede sisteme otomatik gelen API radyoları görünür. <strong className="text-blue-400">Gizle</strong> diyerek sitede gösterilmesini engelleyebilirsiniz.
+                                        </div>
+                                        <input
+                                            type="text"
+                                            placeholder="Radyo ara..."
+                                            value={apiSearch}
+                                            onChange={e => setApiSearch(e.target.value)}
+                                            className="w-full bg-gray-800 p-2.5 rounded-lg text-white text-sm border border-white/10 focus:border-teal-500 outline-none"
+                                        />
+                                        <p className="text-xs text-slate-500">{apiFiltered.length} radyo listeleniyor</p>
+                                        <div className="space-y-2">
+                                            {apiFiltered.slice(0, 50).map(s => {
+                                                const isBlocked = blockedIds.includes(s.stationuuid);
+                                                return (
+                                                    <div key={s.stationuuid} className={`flex items-center gap-3 p-3 rounded-xl border transition ${isBlocked ? 'bg-red-950/20 border-red-900/30 opacity-60' : 'bg-gray-800/50 border-white/5 hover:border-white/10'}`}>
+                                                        {s.favicon ? <img src={s.favicon} alt="" className="w-8 h-8 rounded-lg object-cover bg-gray-700 shrink-0" onError={e => e.target.style.display='none'} /> : <div className="w-8 h-8 rounded-lg bg-gray-700 shrink-0 flex items-center justify-center text-xs">📻</div>}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                                {isBlocked
+                                                                    ? <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-red-900/60 text-red-400 border border-red-700/30">Gizlendi</span>
+                                                                    : <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-900/60 text-blue-400 border border-blue-700/30">API</span>
+                                                                }
+                                                            </div>
+                                                            <p className="text-white text-sm font-medium truncate">{s.name}</p>
+                                                            <p className="text-slate-500 text-xs truncate">{s.countrycode} {s.tags ? `• ${s.tags.split(',')[0]}` : ''}</p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => isBlocked ? onUnblockStation(s.stationuuid) : onBlockStation(s)}
+                                                            className={`px-2 py-1 rounded-lg text-xs font-bold transition shrink-0 ${isBlocked ? 'text-green-400 hover:bg-green-400/10' : 'text-red-400 hover:bg-red-400/10'}`}
+                                                        >
+                                                            {isBlocked ? '✓ Göster' : '🚫 Gizle'}
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
+                                            {apiFiltered.length > 50 && <p className="text-xs text-slate-500 text-center">Daha fazla görmek için arama yapın ({apiFiltered.length - 50} daha var)</p>}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
 
                             {/* ADD / EDIT TAB */}
                             {activeTab === 'add' && (
@@ -407,6 +487,9 @@ function RadioApp({ page }) {
     const audioRef = useRef((() => { const a = new Audio(); a.preload = 'none'; return a; })());
     const [showAdmin, setShowAdmin] = useState(false);
     const [user, setUser] = useState(null);
+    const [blockedIds, setBlockedIds] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('rs_blocked') || '[]'); } catch { return []; }
+    });
 
     // --- FAVORITES (localStorage) ---
     const [favorites, setFavorites] = useState(() => {
@@ -435,6 +518,20 @@ function RadioApp({ page }) {
 
     // --- AUTH ---
     useEffect(() => { if (auth) return onAuthStateChanged(auth, (u) => setUser(u)); }, []);
+
+    // --- FETCH BLOCKED STATIONS ---
+    useEffect(() => {
+        if (!db) return;
+        const fetchBlocked = async () => {
+            try {
+                const snap = await getDocs(collection(db, "blocked_stations"));
+                const ids = snap.docs.map(d => d.data().stationuuid).filter(Boolean);
+                setBlockedIds(ids);
+                localStorage.setItem('rs_blocked', JSON.stringify(ids));
+            } catch (e) { console.error('Blocked fetch error:', e); }
+        };
+        fetchBlocked();
+    }, [showAdmin]);
 
     // --- FETCH COUNTRIES ---
     useEffect(() => {
@@ -604,9 +701,10 @@ function RadioApp({ page }) {
 
     // --- FILTERS ---
     const filteredStations = useMemo(() => stations.filter(s => {
+        if (blockedIds.includes(s.stationuuid)) return false;
         const q = searchQuery.toLowerCase();
         return (s.name.toLowerCase().includes(q) || s.tags?.toLowerCase().includes(q));
-    }), [stations, searchQuery]);
+    }), [stations, searchQuery, blockedIds]);
 
     // --- COUNTRY CHANGE ---
     const handleCountryChange = useCallback((code) => {
@@ -706,7 +804,30 @@ function RadioApp({ page }) {
                 )}
             </div>
 
-            {showAdmin && <AdminModal isOpen={showAdmin} onClose={() => setShowAdmin(false)} user={user} countries={countriesList} />}
+            {showAdmin && <AdminModal
+                isOpen={showAdmin}
+                onClose={() => setShowAdmin(false)}
+                user={user}
+                countries={countriesList}
+                allStations={stations}
+                blockedIds={blockedIds}
+                onBlockStation={async (station) => {
+                    if (!db) return;
+                    try {
+                        await addDoc(collection(db, "blocked_stations"), { stationuuid: station.stationuuid, name: station.name, country: station.countrycode || station.country || '' });
+                        setBlockedIds(prev => { const next = [...prev, station.stationuuid]; localStorage.setItem('rs_blocked', JSON.stringify(next)); return next; });
+                    } catch (e) { console.error(e); }
+                }}
+                onUnblockStation={async (uuid) => {
+                    if (!db) return;
+                    try {
+                        const snap = await getDocs(collection(db, "blocked_stations"));
+                        const toDelete = snap.docs.find(d => d.data().stationuuid === uuid);
+                        if (toDelete) await deleteDoc(doc(db, "blocked_stations", toDelete.id));
+                        setBlockedIds(prev => { const next = prev.filter(id => id !== uuid); localStorage.setItem('rs_blocked', JSON.stringify(next)); return next; });
+                    } catch (e) { console.error(e); }
+                }}
+            />}
             <CookieConsent />
 
             <PlayerBar

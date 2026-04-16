@@ -1,21 +1,32 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
-import { X, Shield, Settings, Trash2, Ban } from 'lucide-react';
+import { X, Shield, Trash2 } from 'lucide-react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 
-// Components
+// Components (always needed)
 import Header from './components/Header';
 import PlayerBar from './components/PlayerBar';
 
-// Pages
-import HomePage from './pages/HomePage';
-import SearchPage from './pages/SearchPage';
-import FavoritesPage from './pages/FavoritesPage';
-import AboutPage from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
-import PrivacyPage from './pages/PrivacyPage';
+// Pages — lazy loaded to reduce initial bundle
+const HomePage = lazy(() => import('./pages/HomePage'));
+const SearchPage = lazy(() => import('./pages/SearchPage'));
+const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+
+// Suspense fallback
+const PageLoader = () => (
+    <div className="flex items-center justify-center h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-[#ff7eeb] border-t-transparent rounded-full animate-spin" />
+            <span className="text-slate-400 text-sm">Yükleniyor...</span>
+        </div>
+    </div>
+);
+
 
 // --- FIREBASE ---
 const firebaseConfig = {
@@ -233,15 +244,17 @@ const AdminModal = ({ isOpen, onClose, user, countries }) => {
 // --- MAIN APP (Router Shell) ---
 export default function App() {
     return (
-        <Routes>
-            <Route path="/:countryCode/search" element={<RadioApp page="search" />} />
-            <Route path="/:countryCode/favorites" element={<RadioApp page="favorites" />} />
-            <Route path="/:countryCode/about" element={<RadioApp page="about" />} />
-            <Route path="/:countryCode/contact" element={<RadioApp page="contact" />} />
-            <Route path="/:countryCode/privacy" element={<RadioApp page="privacy" />} />
-            <Route path="/:countryCode" element={<RadioApp page="home" />} />
-            <Route path="/" element={<RadioApp page="home" />} />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+            <Routes>
+                <Route path="/:countryCode/search" element={<RadioApp page="search" />} />
+                <Route path="/:countryCode/favorites" element={<RadioApp page="favorites" />} />
+                <Route path="/:countryCode/about" element={<RadioApp page="about" />} />
+                <Route path="/:countryCode/contact" element={<RadioApp page="contact" />} />
+                <Route path="/:countryCode/privacy" element={<RadioApp page="privacy" />} />
+                <Route path="/:countryCode" element={<RadioApp page="home" />} />
+                <Route path="/" element={<RadioApp page="home" />} />
+            </Routes>
+        </Suspense>
     );
 }
 
@@ -550,13 +563,19 @@ function RadioApp({ page }) {
                     />
                 )}
                 {page === 'about' && (
-                    <AboutPage appLang={appLang} onOpenAdmin={() => setShowAdmin(true)} />
+                    <Suspense fallback={<PageLoader />}>
+                        <AboutPage appLang={appLang} onOpenAdmin={() => setShowAdmin(true)} />
+                    </Suspense>
                 )}
                 {page === 'contact' && (
-                    <ContactPage appLang={appLang} onOpenAdmin={() => setShowAdmin(true)} />
+                    <Suspense fallback={<PageLoader />}>
+                        <ContactPage appLang={appLang} onOpenAdmin={() => setShowAdmin(true)} />
+                    </Suspense>
                 )}
                 {page === 'privacy' && (
-                    <PrivacyPage appLang={appLang} onOpenAdmin={() => setShowAdmin(true)} />
+                    <Suspense fallback={<PageLoader />}>
+                        <PrivacyPage appLang={appLang} onOpenAdmin={() => setShowAdmin(true)} />
+                    </Suspense>
                 )}
             </div>
 

@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { getCityImage } from '../data/cityImages';
 
 export default function StationCard({
@@ -12,23 +13,27 @@ export default function StationCard({
     index = 0,
 }) {
     const cityImage = getCityImage(countryCode, station.name);
-    // Use station favicon if available, fallback to cityImage
-    const stationLogo = station.favicon || cityImage;
-    const genre = station.tags ? station.tags.split(',')[0].trim() : 'Radio';
+    const stationLogo = station.favicon || station.logo || cityImage;
+    const genre = station.tags || station.tag ? (station.tags || station.tag).split(',')[0].trim() : 'Radio';
     const bitrate = station.bitrate ? `${station.bitrate}kbps` : 'Stream';
     const listeners = useMemo(() => station.votes
         ? Math.max(station.votes, Math.floor(Math.random() * 500) + 50)
         : Math.floor(Math.random() * 800) + 100, [station.votes]);
 
+    // Manuel radyolar için SEO sayfası URL'si
+    const seoUrl = station.is_manual && station.slug
+        ? `/${(countryCode || station.country || 'tr').toLowerCase()}/radyo/${station.slug}`
+        : null;
+
     return (
         <div 
             onClick={(e) => {
-                if (e.target.closest('.fav-btn')) return;
+                if (e.target.closest('.fav-btn') || e.target.closest('a')) return;
                 onPlay(station);
             }}
             className={`group relative rounded-xl p-5 md:p-6 transition-all duration-500 md:hover:-translate-y-2 border overflow-hidden glass-card cursor-pointer
             ${isActive ? 'border-primary/50 bg-surface-container' : 'border-transparent hover:border-secondary/20 hover:bg-surface-container surface-container-low'}`}
-        >
+        >{/* Station name links to SEO page for manual stations */}
             {/* Ambient Background Glow */}
             <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl transition-all ${isActive ? 'bg-primary/20' : 'bg-secondary/5 group-hover:bg-secondary/10'}`}></div>
             
@@ -77,9 +82,16 @@ export default function StationCard({
             </div>
             
             <div className="relative z-10">
-                <h3 className={`text-xl md:text-2xl font-headline font-bold mb-1 line-clamp-1 ${isActive ? 'text-primary' : 'text-on-surface'}`}>
-                    {station.name}
-                </h3>
+                {seoUrl ? (
+                    <Link to={seoUrl} onClick={e => e.stopPropagation()}
+                        className={`text-xl md:text-2xl font-headline font-bold mb-1 line-clamp-1 block hover:underline underline-offset-2 ${isActive ? 'text-primary' : 'text-on-surface'}`}>
+                        {station.name}
+                    </Link>
+                ) : (
+                    <h3 className={`text-xl md:text-2xl font-headline font-bold mb-1 line-clamp-1 ${isActive ? 'text-primary' : 'text-on-surface'}`}>
+                        {station.name}
+                    </h3>
+                )}
                 <p className="text-xs text-on-surface-variant font-label uppercase tracking-wider capitalize">
                     {genre} • {bitrate}
                 </p>

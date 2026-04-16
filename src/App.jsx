@@ -16,6 +16,14 @@ const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const StationPage = lazy(() => import('./pages/StationPage'));
+
+// Slug helper
+const toSlug = (name) => name
+    .toLowerCase()
+    .replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ı/g, 'i')
+    .replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u')
+    .replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
 
 // Suspense fallback
 const PageLoader = () => (
@@ -192,7 +200,7 @@ const AdminModal = ({ isOpen, onClose, user, countries, allStations = [], blocke
     const [activeTab, setActiveTab] = useState('list');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [newStation, setNewStation] = useState({ name: '', url: '', logo: '', country: 'TR', tag: '' });
+    const [newStation, setNewStation] = useState({ name: '', url: '', logo: '', country: 'TR', tag: '', slug: '', seoTitle: '', seoDescription: '', seoKeywords: '' });
     const [newCountry, setNewCountry] = useState({ code: '', name: '', flag: '' });
     const [dbStations, setDbStations] = useState([]);
     const [msg, setMsg] = useState('');
@@ -230,14 +238,16 @@ const AdminModal = ({ isOpen, onClose, user, countries, allStations = [], blocke
     const handleStationSubmit = async (e) => {
         e.preventDefault();
         try {
+            const slug = newStation.slug || toSlug(newStation.name);
+            const stationData = { ...newStation, slug, is_manual: true };
             if (editingId) {
-                await updateDoc(doc(db, "stations", editingId), newStation);
+                await updateDoc(doc(db, "stations", editingId), stationData);
                 showMsg("✅ Güncellendi.");
             } else {
-                await addDoc(collection(db, "stations"), newStation);
+                await addDoc(collection(db, "stations"), stationData);
                 showMsg("✅ Radyo eklendi.");
             }
-            setNewStation({ name: '', url: '', logo: '', country: 'TR', tag: '' });
+            setNewStation({ name: '', url: '', logo: '', country: 'TR', tag: '', slug: '', seoTitle: '', seoDescription: '', seoKeywords: '' });
             setEditingId(null);
             fetchStations();
             setActiveTab('list');
@@ -253,7 +263,11 @@ const AdminModal = ({ isOpen, onClose, user, countries, allStations = [], blocke
     };
 
     const handleStationEdit = (s) => {
-        setNewStation({ name: s.name, url: s.url, logo: s.logo || '', country: s.country || 'TR', tag: s.tag || '' });
+        setNewStation({
+            name: s.name, url: s.url, logo: s.logo || '', country: s.country || 'TR', tag: s.tag || '',
+            slug: s.slug || toSlug(s.name),
+            seoTitle: s.seoTitle || '', seoDescription: s.seoDescription || '', seoKeywords: s.seoKeywords || ''
+        });
         setEditingId(s.id);
         setActiveTab('add');
     };
@@ -402,7 +416,12 @@ const AdminModal = ({ isOpen, onClose, user, countries, allStations = [], blocke
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="space-y-1">
                                             <label className="text-xs text-slate-400">Radyo Adı *</label>
-                                            <input type="text" placeholder="Örn: TRT FM" className="w-full bg-gray-800 p-2.5 rounded-lg text-white text-sm border border-white/10 focus:border-teal-500 outline-none" value={newStation.name} onChange={e => setNewStation({ ...newStation, name: e.target.value })} required />
+                                            <input type="text" placeholder="Örn: TRT FM" className="w-full bg-gray-800 p-2.5 rounded-lg text-white text-sm border border-white/10 focus:border-teal-500 outline-none"
+                                                value={newStation.name}
+                                                onChange={e => {
+                                                    const name = e.target.value;
+                                                    setNewStation(prev => ({ ...prev, name, slug: prev.slug || toSlug(name) }));
+                                                }} required />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-xs text-slate-400">Ülke *</label>
@@ -423,12 +442,45 @@ const AdminModal = ({ isOpen, onClose, user, countries, allStations = [], blocke
                                         <label className="text-xs text-slate-400">Etiket / Tür</label>
                                         <input type="text" placeholder="Örn: pop, news, jazz" className="w-full bg-gray-800 p-2.5 rounded-lg text-white text-sm border border-white/10 focus:border-teal-500 outline-none" value={newStation.tag} onChange={e => setNewStation({ ...newStation, tag: e.target.value })} />
                                     </div>
+
+                                    {/* SEO ALANLARI */}
+                                    <div className="border-t border-white/10 pt-3">
+                                        <p className="text-xs font-bold text-teal-400 uppercase tracking-wider mb-2">🔍 SEO Ayarları</p>
+                                        <div className="space-y-2">
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-slate-400">URL Slug <span className="text-slate-600">(sayfa adresi)</span></label>
+                                                <div className="flex items-center gap-1 bg-gray-800 rounded-lg border border-white/10 focus-within:border-teal-500 overflow-hidden">
+                                                    <span className="text-slate-600 text-xs pl-2.5 whitespace-nowrap">radiocu.com/tr/radyo/</span>
+                                                    <input type="text" placeholder="metro-fm" className="flex-1 bg-transparent p-2.5 text-white text-sm outline-none min-w-0"
+                                                        value={newStation.slug} onChange={e => setNewStation({ ...newStation, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })} />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-slate-400">SEO Başlığı <span className="text-slate-600">(tarayıcı başlığı)</span></label>
+                                                <input type="text" placeholder="Metro FM Canlı Dinle | Radiocu" className="w-full bg-gray-800 p-2.5 rounded-lg text-white text-sm border border-white/10 focus:border-teal-500 outline-none"
+                                                    value={newStation.seoTitle} onChange={e => setNewStation({ ...newStation, seoTitle: e.target.value })} />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-slate-400">
+                                                    SEO Açıklaması <span className={`text-xs ${newStation.seoDescription.length > 160 ? 'text-red-400' : 'text-slate-600'}`}>({newStation.seoDescription.length}/160)</span>
+                                                </label>
+                                                <textarea rows={2} placeholder="Metro FM'i ücretsiz canlı dinle. Pop müziğin kalbi Radiocu'da!" className="w-full bg-gray-800 p-2.5 rounded-lg text-white text-sm border border-white/10 focus:border-teal-500 outline-none resize-none"
+                                                    value={newStation.seoDescription} onChange={e => setNewStation({ ...newStation, seoDescription: e.target.value })} />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-slate-400">Anahtar Kelimeler <span className="text-slate-600">(virgülle ayır)</span></label>
+                                                <input type="text" placeholder="metro fm, metro fm canlı, metro fm dinle" className="w-full bg-gray-800 p-2.5 rounded-lg text-white text-sm border border-white/10 focus:border-teal-500 outline-none"
+                                                    value={newStation.seoKeywords} onChange={e => setNewStation({ ...newStation, seoKeywords: e.target.value })} />
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div className="flex gap-2 pt-1">
                                         <button type="submit" className="flex-1 bg-teal-600 hover:bg-teal-500 text-white p-2.5 rounded-xl text-sm font-bold transition">
                                             {editingId ? '✅ Güncelle' : '➕ Ekle'}
                                         </button>
                                         {editingId && (
-                                            <button type="button" onClick={() => { setEditingId(null); setNewStation({ name: '', url: '', logo: '', country: 'TR', tag: '' }); setActiveTab('list'); }}
+                                            <button type="button" onClick={() => { setEditingId(null); setNewStation({ name: '', url: '', logo: '', country: 'TR', tag: '', slug: '', seoTitle: '', seoDescription: '', seoKeywords: '' }); setActiveTab('list'); }}
                                                 className="px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-xl text-sm transition flex items-center gap-1">
                                                 <Ban className="w-4 h-4" /> İptal
                                             </button>
@@ -490,6 +542,9 @@ export default function App() {
     return (
         <Suspense fallback={<PageLoader />}>
             <Routes>
+                {/* SEO Station Pages - must be before /:countryCode */}
+                <Route path="/:countryCode/radyo/:slug" element={<StationPageWrapper />} />
+
                 <Route path="/:countryCode/search" element={<RadioApp page="search" />} />
                 <Route path="/:countryCode/favorites" element={<RadioApp page="favorites" />} />
                 <Route path="/:countryCode/about" element={<RadioApp page="about" />} />
@@ -501,6 +556,35 @@ export default function App() {
         </Suspense>
     );
 }
+
+// Wrapper for StationPage - provides play context from localStorage
+function StationPageWrapper() {
+    const [currentStation, setCurrentStation] = useState(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const audioRef = useRef(null);
+
+    const playStation = useCallback((station) => {
+        if (!audioRef.current) audioRef.current = new Audio();
+        const url = station.url || station.url_resolved;
+        if (currentStation?.id === station.id && audioRef.current.src) {
+            if (isPlaying) { audioRef.current.pause(); setIsPlaying(false); }
+            else { audioRef.current.play().catch(() => {}); setIsPlaying(true); }
+        } else {
+            audioRef.current.pause();
+            audioRef.current.src = url;
+            audioRef.current.play().catch(() => {});
+            setCurrentStation(station);
+            setIsPlaying(true);
+        }
+    }, [currentStation, isPlaying]);
+
+    return (
+        <Suspense fallback={<PageLoader />}>
+            <StationPage onPlayStation={playStation} currentStation={currentStation} isPlaying={isPlaying} />
+        </Suspense>
+    );
+}
+
 
 function RadioApp({ page }) {
     const { countryCode: urlCountryCode } = useParams();

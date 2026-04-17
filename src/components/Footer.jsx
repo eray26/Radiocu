@@ -35,7 +35,7 @@ export default function Footer({ appLang, onOpenAdmin }) {
                     <Link to={`${base}/privacy`} className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-[#00e3fd] transition-colors">
                         {appLang === 'TR' ? 'Gizlilik Politikası' : 'Privacy Policy'}
                     </Link>
-                    <button 
+                    <button
                         onClick={onOpenAdmin}
                         className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50 hover:text-primary transition-colors"
                     >

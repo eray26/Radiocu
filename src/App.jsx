@@ -306,7 +306,7 @@ const AdminModal = ({ isOpen, onClose, user, countries, allStations = [], blocke
                         {/* Tabs */}
                         <div className="flex border-b border-white/10 shrink-0 px-2">
                             {[['list', '📋 Manuel'], ['api', '🌐 API'], ['add', editingId ? '✏️ Düzenle' : '➕ Ekle'], ['countries', '🌍 Ülkeler']].map(([key, label]) => (
-                                <button key={key} onClick={() => { setActiveTab(key); if (key !== 'add') { setEditingId(null); setNewStation({ name: '', url: '', logo: '', country: 'TR', tag: '' }); } }}
+                                <button key={key} onClick={() => { setActiveTab(key); if (key !== 'add') { setEditingId(null); setNewStation({ name: '', url: '', logo: '', country: 'TR', tag: '', slug: '', seoTitle: '', seoDescription: '', seoKeywords: '' }); } }}
                                     className={`flex-1 py-3 text-[11px] font-bold transition-colors ${activeTab === key ? 'text-teal-400 border-b-2 border-teal-400' : 'text-slate-500 hover:text-slate-300'}`}>
                                     {label}
                                 </button>
@@ -564,6 +564,19 @@ function StationPageWrapper() {
     const [currentStation, setCurrentStation] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const audioRef = useRef(null);
+
+    // Stop audio when navigating away from station page
+    useEffect(() => {
+        if (!audioRef.current) audioRef.current = new Audio();
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.src = '';
+                setIsPlaying(false);
+                setCurrentStation(null);
+            }
+        };
+    }, []);
 
     const playStation = useCallback((station) => {
         if (!audioRef.current) audioRef.current = new Audio();

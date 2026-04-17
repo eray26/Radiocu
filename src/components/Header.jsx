@@ -22,34 +22,34 @@ export default function Header({
             </div>
 
             <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8 whitespace-nowrap">
-                    <NavLink
-                        to={base}
-                        end
-                        className={({ isActive }) =>
-                            `font-label text-xs md:text-[13px] uppercase tracking-[0.15em] font-medium transition-colors ${isActive ? 'text-[#ff7eeb] border-b-2 border-[#ff7eeb] pb-1.5' : 'text-slate-400 hover:text-[#ff7eeb]'
-                            }`
-                        }
-                    >
-                        {appLang === 'TR' ? 'Ana Sayfa' : 'Home'}
-                    </NavLink>
-                    <NavLink
-                        to={`${base}/about`}
-                        className={({ isActive }) =>
-                            `font-label text-xs md:text-[13px] uppercase tracking-[0.15em] font-medium transition-colors ${isActive ? 'text-[#ff7eeb] border-b-2 border-[#ff7eeb] pb-1.5' : 'text-slate-400 hover:text-[#ff7eeb]'
-                            }`
-                        }
-                    >
-                        {appLang === 'TR' ? 'Hakkımızda' : 'About'}
-                    </NavLink>
-                    <NavLink
-                        to={`${base}/contact`}
-                        className={({ isActive }) =>
-                            `font-label text-xs md:text-[13px] uppercase tracking-[0.15em] font-medium transition-colors ${isActive ? 'text-[#ff7eeb] border-b-2 border-[#ff7eeb] pb-1.5' : 'text-slate-400 hover:text-[#ff7eeb]'
-                            }`
-                        }
-                    >
-                        {appLang === 'TR' ? 'İletişim' : 'Contact'}
-                    </NavLink>
+                <NavLink
+                    to={base}
+                    end
+                    className={({ isActive }) =>
+                        `font-label text-xs md:text-[13px] uppercase tracking-[0.15em] font-medium transition-colors ${isActive ? 'text-[#ff7eeb] border-b-2 border-[#ff7eeb] pb-1.5' : 'text-slate-400 hover:text-[#ff7eeb]'
+                        }`
+                    }
+                >
+                    {appLang === 'TR' ? 'Ana Sayfa' : 'Home'}
+                </NavLink>
+                <NavLink
+                    to={`${base}/about`}
+                    className={({ isActive }) =>
+                        `font-label text-xs md:text-[13px] uppercase tracking-[0.15em] font-medium transition-colors ${isActive ? 'text-[#ff7eeb] border-b-2 border-[#ff7eeb] pb-1.5' : 'text-slate-400 hover:text-[#ff7eeb]'
+                        }`
+                    }
+                >
+                    {appLang === 'TR' ? 'Hakkımızda' : 'About'}
+                </NavLink>
+                <NavLink
+                    to={`${base}/contact`}
+                    className={({ isActive }) =>
+                        `font-label text-xs md:text-[13px] uppercase tracking-[0.15em] font-medium transition-colors ${isActive ? 'text-[#ff7eeb] border-b-2 border-[#ff7eeb] pb-1.5' : 'text-slate-400 hover:text-[#ff7eeb]'
+                        }`
+                    }
+                >
+                    {appLang === 'TR' ? 'İletişim' : 'Contact'}
+                </NavLink>
             </nav>
 
             <div className="flex items-center gap-2 md:gap-4 relative z-10">
@@ -116,7 +116,7 @@ export default function Header({
                     >
                         {appLang === 'TR' ? 'İletişim' : 'Contact'}
                     </NavLink>
-                    
+
                     <div className="flex items-center bg-surface-container-highest px-4 py-2 rounded-lg border border-outline-variant/15 mt-2">
                         <span className="material-symbols-outlined text-on-surface-variant text-sm">search</span>
                         <input

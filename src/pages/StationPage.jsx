@@ -36,19 +36,41 @@ export function toSlug(name) {
         .replace(/\s+/g, '-');
 }
 
+// Helper: fetch related stations from same country
+async function fetchRelatedStations(country, currentSlug) {
+    const db = getDb();
+    if (!db || !country) return [];
+    try {
+        const q = query(collection(db, 'stations'), where('country', '==', country));
+        const snap = await getDocs(q);
+        return snap.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .filter(s => s.slug && s.slug !== currentSlug)
+            .slice(0, 6);
+    } catch (e) {
+        console.error('Related stations fetch error:', e);
+        return [];
+    }
+}
+
 export default function StationPage({ onPlayStation, currentStation, isPlaying }) {
     const { slug, countryCode } = useParams();
     const navigate = useNavigate();
     const [station, setStation] = useState(null);
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
+    const [relatedStations, setRelatedStations] = useState([]);
 
     useEffect(() => {
         setLoading(true);
         setNotFound(false);
         fetchStationBySlug(slug).then(data => {
             if (!data) { setNotFound(true); }
-            else { setStation(data); }
+            else {
+                setStation(data);
+                // Fetch related stations from same country
+                fetchRelatedStations(data.country, slug).then(setRelatedStations);
+            }
             setLoading(false);
         });
     }, [slug]);
@@ -146,7 +168,7 @@ export default function StationPage({ onPlayStation, currentStation, isPlaying }
                         </div>
                         <h2 className="text-3xl font-bold text-white">{station.name}</h2>
                         <p className="text-slate-400 text-sm mt-1 capitalize">
-                            {station.tag || 'Radyo'} {station.country ? `• ${station.country}` : ''}
+                            {station.tag || 'Radyo'}
                         </p>
                     </div>
                 </div>
@@ -177,20 +199,48 @@ export default function StationPage({ onPlayStation, currentStation, isPlaying }
                 )}
 
                 {/* Station Details */}
-                <div className="grid grid-cols-2 gap-3">
-                    {station.tag && (
-                        <div className="bg-gray-900 rounded-xl p-4 border border-white/5">
-                            <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Tür</p>
-                            <p className="text-white font-semibold capitalize">{station.tag}</p>
+                {station.tag && (
+                    <div className="bg-gray-900 rounded-xl p-4 border border-white/5 inline-flex flex-col">
+                        <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Tür</p>
+                        <p className="text-white font-semibold capitalize">{station.tag}</p>
+                    </div>
+                )}
+
+                {/* Related Stations from same country */}
+                {relatedStations.length > 0 && (
+                    <div className="space-y-3">
+                        <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
+                            📻 {(countryCode || station.country || '').toUpperCase()} Radyo Önerileri
+                        </h3>
+                        <div className="grid grid-cols-1 gap-2">
+                            {relatedStations.map(rel => (
+                                <Link
+                                    key={rel.id}
+                                    to={`/${(countryCode || rel.country || 'tr').toLowerCase()}/${rel.slug}`}
+                                    className="flex items-center gap-3 p-3 bg-gray-900 hover:bg-gray-800 border border-white/5 hover:border-white/10 rounded-xl transition-all group"
+                                >
+                                    <div className="w-10 h-10 rounded-lg bg-gray-800 border border-white/10 overflow-hidden shrink-0 flex items-center justify-center">
+                                        {rel.logo ? (
+                                            <img src={rel.logo} alt={rel.name} className="w-full h-full object-cover"
+                                                onError={e => { e.target.style.display = 'none'; }} />
+                                        ) : (
+                                            <span className="text-xl">📻</span>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-white text-sm font-semibold truncate group-hover:text-teal-400 transition-colors">
+                                            {rel.name}
+                                        </p>
+                                        {rel.tag && (
+                                            <p className="text-slate-500 text-xs capitalize">{rel.tag}</p>
+                                        )}
+                                    </div>
+                                    <span className="text-slate-600 group-hover:text-teal-400 transition-colors text-sm">›</span>
+                                </Link>
+                            ))}
                         </div>
-                    )}
-                    {station.country && (
-                        <div className="bg-gray-900 rounded-xl p-4 border border-white/5">
-                            <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Ülke</p>
-                            <p className="text-white font-semibold">{station.country}</p>
-                        </div>
-                    )}
-                </div>
+                    </div>
+                )}
 
                 {/* Back link */}
                 <div className="text-center pt-4">

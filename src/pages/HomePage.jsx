@@ -62,9 +62,11 @@ export default function HomePage({
     // Filter by genre
     const genreFiltered = useMemo(() => {
         if (!selectedGenre || selectedGenre === 'all') return filteredStations;
-        return filteredStations.filter(s =>
-            (s.tags || '').toLowerCase().includes(selectedGenre.toLowerCase())
-        );
+        // Manuel radyolar 'tag', API radyolar 'tags' kullanıyor — her ikisini de kontrol et
+        return filteredStations.filter(s => {
+            const tagStr = (s.tags || s.tag || '').toLowerCase();
+            return tagStr.includes(selectedGenre.toLowerCase());
+        });
     }, [filteredStations, selectedGenre]);
 
     const activeCount = genreFiltered.length;

@@ -196,7 +196,7 @@ const ApiTabContent = ({ countries, blockedIds, onBlockStation, onUnblockStation
 };
 
 // --- ADMİN PANELİ MODALI ---
-const AdminModal = ({ isOpen, onClose, user, countries, allStations = [], blockedIds = [], onBlockStation, onUnblockStation }) => {
+const AdminModal = ({ isOpen, onClose, user, countries, allStations = [], blockedIds = [], onBlockStation, onUnblockStation, onStationsChanged }) => {
     const [activeTab, setActiveTab] = useState('list');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -251,14 +251,18 @@ const AdminModal = ({ isOpen, onClose, user, countries, allStations = [], blocke
             setEditingId(null);
             fetchStations();
             setActiveTab('list');
+            // Yeni radyo eklendi/güncellendi → ana uygulamada cache'i temizle ve yenile
+            if (onStationsChanged) onStationsChanged(stationData.country);
         } catch (e) { showMsg("Hata: " + e.message, 'error'); }
     };
 
-    const handleStationDelete = async (id, name) => {
+    const handleStationDelete = async (id, name, country) => {
         if (window.confirm(`"${name}" silinsin mi?`)) {
             await deleteDoc(doc(db, "stations", id));
             showMsg("🗑️ Silindi.");
             fetchStations();
+            // Radyo silindi → ana uygulamada cache'i temizle ve yenile
+            if (onStationsChanged) onStationsChanged(country);
         }
     };
 
@@ -361,7 +365,7 @@ const AdminModal = ({ isOpen, onClose, user, countries, allStations = [], blocke
                                                             <button onClick={() => handleStationEdit(s)} className="p-1.5 text-yellow-400 hover:bg-yellow-400/10 rounded-lg transition" title="Düzenle">
                                                                 <PencilLine className="w-3.5 h-3.5" />
                                                             </button>
-                                                            <button onClick={() => handleStationDelete(s.id, s.name)} className="p-1.5 text-red-400 hover:bg-red-400/10 rounded-lg transition" title="Sil">
+                                                            <button onClick={() => handleStationDelete(s.id, s.name, s.country)} className="p-1.5 text-red-400 hover:bg-red-400/10 rounded-lg transition" title="Sil">
                                                                 <Trash2 className="w-3.5 h-3.5" />
                                                             </button>
                                                         </div>
@@ -696,21 +700,10 @@ function RadioApp({ page }) {
 
     // --- FETCH STATIONS ---
     const fetchWithFailover = useCallback(async (countryCode) => {
+        if (!countryCode) return; // Bos ulke kodu ile fetch yapma
         setLoading(true); setError(null);
-        const cacheKey = `rs_stations_${countryCode}`;
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-            try {
-                const parsed = JSON.parse(cached);
-                if (Date.now() - parsed.timestamp < 3600000) {
-                    setStations(parsed.data);
-                    setLoading(false);
-                    return;
-                }
-            } catch { localStorage.removeItem(cacheKey); }
-        }
 
-        let data = [];
+        // 1) Manuel radyolari her zaman Firebase'den taze cek
         let manualStations = [];
         if (db) {
             try {
@@ -722,28 +715,48 @@ function RadioApp({ page }) {
             } catch (e) { console.error(e); }
         }
 
+        // Hardcoded fallback (sadece Firebase'de hic manuel yoksa)
         if (manualStations.length === 0) {
             const hardcoded = VIP_STATIONS_DEFAULT[countryCode] || [];
             manualStations = hardcoded.map(s => ({ stationuuid: `manual-${s.name}`, name: s.name, url_resolved: s.url, favicon: s.logo, homepage: s.site, tags: s.tag, is_manual: true }));
         }
 
-        for (const server of API_MIRRORS) {
+        // 2) API radyolarini cache'den veya network'ten cek
+        const cacheKey = `rs_stations_api_${countryCode}`;
+        let cleanApiData = [];
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3500);
-                const res = await fetch(`${server}/json/stations/bycountrycodeexact/${countryCode}?limit=200&order=votes&reverse=true`, { signal: controller.signal });
-                clearTimeout(timeoutId);
-                if (res.ok) { data = await res.json(); break; }
-            } catch { /* ignore */ }
+                const parsed = JSON.parse(cached);
+                if (Date.now() - parsed.timestamp < 3600000) {
+                    cleanApiData = parsed.data;
+                }
+            } catch { localStorage.removeItem(cacheKey); }
         }
 
-        let cleanApiData = data.filter(s => s.url_resolved && s.name.trim().length > 0 && !s.name.toLowerCase().includes("test") && s.url_resolved.startsWith("https") && !s.url_resolved.includes(".m3u8"));
+        if (cleanApiData.length === 0) {
+            let data = [];
+            for (const server of API_MIRRORS) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3500);
+                    const res = await fetch(`${server}/json/stations/bycountrycodeexact/${countryCode}?limit=200&order=votes&reverse=true`, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (res.ok) { data = await res.json(); break; }
+                } catch { /* ignore */ }
+            }
+            cleanApiData = data.filter(s => s.url_resolved && s.name.trim().length > 0 && !s.name.toLowerCase().includes("test") && s.url_resolved.startsWith("https") && !s.url_resolved.includes(".m3u8"));
+            if (cleanApiData.length > 0) {
+                localStorage.setItem(cacheKey, JSON.stringify({ data: cleanApiData, timestamp: Date.now() }));
+            }
+        }
+
+        // Manuel radyolarla ayni isimde olan API radyolarini cikar
         cleanApiData = cleanApiData.filter(s => !manualStations.some(m => m.name.toLowerCase() === s.name.toLowerCase()));
 
         const finalData = [...manualStations, ...cleanApiData];
         if (finalData.length > 0) {
             setStations(finalData);
-            localStorage.setItem(cacheKey, JSON.stringify({ data: finalData, timestamp: Date.now() }));
         } else { setError(t.errorMsg); }
         setLoading(false);
     }, [t.errorMsg]);
@@ -857,7 +870,9 @@ function RadioApp({ page }) {
     const filteredStations = useMemo(() => stations.filter(s => {
         if (blockedIds.includes(s.stationuuid)) return false;
         const q = searchQuery.toLowerCase();
-        return (s.name.toLowerCase().includes(q) || s.tags?.toLowerCase().includes(q));
+        // Manuel radyolar 'tag', API radyolar 'tags' kullanıyor — her ikisini de kontrol et
+        const tagStr = (s.tags || s.tag || '').toLowerCase();
+        return (s.name.toLowerCase().includes(q) || tagStr.includes(q));
     }), [stations, searchQuery, blockedIds]);
 
     // --- COUNTRY CHANGE ---
@@ -962,6 +977,13 @@ function RadioApp({ page }) {
                 countries={countriesList}
                 allStations={stations}
                 blockedIds={blockedIds}
+                onStationsChanged={(country) => {
+                    // Manuel radyolar zaten her zaman taze cekiliyor,
+                    // sadece secilidiyse yenile
+                    if (country === selectedCountry) {
+                        fetchWithFailover(selectedCountry);
+                    }
+                }}
                 onBlockStation={async (station) => {
                     if (!db) return;
                     try {

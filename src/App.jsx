@@ -806,7 +806,15 @@ function RadioApp({ page }) {
         audio.addEventListener('playing', onPlaying);
         audio.addEventListener('pause', onPause);
         audio.addEventListener('error', onError);
-        return () => { audio.removeEventListener('waiting', onWaiting); audio.removeEventListener('playing', onPlaying); audio.removeEventListener('pause', onPause); audio.removeEventListener('error', onError); };
+        return () => {
+            audio.removeEventListener('waiting', onWaiting);
+            audio.removeEventListener('playing', onPlaying);
+            audio.removeEventListener('pause', onPause);
+            audio.removeEventListener('error', onError);
+            // Stop audio when RadioApp unmounts (e.g. navigating to a station page)
+            audio.pause();
+            audio.src = '';
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [countriesList, t.playingError, urlCountryCode]);
 
